@@ -93,11 +93,10 @@ def cfgEquiv : Config (N + M) ≃ (Config N × Config M) where
   invFun p := cfgJoin (N := N) (M := M) p.1 p.2
   left_inv γ := by
     -- `Fin.addCases_castAdd_natAdd` is exactly the statement that splitting then joining is `id`.
-    ext i
-    -- unfold to reduce to the lemma from `Mathlib.Data.Fin.Tuple.Basic`
+    -- (Mathlib ≥ v4.32.1 states it pointwise, with an explicit point argument.)
+    funext i
     simpa [cfgJoin, cfgLeft, cfgRight] using
-      congrArg (fun f => f i)
-        (Fin.addCases_castAdd_natAdd (m := N) (n := M) (v := γ))
+      Fin.addCases_castAdd_natAdd (m := N) (n := M) (v := γ) i
   right_inv p := by
     rcases p with ⟨α, σ⟩
     simp [cfgLeft_join, cfgRight_join]
@@ -107,7 +106,7 @@ def cfgEquiv : Config (N + M) ≃ (Config N × Config M) where
         (cfgLeft (N := N) (M := M) γ) (cfgRight (N := N) (M := M) γ) = γ := by
   funext i
   simpa [cfgJoin, cfgLeft, cfgRight] using
-    congrArg (fun f => f i) (Fin.addCases_castAdd_natAdd (m := N) (n := M) (v := γ))
+    Fin.addCases_castAdd_natAdd (m := N) (n := M) (v := γ) i
 
 lemma magnetization_join (α : Config N) (σ : Config M) :
     magnetization (N := N + M) (cfgJoin (N := N) (M := M) α σ)
@@ -121,7 +120,9 @@ lemma magnetization_split (γ : Config (N + M)) :
     magnetization (N := N) (cfgLeft (N := N) (M := M) γ)
       +
     magnetization (N := M) (cfgRight (N := N) (M := M) γ) := by
-  simp [magnetization, cfgLeft, cfgRight, spin, Fin.sum_univ_add]
+  have h := magnetization_join (N := N) (M := M)
+    (cfgLeft (N := N) (M := M) γ) (cfgRight (N := N) (M := M) γ)
+  rwa [cfgJoin_cfgLeft_cfgRight] at h
 
 end Blocks
 
@@ -215,18 +216,18 @@ lemma integrable_log_skZ (sk : SKDisorder (Ω := Ω) N β h) :
   have hlogZ := hZ.log (fun H => (Z_pos (N := N) (H := H)).ne')
   have hEnergy :
       Continuous fun K : EnergySpace N => skEnergy (N := N) (β := β) (h := h) K := by
-    have h1 : Continuous fun K : EnergySpace N => (-1 : ℝ) • K :=
-      continuous_const.smul continuous_id
+    have h1 : Continuous fun K : EnergySpace N => (-1 : ℝ) • K := by
+      fun_prop
     have h2 : Continuous fun _K : EnergySpace N =>
         magnetic_field_vector (N := N) (-h) := continuous_const
     simpa [skEnergy] using h1.add h2
   have hcont :
       Continuous fun K : EnergySpace N => Real.log (skZ (N := N) (β := β) (h := h) K) := by
-    simpa [skZ] using hlogZ.continuous.comp hEnergy
+    exact hlogZ.continuous.comp hEnergy
   have hf_m :
       AEStronglyMeasurable
         (fun ω => Real.log (skZ (N := N) (β := β) (h := h) (sk.U ω))) (ℙ : Measure Ω) := by
-    simpa using (hcont.measurable.comp hU_meas).aestronglyMeasurable
+    exact (hcont.measurable.comp hU_meas).aestronglyMeasurable
 
   let cN : ℝ :=
     Real.log (Fintype.card (Config N) : ℝ) + ‖magnetic_field_vector (N := N) (-h)‖
