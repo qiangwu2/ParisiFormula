@@ -1,0 +1,315 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\hypersetup{colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue}
+
+% ---------------------------------------------------------------------------
+% Blueprint macros.  When this file is later compiled with the `leanblueprint`
+% tool (https://github.com/PatrickMassot/leanblueprint) these macros are
+% provided by the tool and drive the dependency graph.  Until then they are
+% harmless no-ops so the document compiles with plain pdflatex.
+% ---------------------------------------------------------------------------
+\providecommand{\lean}[1]{\par\noindent{\footnotesize\texttt{Lean: #1}}}
+\providecommand{\leanok}{\par\noindent{\footnotesize\textcolor{green!50!black}{[formalised]}}}
+\providecommand{\uses}[1]{\par\noindent{\footnotesize Uses: #1}}
+\providecommand{\notready}{}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{remark}[theorem]{Remark}
+
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Sig}{\Sigma_N}
+\newcommand{\bra}[1]{\langle #1\rangle}
+\DeclareMathOperator{\cov}{Cov}
+
+\title{The Parisi formula in Lean 4\\ \large Blueprint (working draft)}
+\author{ParisiFormula project}
+\date{September 2026}
+
+\begin{document}
+\maketitle
+
+\section*{Purpose and status}
+
+This document is the mathematical plan for a Lean~4 formalisation of the Parisi
+formula for the Sherrington--Kirkpatrick (SK) model, following Guerra's interpolation
+and Talagrand's proof \cite{Tal06}.  Each statement is paired with the name of its
+Lean counterpart.  Statements marked \emph{[formalised]} are already machine-verified;
+the rest are targets, stated with \texttt{sorry} in \texttt{Targets/Milestones.lean}.
+
+The project builds on two open-source Lean libraries: \texttt{or4nge19/SpinGlass}
+(M.~Cipollina) and its extension in \texttt{njimaMath/research\_public} (RSAT).
+See \texttt{docs/PROVENANCE.md}.
+
+\textbf{Milestones.} (1) Existence of the thermodynamic limit (Guerra--Toninelli).
+(2) The finite-step Parisi functional and its continuity.
+(3) Guerra's replica-symmetry-breaking upper bound.
+(4) Talagrand's lower bound, hence the Parisi formula.
+Milestones 1--3 form a self-contained project; 4 is the long-term goal.
+
+\section{Conventions}
+
+\begin{definition}[Configurations and overlap]
+\lean{SpinGlass.Config, SpinGlass.spin, SpinGlass.overlap}\leanok
+For $N\ge1$ let $\Sig=\{-1,1\}^N$. For $\sigma,\tau\in\Sig$ the overlap is
+$R(\sigma,\tau)=\frac1N\sum_{i\le N}\sigma_i\tau_i$.
+\end{definition}
+
+\begin{definition}[SK disorder]
+\lean{SpinGlass.SKDisorder, SpinGlass.sk\_cov\_kernel}\leanok
+An SK disorder at inverse temperature $\beta$ is a centred Gaussian family
+$(U(\sigma))_{\sigma\in\Sig}$ with
+\[
+\E\,U(\sigma)U(\tau)=\frac{N\beta^2}{2}\,R(\sigma,\tau)^2 .
+\]
+In mixed $p$-spin language this is $N\beta^2\xi(R)$ with $\xi(x)=x^2/2$; the vendored
+library already supports a general $\xi$ (\texttt{SpinGlass.simple\_cov\_kernel}).
+The Gaussian structure is encoded through a covariance operator on the Hilbert space
+$\R^{\Sig}$ (\texttt{PhysLean.Probability.GaussianIBP.IsGaussianHilbert}).
+\end{definition}
+
+\begin{definition}[Free entropy]
+\lean{SpinGlass.free\_entropy, SpinGlass.free\_energy\_density}\leanok
+With external field $h\in\R$,
+\[
+Z_N=\sum_{\sigma\in\Sig}\exp\Big(U(\sigma)+h\sum_{i\le N}\sigma_i\Big),
+\qquad
+s_N(\beta,h)=\frac1N\,\E\log Z_N .
+\]
+\end{definition}
+
+\begin{remark}
+Talagrand writes $H_N(\sigma)=\frac{\beta}{\sqrt N}\sum_{i<j}g_{ij}\sigma_i\sigma_j$, whose
+covariance is $\frac{N\beta^2}{2}(R^2-\frac1N)$.  The vendored kernel drops the $\frac1N$
+correction, so all bounds below hold \emph{exactly} at finite $N$, with no $O(1/N)$ error.
+The limits coincide.
+\end{remark}
+
+\section{Milestone 1: the thermodynamic limit}
+
+Everything in this section except Lemma~\ref{lem:annealed} and
+Proposition~\ref{prop:mono} is already formalised in
+\texttt{ParisiFormula/GuerraToninelli.lean}; the final theorems there take the two
+missing results as hypotheses.
+
+\begin{lemma}[Annealed bound]\label{lem:annealed}
+\lean{SpinGlass.Targets.free\_entropy\_le\_annealed}
+For all $N\ge1$, $s_N(\beta,h)\le\log2+\frac{\beta^2}{4}+|h|$.
+\end{lemma}
+\begin{proof}
+By Jensen, $\E\log Z_N\le\log\E Z_N$.  Since $\E\exp U(\sigma)=\exp(N\beta^2/4)$ and
+$|h\sum_i\sigma_i|\le|h|N$, we get $\E Z_N\le 2^N\exp(N\beta^2/4+|h|N)$.
+The bound $|\sum_i\sigma_i|\le N$ and the Gaussian moment generating function are
+available in the vendored library (\texttt{abs\_magnetization\_le},
+\texttt{IsGaussianHilbert} moment lemmas).
+\end{proof}
+
+\begin{definition}[Guerra--Toninelli interpolation]
+\lean{SpinGlass.K\_block, SpinGlass.K\_interpol, SpinGlass.Φ}\leanok
+Let $U_{N+M},U_N,U_M$ be independent SK disorders on $N+M$, $N$, $M$ spins.
+Write $\gamma=(\alpha,\sigma)\in\Sigma_{N+M}$ with $\alpha\in\Sig,\sigma\in\Sigma_M$, and
+\[
+K_t(\gamma)=\sqrt t\,U_{N+M}(\gamma)+\sqrt{1-t}\,\big(U_N(\alpha)+U_M(\sigma)\big),
+\qquad
+\Phi(t)=\E\log\sum_\gamma\exp\Big(K_t(\gamma)+h\sum_i\gamma_i\Big).
+\]
+\end{definition}
+
+\begin{lemma}[Endpoints]
+\lean{SpinGlass.Z\_interpol\_one, SpinGlass.Z\_interpol\_zero}\leanok
+$\Phi(1)=(N+M)\,s_{N+M}$ and $\Phi(0)=N s_N+M s_M$.
+\end{lemma}
+
+\begin{lemma}[Covariance comparison]\label{lem:cov}
+\lean{SpinGlass.cov\_deriv\_diag, SpinGlass.cov\_deriv\_offdiag\_nonpos (currently \texttt{private}; to be exposed)}\leanok
+Let $C_L(\gamma,\gamma')=\frac{(N+M)\beta^2}2R_{N+M}(\gamma,\gamma')^2$ and
+$C_{\mathrm{blk}}(\gamma,\gamma')=\frac{N\beta^2}2R_N(\alpha,\alpha')^2+\frac{M\beta^2}2R_M(\sigma,\sigma')^2$.
+Then $C_L-C_{\mathrm{blk}}$ vanishes on the diagonal and is $\le0$ off the diagonal.
+\end{lemma}
+\begin{proof}
+On the diagonal all overlaps equal $1$. Off the diagonal, with $\lambda=N/(N+M)$,
+$R_{N+M}=\lambda R_N+(1-\lambda)R_M$, and convexity of $x\mapsto x^2$ gives
+$R_{N+M}^2\le\lambda R_N^2+(1-\lambda)R_M^2$.
+\end{proof}
+
+\begin{lemma}[Sign of the Hessian]
+\lean{SpinGlass.hessian\_free\_energy\_std\_basis\_offdiag\_nonpos}\leanok
+For $H\in\R^{\Sigma}$ and $\gamma\ne\gamma'$, $\partial_\gamma\partial_{\gamma'}\log Z(H)=-G(\gamma)G(\gamma')\le0$,
+where $G$ is the Gibbs weight.
+\end{lemma}
+
+\begin{lemma}[Derivative of $\Phi$]\label{lem:dPhi}
+\lean{(to be added to ParisiFormula/GuerraToninelli.lean)}
+For $t\in(0,1)$,
+\[
+\Phi'(t)=\frac12\sum_{\gamma,\gamma'}\big(C_L-C_{\mathrm{blk}}\big)(\gamma,\gamma')\;
+\E\big[\partial_\gamma\partial_{\gamma'}\log Z(K_t)\big].
+\]
+\end{lemma}
+\begin{proof}
+Differentiate under $\E$ (dominated convergence; the vendored
+\texttt{SpinGlass.hasDerivAt\_nu} and \texttt{hasDerivAt\_guerraPhi} in
+\texttt{port/GuerraInterpolation.lean} do exactly this for the Guerra smart path), then
+apply Gaussian integration by parts in covariant form
+(\texttt{gaussian\_integration\_by\_parts\_hilbert\_cov}) and the trace identity
+(\texttt{SpinGlass.trace\_formula}).  The upstream file
+\texttt{port/GuerraPipeline.lean} carries out this three-step pipeline for the
+RS interpolation; the Guerra--Toninelli case is the same computation with
+$(C_L,C_{\mathrm{blk}})$ in place of the SK and reference kernels.
+\end{proof}
+
+\begin{proposition}[Monotonicity]\label{prop:mono}
+\lean{SpinGlass.Targets.Φ\_monotoneOn}
+\uses{lem:cov, lem:dPhi}
+$\Phi$ is non-decreasing on $[0,1]$.
+\end{proposition}
+\begin{proof}
+By Lemma~\ref{lem:dPhi} and the two sign lemmas, every term of $\Phi'(t)$ is a product of
+two non-positive numbers (or vanishes on the diagonal), hence $\Phi'\ge0$ on $(0,1)$;
+conclude with continuity of $\Phi$ on $[0,1]$ (or the mean value theorem on compact
+subintervals).
+\end{proof}
+
+\begin{theorem}[Guerra--Toninelli superadditivity]
+\lean{SpinGlass.guerra\_toninelli\_superadditive}\leanok
+\uses{prop:mono}
+$(N+M)s_{N+M}\ge Ns_N+Ms_M$.  (Formalised conditionally on Proposition~\ref{prop:mono}.)
+\end{theorem}
+
+\begin{theorem}[Thermodynamic limit]
+\lean{SpinGlass.Targets.free\_entropy\_tendsto, SpinGlass.free\_entropy\_tendsto\_of\_bddAbove}
+\uses{lem:annealed, prop:mono}
+$\lim_{N\to\infty}s_N(\beta,h)$ exists.
+\end{theorem}
+\begin{proof}
+$N\mapsto Ns_N$ is superadditive and $s_N$ is bounded above (Lemma~\ref{lem:annealed});
+Fekete's lemma (\texttt{Subadditive.tendsto\_lim} in Mathlib) applied to $-Ns_N$ gives the
+limit.  This assembly step is already formalised.
+\end{proof}
+
+\section{Milestone 2: the finite-step Parisi functional}
+
+\begin{definition}[RSB scheme]
+\lean{SpinGlass.Targets.RSBScheme}
+A $k$-step scheme is a pair of sequences
+$0=m_0\le m_1\le\dots\le m_k\le m_{k+1}=1$ and
+$0=q_0\le q_1\le\dots\le q_{k+1}\le q_{k+2}=1$.
+\end{definition}
+
+\begin{definition}[Gaussian smoothing operator]
+\lean{SpinGlass.Targets.parisiStep; upstream: SpinGlass.Parisi.T in port/ParisiOperator.lean}
+For $m>0$, $v\ge0$ and $A:\R\to\R$ of moderate growth,
+\[
+T_{m,v}A(x)=\frac1m\log\int\exp\big(mA(x+\sqrt v z)\big)\,d\gamma(z),
+\qquad T_{0,v}A(x)=\int A(x+\sqrt vz)\,d\gamma(z).
+\]
+\end{definition}
+
+\begin{lemma}[Semigroup law]
+\lean{SpinGlass.Parisi.T\_add (port/ParisiOperator.lean, Lean 4.28; needs port)}\leanok
+$T_{m,v_1}T_{m,v_2}=T_{m,v_1+v_2}$ for $m\ne0$.
+\end{lemma}
+
+\begin{definition}[Finite-step Parisi functional]
+\lean{SpinGlass.Targets.parisiF, SpinGlass.Targets.parisiFunctional}
+Set $F_{k+2}(x)=\log\cosh x$ and, for $p=k+1,\dots,1$,
+$F_p=T_{m_p,\,\beta^2(q_{p+1}-q_p)}F_{p+1}$; finally $F_0=T_{0,\beta^2q_1}F_1$.
+Then
+\[
+\mathcal P_k(m,q)=\log2+F_0(h)-\frac{\beta^2}{4}\sum_{p=1}^{k+1}m_p\big(q_{p+1}^2-q_p^2\big).
+\]
+\end{definition}
+
+\begin{lemma}[Replica-symmetric case]
+\lean{SpinGlass.Targets.parisiFunctional\_rsScheme}
+For $k=0$, $m=(0,1)$, $q=(0,q,1)$:
+$\mathcal P_0=\log2+\E\log\cosh(\beta\sqrt q\,z+h)+\frac{\beta^2}4(1-q)^2$.
+\end{lemma}
+\begin{proof}
+$F_1(x)=\log\E\cosh(x+\beta\sqrt{1-q}\,z)=\log\cosh x+\frac{\beta^2(1-q)}2$, so
+$F_0(h)=\E\log\cosh(\beta\sqrt qz+h)+\frac{\beta^2(1-q)}2$, and
+$\frac{\beta^2(1-q)}2-\frac{\beta^2}4(1-q^2)=\frac{\beta^2}4(1-q)^2$.
+This is a sanity check on the normalisations; it should be proved early.
+\end{proof}
+
+\begin{lemma}[Continuity in the scheme]
+\lean{SpinGlass.Targets.parisiFunctional\_lipschitz}
+For fixed $k$ the map $(m,q)\mapsto\mathcal P_k(m,q)$ is Lipschitz, with a constant
+depending only on $\beta$.  (Guerra \cite{Gue03}; Talagrand Vol.~II, Lemma~14.6.x.)
+\end{lemma}
+
+\section{Milestone 3: Guerra's upper bound}
+
+\begin{theorem}[Guerra's RSB bound \cite{Gue03}]\label{thm:guerra}
+\lean{SpinGlass.Targets.guerra\_rsb\_bound}
+For every $N$, every $(\beta,h)$ and every $k$-step scheme, $s_N(\beta,h)\le\mathcal P_k(m,q)$.
+\end{theorem}
+
+\begin{proof}[Proof plan]
+Let $(z_p^i)_{0\le p\le k+1,\;i\le N}$ be independent standard Gaussians and
+\[
+H_t(\sigma)=\sqrt t\,U(\sigma)+\sqrt{1-t}\sum_{i\le N}\sigma_i\sum_{p=0}^{k+1}z^i_p\,\beta\sqrt{q_{p+1}-q_p}.
+\]
+Write $\E_p$ for expectation in $(z^i_p)_i$ only, and define recursively
+$Z_{k+2}=\sum_\sigma\exp(H_t(\sigma)+h\sum_i\sigma_i)$,
+$Z_p=\big(\E_p Z_{p+1}^{m_p}\big)^{1/m_p}$ for $p=k+1,\dots,1$, and $\varphi(t)=\frac1N\E_0\log Z_1$.
+Then $\varphi(1)=s_N$ and $\varphi(0)=\log2+F_0(h)$ (the $\sigma$-sum factorises and the
+recursion is exactly that of $F_p$).  Gaussian integration by parts gives
+\[
+\varphi'(t)=-\frac{\beta^2}4\sum_{p=0}^{k+1}(m_{p+1}-m_p)\,\E\big\langle (R_{12}-q_{p+1})^2\big\rangle_{t,p}
++\Big(\text{explicit constant}\Big),
+\]
+where the brackets are Gibbs averages under the hierarchical (``cascade'') weights and the
+constant equals $-\frac{\beta^2}4\sum_p m_p(q_{p+1}^2-q_p^2)$ after telescoping.  All terms
+are $\le0$, so $\varphi(1)\le\varphi(0)-(\dots)$, which is the claim.
+
+\emph{Formalisation route.}  Because the hierarchical expectation is a finite composition
+of $\E_p$'s over finitely many Gaussians, no Ruelle probability cascades are needed:
+the object is a finite tree of Gaussian vectors, and each $\E_p$ is an integral over a
+finite-dimensional Gaussian measure.  The RS case ($k=0$) is exactly the RS-Guerra
+pipeline in \texttt{port/GuerraPipeline.lean}; the general case iterates it.
+\end{proof}
+
+\begin{theorem}[Upper bound in the limit]
+\lean{SpinGlass.Targets.limsup\_free\_entropy\_le\_parisiValue}
+\uses{thm:guerra}
+$\limsup_N s_N\le\mathcal P(\beta,h):=\inf_k\inf_{(m,q)}\mathcal P_k(m,q)$.
+\end{theorem}
+
+\section{Milestone 4: the lower bound (outline only)}
+
+\begin{theorem}[Parisi formula \cite{Tal06}]
+\lean{SpinGlass.Targets.parisi\_formula}
+$\lim_N s_N(\beta,h)=\mathcal P(\beta,h)$.
+\end{theorem}
+
+Talagrand's proof of $\liminf_N s_N\ge\mathcal P$ proceeds by studying two replicas
+coupled through their overlap.  For $u\in[-1,1]$ define the constrained partition function
+$Z_N(u)=\sum_{R(\sigma^1,\sigma^2)=u}\exp(-H(\sigma^1)-H(\sigma^2))$ and extend Guerra's
+interpolation to this two-replica system.  The replica-symmetric instance of the resulting
+bound is already formalised in RSAT as \texttt{SpinGlass.AT.twoReplica\_GT\_bound}
+(finite-volume two-replica Guerra--Talagrand bound with Lagrange multiplier).
+Talagrand's argument then shows, by induction on $k$ and using convexity of the
+$k$-step functional in the coupling parameter, that if $\liminf s_N<\mathcal P$ then the
+constrained free energy would exceed its bound for some $u$, a contradiction.
+A detailed blueprint of this chapter will be written once Milestones~1--3 are complete.
+
+\begin{thebibliography}{9}
+\bibitem{Gue03} F.~Guerra, Broken replica symmetry bounds in the mean field spin glass
+model, \emph{Comm. Math. Phys.} 233 (2003), 1--12.
+\bibitem{GT02} F.~Guerra, F.~L.~Toninelli, The thermodynamic limit in mean field spin glass
+models, \emph{Comm. Math. Phys.} 230 (2002), 71--79.
+\bibitem{Tal06} M.~Talagrand, The Parisi formula, \emph{Ann. of Math.} 163 (2006), 221--263.
+\bibitem{TalI} M.~Talagrand, \emph{Mean Field Models for Spin Glasses}, Vol.~I, Springer 2011.
+\bibitem{TalII} M.~Talagrand, \emph{Mean Field Models for Spin Glasses}, Vol.~II, Springer 2011.
+\bibitem{Pan13} D.~Panchenko, \emph{The Sherrington--Kirkpatrick Model}, Springer 2013.
+\end{thebibliography}
+
+\end{document}

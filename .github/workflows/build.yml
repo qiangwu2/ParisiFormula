@@ -1,0 +1,30 @@
+name: build
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  # Tiers 1 and 2 must always build and must contain no `sorry`.
+  verified:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: leanprover/lean-action@v1
+        with:
+          build-args: "SpinGlassCore ParisiFormula"
+      - name: Reject sorry / admit / axiom in Tier 1-2
+        run: |
+          if grep -rnE "\bsorry\b|\badmit\b|^axiom " --include='*.lean' Lemmas ParisiFormula; then
+            echo "::error::placeholder or project-local axiom found in verified tiers"; exit 1
+          fi
+
+  # Tier 3 is allowed to contain `sorry` and, early on, allowed to fail.
+  targets:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: leanprover/lean-action@v1
+        with:
+          build-args: "Targets"

@@ -1,0 +1,14 @@
+ParisiFormula
+Copyright 2026 The ParisiFormula project contributors
+
+This product includes software developed by Matteo Cipollina and collaborators,
+distributed under the Apache License, Version 2.0:
+
+  * or4nge19/SpinGlass            https://github.com/or4nge19/SpinGlass
+                                  (commit d1342fdf0179e3e62c76a49d4eaad84e04c64fd6)
+  * njimaMath/research_public     https://github.com/njimaMath/research_public
+                                  (commit f3b34d2071d9cde5262c6672b6ebab132d4a7b43), directories RSAT/ and perceptronFixed/
+
+Portions of Lemmas/SpinGlass/ are derived from or adapted from the or4nge19/SpinGlass
+project via RSAT.  Existing copyright and license headers in the derived files are
+retained.  See docs/PROVENANCE.md for a file-by-file map.
