@@ -150,7 +150,7 @@ noncomputable def parisiStep (m v : ℝ) (A : ℝ → ℝ) (x : ℝ) : ℝ :=
   `F_p = T_{m_p, β²(q_{p+1} - q_p)} F_{p+1}`   for `p = k+1, k, …, 1`,
   `F_0 = T_{0, β² q₁} F_1 = E F_1(· + β√q₁ z)`.
 
-So `parisiF s β (k+1)` is `F_0`. -/
+So `parisiF s β (k+2)` is `F_0` (there are `k+2` smoothing steps: `p = k+1, …, 1`, then `p = 0`). -/
 noncomputable def parisiF {k : ℕ} (s : RSBScheme k) (β : ℝ) : ℕ → (ℝ → ℝ)
   | 0 => fun x => Real.log (Real.cosh x)
   | j + 1 =>
@@ -163,7 +163,7 @@ noncomputable def parisiF {k : ℕ} (s : RSBScheme k) (β : ℝ) : ℕ → (ℝ 
 
 (The prefactor `β²/4` is `β²/2 · (θ(q_{p+1}) - θ(q_p))` with `θ(q) = q ξ'(q) - ξ(q) = q²/2`.) -/
 noncomputable def parisiFunctional {k : ℕ} (s : RSBScheme k) (β h : ℝ) : ℝ :=
-  Real.log 2 + parisiF s β (k + 1) h
+  Real.log 2 + parisiF s β (k + 2) h
     - (β ^ 2 / 4) * ∑ p ∈ Finset.range (k + 1), s.m (p + 1) * (s.q (p + 2) ^ 2 - s.q (p + 1) ^ 2)
 
 /-- The replica-symmetric scheme with overlap `q`: `k = 0`, `m = (0, 1)`, `q = (0, q, 1)`. -/
@@ -188,7 +188,12 @@ noncomputable def rsScheme (q : ℝ) (hq0 : 0 ≤ q) (hq1 : q ≤ 1) : RSBScheme
 replica-symmetric formula `log 2 + E log cosh(β√q z + h) + (β²/4)(1-q)²`.
 
 This lemma guards against off-by-one or normalisation mistakes in the definitions above:
-if it is false, the definitions are wrong, not the theorem. -/
+if it is false, the definitions are wrong, not the theorem.
+
+Hand computation to check against (`k = 0`, `m = (0,1)`, `q = (0,q,1)`):
+`F_1 = T_{1, β²(1-q)} (log cosh)`, and `∫ cosh(x + σ z) dγ(z) = cosh x · e^{σ²/2}`, so
+`F_1(x) = log cosh x + β²(1-q)/2`; then `F_0(h) = E log cosh(h + β√q z) + β²(1-q)/2` and
+`𝒫_0 = log 2 + F_0(h) - (β²/4)(1 - q²) = log 2 + E log cosh(β√q z + h) + (β²/4)(1-q)²`. -/
 theorem parisiFunctional_rsScheme (β h q : ℝ) (hq0 : 0 ≤ q) (hq1 : q ≤ 1) :
     parisiFunctional (rsScheme q hq0 hq1) β h
       = Real.log 2

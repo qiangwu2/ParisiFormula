@@ -94,9 +94,10 @@ def cfgEquiv : Config (N + M) ≃ (Config N × Config M) where
   left_inv γ := by
     -- `Fin.addCases_castAdd_natAdd` is exactly the statement that splitting then joining is `id`.
     -- (Mathlib ≥ v4.32.1 states it pointwise, with an explicit point argument.)
+    -- `exact` (not `simpa`): `cfgJoin`/`cfgLeft`/`cfgRight` unfold definitionally, whereas
+    -- their `simp` equation lemmas are in applied form and cannot fire under `Fin.addCases`.
     funext i
-    simpa [cfgJoin, cfgLeft, cfgRight] using
-      Fin.addCases_castAdd_natAdd (m := N) (n := M) (v := γ) i
+    exact Fin.addCases_castAdd_natAdd (m := N) (n := M) (v := γ) i
   right_inv p := by
     rcases p with ⟨α, σ⟩
     simp [cfgLeft_join, cfgRight_join]
@@ -105,8 +106,7 @@ def cfgEquiv : Config (N + M) ≃ (Config N × Config M) where
     cfgJoin (N := N) (M := M)
         (cfgLeft (N := N) (M := M) γ) (cfgRight (N := N) (M := M) γ) = γ := by
   funext i
-  simpa [cfgJoin, cfgLeft, cfgRight] using
-    Fin.addCases_castAdd_natAdd (m := N) (n := M) (v := γ) i
+  exact Fin.addCases_castAdd_natAdd (m := N) (n := M) (v := γ) i
 
 lemma magnetization_join (α : Config N) (σ : Config M) :
     magnetization (N := N + M) (cfgJoin (N := N) (M := M) α σ)
@@ -216,11 +216,12 @@ lemma integrable_log_skZ (sk : SKDisorder (Ω := Ω) N β h) :
   have hlogZ := hZ.log (fun H => (Z_pos (N := N) (H := H)).ne')
   have hEnergy :
       Continuous fun K : EnergySpace N => skEnergy (N := N) (β := β) (h := h) K := by
-    have h1 : Continuous fun K : EnergySpace N => (-1 : ℝ) • K := by
-      fun_prop
-    have h2 : Continuous fun _K : EnergySpace N =>
-        magnetic_field_vector (N := N) (-h) := continuous_const
-    simpa [skEnergy] using h1.add h2
+    -- `simp only [skEnergy]` (not `simpa ... using h1.add h2`): a full `simp` normalises the
+    -- goal into `Pi.add` form, which no longer matches the pointwise `Continuous.add`.
+    -- `fun_prop` then discharges `fun K => (-1) • K + const` without depending on how the
+    -- scalar literal in `skEnergy` elaborates.
+    simp only [skEnergy]
+    fun_prop
   have hcont :
       Continuous fun K : EnergySpace N => Real.log (skZ (N := N) (β := β) (h := h) K) := by
     exact hlogZ.continuous.comp hEnergy
@@ -665,7 +666,6 @@ private lemma overlap_split (γ γ' : Config (N + M)) :
         +
         ((M : ℝ) / (N + M : ℝ)) * overlap (N := M) (cfgRight (N := N) (M := M) γ)
           (cfgRight (N := N) (M := M) γ') := by
-  -- TODO: expand `overlap` and split the sum over `Fin (N+M)` using `Fin.sum_univ_add`.
   classical
   cases N with
   | zero =>
@@ -697,7 +697,6 @@ private lemma sq_le_weighted_sq (a b x y : ℝ) (ha : 0 ≤ a) (hb : 0 ≤ b) (h
     (a * x + b * y) ^ 2 ≤ a * x ^ 2 + b * y ^ 2 := by
   -- Standard two-point Jensen / convexity of `x ↦ x^2`.
   -- One clean proof is `a*b*(x-y)^2 ≥ 0` after using `hab` to rewrite `1-a=b`.
-  -- TODO: `ring_nf` + `nlinarith`.
   have hb' : b = 1 - a := by linarith
   subst hb'
   have ha_le_one : a ≤ 1 := by linarith
@@ -724,7 +723,6 @@ private lemma cov_deriv_offdiag_nonpos (hN : 0 < N) (hM : 0 < M)
     (sk_cov_kernel (N := N + M) (β := β) γ γ')
       ≤ (sk_cov_kernel (N := N) (β := β) (cfgLeft (N := N) (M := M) γ) (cfgLeft (N := N) (M := M) γ'))
         + (sk_cov_kernel (N := M) (β := β) (cfgRight (N := N) (M := M) γ) (cfgRight (N := N) (M := M) γ')) := by
-  -- TODO: use `overlap_split` + `sq_le_weighted_sq` and simplify the `sk_cov_kernel` prefactors.
   classical
   -- Set the block overlaps.
   set rN :=
@@ -801,7 +799,6 @@ private lemma cov_deriv_diag (hN : 0 < N) (hM : 0 < M) (γ : Config (N + M)) :
       (sk_cov_kernel (N := N) (β := β) (cfgLeft (N := N) (M := M) γ) (cfgLeft (N := N) (M := M) γ))
         + (sk_cov_kernel (N := M) (β := β) (cfgRight (N := N) (M := M) γ) (cfgRight (N := N) (M := M) γ)) := by
   -- Diagonal: all overlaps are 1, so this is just `(N+M)β^2/2 = Nβ^2/2 + Mβ^2/2`.
-  -- TODO: `simp [sk_cov_kernel, overlap_self (hN := ?)]`.
   classical
   have hNM : 0 < N + M := Nat.add_pos_left hN M
   have hN1 : overlap (N := N) (cfgLeft (N := N) (M := M) γ) (cfgLeft (N := N) (M := M) γ) = 1 := by
@@ -815,7 +812,7 @@ private lemma cov_deriv_diag (hN : 0 < N) (hM : 0 < M) (γ : Config (N + M)) :
 
 end Covariance
 
-/-! ## 7. Guerra–Toninelli superadditivity (final statement, TODO) -/
+/-! ## 7. Guerra–Toninelli superadditivity (final statement, conditional on `hmono`) -/
 
 section MainTheorem
 

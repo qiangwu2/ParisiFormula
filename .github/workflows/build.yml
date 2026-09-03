@@ -53,6 +53,9 @@ jobs:
           PYEOF
           exit $status
       - name: Reject sorry / admit / axiom in Tier 1-2
+        # `always()`: run the placeholder scan even when the build step failed, so a red
+        # build never hides a `sorry` that slipped into a verified tier.
+        if: always()
         run: |
           if grep -rnE "\bsorry\b|\badmit\b|^axiom " --include='*.lean' Lemmas ParisiFormula; then
             echo "::error::placeholder or project-local axiom found in verified tiers"; exit 1
