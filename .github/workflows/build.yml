@@ -4,6 +4,10 @@ on:
   push:
   pull_request:
 
+# Both jobs run `lake build` themselves (instead of letting lean-action do it) so that the
+# Lean error messages can be written to the run's Summary page and as annotations.
+# Those are visible to anyone on the public run page, without downloading logs.
+
 jobs:
   # Tiers 1 and 2 must always build and must contain no `sorry`.
   verified:
@@ -12,7 +16,42 @@ jobs:
       - uses: actions/checkout@v4
       - uses: leanprover/lean-action@v1
         with:
-          build-args: "SpinGlassCore ParisiFormula"
+          build: false
+          use-mathlib-cache: true
+          use-github-cache: true
+      - name: Build Tier 1-2 and report Lean errors
+        shell: bash
+        run: |
+          set +e
+          lake build SpinGlassCore ParisiFormula 2>&1 | tee build.log
+          status=${PIPESTATUS[0]}
+          python3 - build.log "Tier 1-2 (SpinGlassCore + ParisiFormula)" <<'PYEOF'
+          import re, sys, os
+          log = open(sys.argv[1], errors="replace").read().splitlines()
+          title = sys.argv[2]
+          pat = re.compile(r"^error: ([^:\s]+\.lean):(\d+):(\d+): (.*)$")
+          stop = ("error:", "warning:", "info:", "✔", "✖", "⚠", "Build completed", "Some required")
+          errs, i = [], 0
+          while i < len(log):
+              m = pat.match(log[i])
+              if m:
+                  block, j = [log[i]], i + 1
+                  while j < len(log) and not log[j].startswith(stop) and len(block) < 25:
+                      block.append(log[j]); j += 1
+                  errs.append((m.group(1), m.group(2), m.group(3), block)); i = j
+              else:
+                  i += 1
+          out = [f"## {title}: {'FAILED' if errs else 'OK'} - {len(errs)} Lean error(s)", ""]
+          for f, l, c, b in errs[:30]:
+              out += [f"### `{f}:{l}:{c}`", "```"] + b + ["```", ""]
+          summ = os.environ.get("GITHUB_STEP_SUMMARY")
+          if summ:
+              open(summ, "a").write("\n".join(out) + "\n")
+          for f, l, c, b in errs[:10]:
+              msg = "%0A".join(x.replace("%", "%25") for x in b)
+              print(f"::error file={f},line={l},col={c}::{msg}")
+          PYEOF
+          exit $status
       - name: Reject sorry / admit / axiom in Tier 1-2
         run: |
           if grep -rnE "\bsorry\b|\badmit\b|^axiom " --include='*.lean' Lemmas ParisiFormula; then
@@ -27,4 +66,39 @@ jobs:
       - uses: actions/checkout@v4
       - uses: leanprover/lean-action@v1
         with:
-          build-args: "Targets"
+          build: false
+          use-mathlib-cache: true
+          use-github-cache: true
+      - name: Build Tier 3 and report Lean errors
+        shell: bash
+        run: |
+          set +e
+          lake build Targets 2>&1 | tee build.log
+          status=${PIPESTATUS[0]}
+          python3 - build.log "Tier 3 (Targets)" <<'PYEOF'
+          import re, sys, os
+          log = open(sys.argv[1], errors="replace").read().splitlines()
+          title = sys.argv[2]
+          pat = re.compile(r"^error: ([^:\s]+\.lean):(\d+):(\d+): (.*)$")
+          stop = ("error:", "warning:", "info:", "✔", "✖", "⚠", "Build completed", "Some required")
+          errs, i = [], 0
+          while i < len(log):
+              m = pat.match(log[i])
+              if m:
+                  block, j = [log[i]], i + 1
+                  while j < len(log) and not log[j].startswith(stop) and len(block) < 25:
+                      block.append(log[j]); j += 1
+                  errs.append((m.group(1), m.group(2), m.group(3), block)); i = j
+              else:
+                  i += 1
+          out = [f"## {title}: {'FAILED' if errs else 'OK'} - {len(errs)} Lean error(s)", ""]
+          for f, l, c, b in errs[:30]:
+              out += [f"### `{f}:{l}:{c}`", "```"] + b + ["```", ""]
+          summ = os.environ.get("GITHUB_STEP_SUMMARY")
+          if summ:
+              open(summ, "a").write("\n".join(out) + "\n")
+          for f, l, c, b in errs[:10]:
+              msg = "%0A".join(x.replace("%", "%25") for x in b)
+              print(f"::error file={f},line={l},col={c}::{msg}")
+          PYEOF
+          exit $status
