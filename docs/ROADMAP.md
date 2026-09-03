@@ -4,14 +4,18 @@ Concrete, ordered work items. Each maps to a statement in `Targets/Milestones.le
 numbered result in `blueprint/blueprint.tex`. Items are sized roughly
 (S = hours, M = days, L = weeks, XL = months).
 
-## Phase 0 — make the skeleton build  (S–M)
+## Phase 0 — make the skeleton build  (S–M)  — **done**
 
-- [ ] `lake exe cache get && lake build` succeeds (Tier 1). Expected: yes, unchanged code.
-- [ ] `lake build ParisiFormula` succeeds (Tier 2). Expected: yes; the ported file was
-      verified on Lean 4.32.0, we are on 4.32.1.
-- [ ] `lake build Targets` elaborates (Tier 3). Expected: a few repairs needed — these
-      statements were written blind. Fix until only `sorry` warnings remain.
-- [ ] CI green on GitHub (`.github/workflows/build.yml`).
+- [x] `lake exe cache get && lake build` succeeds (Tier 1). Unchanged code, as expected.
+- [x] `lake build ParisiFormula` succeeds (Tier 2). Three repairs were needed after all
+      (`Fin.addCases_castAdd_natAdd` is now pointwise; two `simpa`s that no longer close
+      their goals). See `docs/PROVENANCE.md`.
+- [x] `lake build Targets` elaborates (Tier 3), with only `sorry` warnings.
+- [x] CI green on GitHub (`.github/workflows/build.yml`).
+
+Note that Tier 3 elaborating means the *statements* are well-formed, not that they are the
+right statements: `parisiFunctional` typechecked both before and after an off-by-one in the
+`parisiF` index was corrected. Only Target 2a can catch that class of mistake — do it early.
 
 ## Phase 1 — Milestone 1: the thermodynamic limit  (M–L)
 
