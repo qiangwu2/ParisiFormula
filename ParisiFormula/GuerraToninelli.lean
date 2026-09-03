@@ -718,7 +718,7 @@ after splitting `γ=(α,σ)`, convexity gives
 
 Equivalently, the derivative of the interpolated covariance is nonpositive off the diagonal.
 -/
-private lemma cov_deriv_offdiag_nonpos (hN : 0 < N) (hM : 0 < M)
+lemma cov_deriv_offdiag_nonpos (hN : 0 < N) (hM : 0 < M)
     {γ γ' : Config (N + M)} :
     (sk_cov_kernel (N := N + M) (β := β) γ γ')
       ≤ (sk_cov_kernel (N := N) (β := β) (cfgLeft (N := N) (M := M) γ) (cfgLeft (N := N) (M := M) γ'))
@@ -793,7 +793,7 @@ private lemma cov_deriv_offdiag_nonpos (hN : 0 < N) (hM : 0 < M)
     simpa [mul_add, mul_assoc, mul_left_comm, mul_comm, hNfactor, hMfactor] using this
   simpa [sk_cov_kernel, rN, rM] using h'
 
-private lemma cov_deriv_diag (hN : 0 < N) (hM : 0 < M) (γ : Config (N + M)) :
+lemma cov_deriv_diag (hN : 0 < N) (hM : 0 < M) (γ : Config (N + M)) :
     (sk_cov_kernel (N := N + M) (β := β) γ γ)
       =
       (sk_cov_kernel (N := N) (β := β) (cfgLeft (N := N) (M := M) γ) (cfgLeft (N := N) (M := M) γ))
