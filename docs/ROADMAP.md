@@ -18,6 +18,11 @@ the minimizer, and `parisiValue` well-definedness are proved. `parisi_formula` i
 deduced from these results and Theorem 2.2. The axiom guards in `Targets/GuerraAudit.lean`
 verify that Theorem 2.1 and the upper bounds have no placeholder dependencies.
 
+The convergence deduction within Theorem 2.2 is now proved in
+`Targets/TalagrandConvergence.lean`, conditional on an explicit mass-weighted
+overlap-concentration estimate. The next missing input is that concentration estimate,
+not the differential-inequality argument. The unconditional Theorem 2.2 remains open.
+
 **Milestone 1 (Targets 1b, 1c) is *not* on this critical path.**  Target 4 is strictly
 stronger than 1c — convergence to `parisiValue` subsumes existence of a limit — and deriving
 4 from 3' plus the lower bound never invokes 1c.  Milestone 1 is the classical
@@ -513,8 +518,48 @@ The proof route remains Talagrand, *The Parisi formula*, Ann. of Math. 163 (2006
 
 #### Core 2 — `talagrand_theorem_2_2` (Theorem 2.2)
 
-The paper's §3–§5: Proposition 2.3 (coupled-replica overlap concentration) and its
-consequences.  Untouched.  This is the bulk of the paper and the bulk of what remains.
+**Step 13 (2026-09-04): the concentration-to-convergence deduction.**
+
+`Targets/TalagrandConvergence.lean` formalises the argument on p. 230, (2.20)–(2.22),
+for the actual SK cascade:
+
+* `guerraGap = guerraPsi - guerraPhi` is continuous on `[0,1]`, starts at zero,
+  is nonnegative, and has derivative exactly `guerraRemainder` on `(0,1)`.
+* `guerraReplicaExpectation` averages a level-dependent observable using the existing
+  mass-weighted `guerraReplicaAccum`. Positivity, total mass one, bounded-observable
+  monotonicity, and the required linearity/integrability are proved.
+* `guerraOverlapTail` is the mass-weighted probability of
+  `(R - q_level)² ≥ a`. The bound `0 ≤ (R - q_level)² ≤ 4` gives
+  `Rem ≤ (β²/4)(a + 4δ)` whenever this tail probability is at most `δ`.
+* With `a = K·gap + η` and tail probability at most `η`, this yields
+  `gap' ≤ (β²K/4)·gap + (5β²/4)η`.
+* `guerraGap_le_mul_exp` proves the integrating-factor estimate on the closed
+  interval using derivatives only in its interior. It does not assume a derivative
+  at `t = 0`, where the interpolation contains square roots.
+* `guerraPhi_uniform_of_overlap_concentration` proves uniform convergence on
+  `[0,t₀]` under the stated tail bound, with `K` fixed before `η` and `N`.
+  `talagrand_theorem_2_2_of_overlap_concentration` assembles the exact near-optimality
+  and fixed-level-minimality quantifiers of Theorem 2.2.
+
+These are proved **implications with an explicit concentration hypothesis**. Axiom
+guards in `Targets/GuerraAudit.lean` certify that their proofs use only the standard
+axioms, not the existing Theorem 2.2 placeholder. No new placeholder was introduced;
+`talagrand_theorem_2_2` itself remains unchanged.
+
+**Remaining work, following the Annals argument:**
+
+1. Construct the coupled finite-level cascade of (2.23)–(2.28), and identify its
+   unconstrained pressure and tilted replica averages as in Lemma 2.7.
+2. Prove the constrained free-energy gap-to-probability estimate (Lemma 2.6 and
+   Proposition 2.5), including Gaussian concentration under the cascade weights.
+3. Prove the a priori two-replica bound of Theorem 2.4 using §3–§5 and the scheme's
+   optimality. The imported RS-level `twoReplica_GT_bound` is not this general result.
+4. Combine those bounds to obtain Proposition 2.3 and its mass-weighted form used
+   above. Handle coincident masses/overlap levels via the reduction in (2.19), or
+   prove the needed bound directly without strictness. This reduction is not yet
+   formalised merely because the convergence lemma accepts degenerate schemes.
+5. Supply the concentration hypothesis and replace the original Theorem 2.2
+   placeholder; then audit `parisi_formula` itself.
 
 
 ## Phase 4 — Milestone 4: Talagrand's lower bound  (XL, open-ended)
@@ -533,6 +578,8 @@ following Proposition 2.3 and the coupled-replica estimates of §3–§5. The cu
 statement asks for convergence `φ_N(t) → ψ(t)` on `0 ≤ t ≤ t₀ < 1` for schemes that
 are sufficiently close to `parisiValue` and minimize at their own fixed level.
 The deduction from this theorem and Theorem 2.1 to `parisi_formula` is already written.
+The deduction from a mass-weighted Proposition 2.3 hypothesis to Theorem 2.2 is now
+also proved separately, as detailed in Step 13 above.
 
 Supporting results available through the **active RSAT dependency** include:
 

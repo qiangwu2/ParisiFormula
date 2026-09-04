@@ -54,6 +54,9 @@ identified explicitly. The main files are \texttt{Targets/Milestones.lean} and
 Guerra's RSB upper bound, and its limiting consequence are proved.
 \texttt{Targets/GuerraAudit.lean} guards their standard-axiom-only dependencies.
 Theorem~2.2 remains open, so the full Parisi formula is still conditional.
+Its concentration-to-convergence deduction is now proved separately in
+\texttt{Targets/TalagrandConvergence.lean}, with the concentration estimate
+retained as an explicit, unproved hypothesis.
 Three older placeholders remain off this critical path: Guerra--Toninelli
 monotonicity, the standalone thermodynamic-limit target, and a uniform Lipschitz
 estimate for the scheme. Fixed-level continuity and existence of a minimizer are proved.
@@ -369,6 +372,37 @@ one has $\varphi_N(t)\to\psi_s(t)$ for every $0\le t\le t_0$.
 The proof remains open.
 \end{theorem}
 
+\begin{lemma}[Concentration-to-convergence implication]\label{lem:concentration-convergence}
+\lean{SpinGlass.Targets.guerraPhi\_uniform\_of\_overlap\_concentration}\leanok
+Fix a finite scheme and $0\le t_0<1$. Write
+$g_N(t)=\psi_s(t)-\varphi_N(t)$, and let $T_N(t,a)$ be the mass-weighted
+two-replica probability of $(R_{1,2}-q_\ell)^2\ge a$, implemented as
+\texttt{guerraOverlapTail}.
+Assume there is a fixed $K\ge0$ such that, for every $\eta>0$ and all
+sufficiently large $N$, uniformly for $0<t<t_0$,
+\[
+T_N\bigl(t,Kg_N(t)+\eta\bigr)\le\eta.
+\]
+Then $\varphi_N\to\psi_s$ uniformly on $[0,t_0]$.
+This is a proved implication; the displayed hypothesis is not yet proved.
+\end{lemma}
+
+\begin{proof}[Formalised deduction corresponding to (2.20)--(2.22)]
+The actual gap is continuous, nonnegative, and zero at $t=0$, with
+$g_N'=\operatorname{Rem}_N$ in the interior. Normalization and positivity of
+the replica averages, together with $(R-q_\ell)^2\le4$, give
+\[
+\operatorname{Rem}_N(t)\le\frac{\beta^2K}{4}g_N(t)
+  +\frac{5\beta^2}{4}\eta.
+\]
+The integrating-factor estimate in \texttt{guerraGap\_le\_mul\_exp} uses
+only interior derivatives and endpoint continuity. Taking $\eta$ arbitrarily
+small proves uniform convergence. The theorem
+\texttt{talagrand\_theorem\_2\_2\_of\_overlap\_concentration} assembles
+the near-optimality and fixed-level-minimality quantifiers, still under the
+explicit concentration hypothesis. Its proof has no placeholder dependencies.
+\end{proof}
+
 \begin{theorem}[Parisi formula; conditional deduction \cite{Tal06}]
 \lean{SpinGlass.Targets.parisi\_formula}
 \uses{thm:identity, thm:two-two, thm:guerra}
@@ -387,7 +421,11 @@ Combine this with the proved upper bound.
 \end{proof}
 
 The remaining work follows Proposition~2.3 and the coupled-replica concentration
-argument in \S3--\S5 of \cite{Tal06}. The active RSAT dependency includes
+argument in \S3--\S5 of \cite{Tal06}: construct the coupled cascade and prove
+Lemma~2.7, Proposition~2.5, and the a priori bound of Theorem~2.4. The reduction
+for coincident scheme levels in (2.19) also remains to be formalised before
+the concentration hypothesis is available for every admissible scheme.
+The active RSAT dependency includes
 \texttt{SpinGlass.AT.twoReplica\_GT\_bound} and Gaussian concentration results;
 these are supporting ingredients, not an existing proof of Theorem~2.2.
 The detailed next-step record is maintained in \texttt{docs/ROADMAP.md}.

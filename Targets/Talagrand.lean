@@ -9,6 +9,9 @@ The SK formalisation of Talagrand (Annals 2006) §2, with Targets 3 and 4 *deriv
 two analytic cores of the paper rather than assumed separately.
 Theorem 2.1 is proved below. The only remaining `sorry` on the critical path is Theorem
 2.2, and the deduction of the Parisi formula from these results is machine-checked.
+`Targets/TalagrandConvergence.lean` separately proves convergence from an explicit
+overlap-concentration hypothesis. That hypothesis has not yet been discharged, so
+it does not remove the Theorem 2.2 placeholder below.
 
 ## The objects (Talagrand (2.1)–(2.4), (2.18))
 
@@ -3258,6 +3261,8 @@ level, `φ_N(t) → ψ(t)` as `N → ∞` for every `0 ≤ t ≤ t₀`.
 
 This is the content of the paper's §3–§5, deduced there from Proposition 2.3 (the
 coupled-replica overlap concentration `μ_r((R_{1,2} - q_r)² ≥ K(ψ(t) - φ(t)) + ε₁) ≤ ε₁`).
+The mass-weighted concentration-to-convergence deduction is now proved in
+`Targets/TalagrandConvergence.lean`; the concentration input remains open.
 -/
 theorem talagrand_theorem_2_2 (β h : ℝ) (hβ : 0 < β)
     (sk : ∀ N : ℕ, SKDisorder (Ω := Ω) N β h) {t₀ : ℝ} (ht₀ : t₀ < 1) :

@@ -16,6 +16,13 @@ on the current critical path. Three older, off-path placeholders remain in
 for the current status and [`blueprint/blueprint.tex`](blueprint/blueprint.tex) for the
 mathematical outline and its formalisation status.
 
+**Theorem 2.2 progress:** [`Targets/TalagrandConvergence.lean`](Targets/TalagrandConvergence.lean)
+proves the deduction from an explicit mass-weighted overlap-concentration bound to
+uniform convergence of the actual cascade on `[0,t₀]`. The tail-to-remainder estimate,
+endpoint-safe differential inequality, and final quantifier assembly are checked without
+placeholders. The concentration hypothesis itself is **not yet proved**; the original
+Theorem 2.2 placeholder has not been removed or relocated.
+
 ## Project milestones
 
 1. **Existence of the thermodynamic limit** (Guerra–Toninelli superadditivity + Fekete).
@@ -66,7 +73,7 @@ lake build ParisiFormula Targets  # both local libraries, including the axiom gu
 bash scripts/check.sh            # both builds plus source-placeholder checks/report
 ```
 
-For just the completed Theorem 2.1 and upper-bound dependency audit:
+For the completed Theorem 2.1, upper bounds, and conditional convergence dependency audit:
 
 ```bash
 lake build Targets.GuerraAudit
@@ -75,7 +82,9 @@ lake build Targets.GuerraAudit
 `Targets` contains proved results alongside four remaining placeholders. Those warnings
 do not mean a failed build, but a successful build alone does not certify the full Parisi
 formula. `GuerraAudit` checks that Theorem 2.1 and both upper bounds depend only on
-`propext`, `Classical.choice`, and `Quot.sound`—not `sorryAx` or extra axioms. CI requires
+`propext`, `Classical.choice`, and `Quot.sound`—not `sorryAx` or extra axioms. It also
+checks the conditional convergence lemmas; this does not certify their concentration
+hypothesis. CI requires
 both local libraries to build; it does not ignore target or audit failures.
 
 Open the folder in VS Code and click into any `.lean` file: the Lean extension shows the
@@ -121,7 +130,8 @@ ParisiFormula/
 │   ├── CascadeFieldPi.lean           conditional field integration by parts
 │   ├── CascadeContinuityPi.lean      parameter continuity through smoothing
 │   ├── Talagrand.lean                Theorem 2.1 proved; Theorem 2.2 open; final deduction
-│   └── GuerraAudit.lean              axiom-regression guards for the completed upper bound
+│   ├── TalagrandConvergence.lean     overlap concentration implies Theorem 2.2 (conditional)
+│   └── GuerraAudit.lean              axiom guards for upper bounds and conditional convergence
 ├── .lake/packages/              generated dependency checkout; not tracked
 │   ├── mathlib/                      Mathlib v4.32.1
 │   └── QuantitativeStrictAT/         active RSAT source for Lemmas.* imports
