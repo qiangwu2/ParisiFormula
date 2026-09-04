@@ -232,6 +232,246 @@ theorem hasDerivAt_guerraBase (n : ℕ) (U : EnergySpace n) (h : ℝ) (y : Fin n
     Finset.sum_pos (fun σ _ => Real.exp_pos _) Finset.univ_nonempty
   exact hsum.log hpos.ne'
 
+/-! ## 2c. Bounds on the base and its derivative
+
+What the level induction needs of `F_{k+1,t}`: measurability in `y`, `ℓ¹` growth with
+constants uniform in `t ∈ [0,1]`, `ℓ¹`-Lipschitzness with constant `1`, and `ℓ¹` growth of
+`∂_t F_{k+1,t}` with constants uniform for `t` away from the endpoints.  All elementary: the
+base is `log` of a finite sum of exponentials.
+-/
+
+/-- `∂_t F_{k+1,t}` as a function of the cascade field. -/
+noncomputable def guerraBaseDeriv (n : ℕ) (U : EnergySpace n) (h t : ℝ) (y : Fin n → ℝ) : ℝ :=
+  gibbsAvg (guerraH n U h t y) (guerraHDeriv n U t y)
+
+/-- `∑_σ |U σ|`, a crude size for the disorder. -/
+noncomputable def uAbs (n : ℕ) (U : EnergySpace n) : ℝ := ∑ σ : Config n, |U σ|
+
+theorem uAbs_nonneg (n : ℕ) (U : EnergySpace n) : 0 ≤ uAbs n U :=
+  Finset.sum_nonneg fun _ _ => abs_nonneg _
+
+theorem abs_le_uAbs (n : ℕ) (U : EnergySpace n) (σ : Config n) : |U σ| ≤ uAbs n U :=
+  Finset.single_le_sum (fun τ _ => abs_nonneg (U τ)) (Finset.mem_univ σ)
+
+theorem abs_spin (n : ℕ) (σ : Config n) (i : Fin n) : |spin n σ i| = 1 := by
+  unfold spin; split <;> simp
+
+/-- `log ∑_σ e^{f σ}` is within `log card + ∑_σ |f σ|` of `0`. -/
+theorem abs_log_sum_exp_le {n : ℕ} (f : Config n → ℝ) :
+    |Real.log (∑ σ : Config n, Real.exp (f σ))|
+      ≤ Real.log (Fintype.card (Config n)) + ∑ σ, |f σ| := by
+  have hpos : 0 < ∑ σ : Config n, Real.exp (f σ) :=
+    Finset.sum_pos (fun σ _ => Real.exp_pos _) Finset.univ_nonempty
+  have hcard : (0 : ℝ) < Fintype.card (Config n) := by exact_mod_cast Fintype.card_pos
+  have hup : (∑ σ : Config n, Real.exp (f σ))
+      ≤ Fintype.card (Config n) * Real.exp (∑ σ, |f σ|) := by
+    calc (∑ σ : Config n, Real.exp (f σ)) ≤ ∑ _σ : Config n, Real.exp (∑ τ, |f τ|) := by
+          refine Finset.sum_le_sum fun σ _ => Real.exp_le_exp.2 ?_
+          exact (le_abs_self _).trans
+            (Finset.single_le_sum (fun τ _ => abs_nonneg (f τ)) (Finset.mem_univ σ))
+      _ = Fintype.card (Config n) * Real.exp (∑ τ, |f τ|) := by
+          rw [Finset.sum_const, Finset.card_univ, nsmul_eq_mul]
+  have hlow : Real.exp (-(∑ σ, |f σ|)) ≤ ∑ σ : Config n, Real.exp (f σ) := by
+    obtain ⟨σ₀⟩ := (inferInstance : Nonempty (Config n))
+    calc Real.exp (-(∑ σ, |f σ|)) ≤ Real.exp (f σ₀) := by
+          refine Real.exp_le_exp.2 ?_
+          have := Finset.single_le_sum (fun τ _ => abs_nonneg (f τ)) (Finset.mem_univ σ₀)
+          linarith [neg_abs_le (f σ₀)]
+      _ ≤ ∑ σ : Config n, Real.exp (f σ) :=
+          Finset.single_le_sum (fun τ _ => (Real.exp_pos (f τ)).le) (Finset.mem_univ σ₀)
+  rw [abs_le]
+  constructor
+  · have := Real.log_le_log (Real.exp_pos _) hlow
+    rw [Real.log_exp] at this
+    have hc : 0 ≤ Real.log (Fintype.card (Config n)) :=
+      Real.log_nonneg (by exact_mod_cast Fintype.card_pos)
+    linarith
+  · have := Real.log_le_log hpos hup
+    rw [Real.log_mul hcard.ne' (Real.exp_pos _).ne', Real.log_exp] at this
+    exact this
+
+/-- `log ∑ e^{f}` is `1`-Lipschitz in the sup norm of `f`. -/
+theorem abs_log_sum_exp_sub_le {n : ℕ} {f g : Config n → ℝ} {ε : ℝ}
+    (hε : ∀ σ, |f σ - g σ| ≤ ε) :
+    |Real.log (∑ σ : Config n, Real.exp (f σ))
+      - Real.log (∑ σ : Config n, Real.exp (g σ))| ≤ ε := by
+  have hf : 0 < ∑ σ : Config n, Real.exp (f σ) :=
+    Finset.sum_pos (fun σ _ => Real.exp_pos _) Finset.univ_nonempty
+  have hg : 0 < ∑ σ : Config n, Real.exp (g σ) :=
+    Finset.sum_pos (fun σ _ => Real.exp_pos _) Finset.univ_nonempty
+  have h1 : (∑ σ : Config n, Real.exp (f σ)) ≤ Real.exp ε * ∑ σ, Real.exp (g σ) := by
+    rw [Finset.mul_sum]
+    refine Finset.sum_le_sum fun σ _ => ?_
+    rw [← Real.exp_add]
+    exact Real.exp_le_exp.2 (by linarith [(abs_le.1 (hε σ)).2])
+  have h2 : (∑ σ : Config n, Real.exp (g σ)) ≤ Real.exp ε * ∑ σ, Real.exp (f σ) := by
+    rw [Finset.mul_sum]
+    refine Finset.sum_le_sum fun σ _ => ?_
+    rw [← Real.exp_add]
+    exact Real.exp_le_exp.2 (by linarith [(abs_le.1 (hε σ)).1])
+  have hl1 := Real.log_le_log hf h1
+  have hl2 := Real.log_le_log hg h2
+  rw [Real.log_mul (Real.exp_pos _).ne' hg.ne', Real.log_exp] at hl1
+  rw [Real.log_mul (Real.exp_pos _).ne' hf.ne', Real.log_exp] at hl2
+  rw [abs_le]
+  constructor <;> linarith
+
+/-- A Gibbs average is bounded by the `ℓ¹` size of the observable. -/
+theorem abs_gibbsAvg_le {n : ℕ} (E f : Config n → ℝ) : |gibbsAvg E f| ≤ ∑ σ, |f σ| := by
+  unfold gibbsAvg
+  have hpos : 0 < ∑ σ : Config n, Real.exp (E σ) :=
+    Finset.sum_pos (fun σ _ => Real.exp_pos _) Finset.univ_nonempty
+  rw [abs_div, abs_of_pos hpos, div_le_iff₀ hpos]
+  calc |∑ σ, Real.exp (E σ) * f σ| ≤ ∑ σ, |Real.exp (E σ) * f σ| :=
+        Finset.abs_sum_le_sum_abs _ _
+    _ = ∑ σ, Real.exp (E σ) * |f σ| := by
+        refine Finset.sum_congr rfl fun σ _ => ?_
+        rw [abs_mul, abs_of_pos (Real.exp_pos _)]
+    _ ≤ ∑ σ, Real.exp (E σ) * ∑ τ, |f τ| := by
+        refine Finset.sum_le_sum fun σ _ => ?_
+        exact mul_le_mul_of_nonneg_left
+          (Finset.single_le_sum (fun τ _ => abs_nonneg (f τ)) (Finset.mem_univ σ))
+          (Real.exp_pos _).le
+    _ = (∑ τ, |f τ|) * ∑ σ, Real.exp (E σ) := by rw [← Finset.sum_mul, mul_comm]
+
+/-- `|H_t(σ)| ≤ |U σ| + ∑ᵢ|yᵢ| + n|h|` for `0 ≤ t ≤ 1`. -/
+theorem abs_guerraH_le (n : ℕ) (U : EnergySpace n) (h : ℝ) {t : ℝ} (ht0 : 0 ≤ t) (ht1 : t ≤ 1)
+    (y : Fin n → ℝ) (σ : Config n) :
+    |guerraH n U h t y σ| ≤ |U σ| + (l1 y + n * |h|) := by
+  have hst : Real.sqrt t ≤ 1 := by
+    have := Real.sqrt_le_sqrt ht1; rwa [Real.sqrt_one] at this
+  have hs1 : Real.sqrt (1 - t) ≤ 1 := by
+    have := Real.sqrt_le_sqrt (show 1 - t ≤ 1 by linarith); rwa [Real.sqrt_one] at this
+  unfold guerraH
+  refine (abs_add_le _ _).trans ?_
+  have h1 : |Real.sqrt t * U σ| ≤ |U σ| := by
+    rw [abs_mul, abs_of_nonneg (Real.sqrt_nonneg t)]
+    nlinarith [abs_nonneg (U σ)]
+  have h2 : |∑ i, spin n σ i * (Real.sqrt (1 - t) * y i + h)| ≤ l1 y + n * |h| := by
+    refine (Finset.abs_sum_le_sum_abs _ _).trans ?_
+    have hterm : ∀ i, |spin n σ i * (Real.sqrt (1 - t) * y i + h)| ≤ |y i| + |h| := by
+      intro i
+      rw [abs_mul, abs_spin, one_mul]
+      refine (abs_add_le _ _).trans ?_
+      rw [abs_mul, abs_of_nonneg (Real.sqrt_nonneg _)]
+      nlinarith [abs_nonneg (y i)]
+    calc (∑ i, |spin n σ i * (Real.sqrt (1 - t) * y i + h)|) ≤ ∑ i, (|y i| + |h|) :=
+          Finset.sum_le_sum fun i _ => hterm i
+      _ = l1 y + n * |h| := by
+          rw [Finset.sum_add_distrib, Finset.sum_const, Finset.card_univ, Fintype.card_fin,
+            nsmul_eq_mul]
+  linarith
+
+theorem guerraH_sub (n : ℕ) (U : EnergySpace n) (h t : ℝ) (y y' : Fin n → ℝ) (σ : Config n) :
+    guerraH n U h t y σ - guerraH n U h t y' σ
+      = Real.sqrt (1 - t) * ∑ i, spin n σ i * (y i - y' i) := by
+  unfold guerraH
+  rw [Finset.mul_sum]
+  have hsplit : ∀ i, spin n σ i * (Real.sqrt (1 - t) * y i + h)
+      - spin n σ i * (Real.sqrt (1 - t) * y' i + h)
+      = Real.sqrt (1 - t) * (spin n σ i * (y i - y' i)) := fun i => by ring
+  calc Real.sqrt t * U σ + ∑ i, spin n σ i * (Real.sqrt (1 - t) * y i + h)
+        - (Real.sqrt t * U σ + ∑ i, spin n σ i * (Real.sqrt (1 - t) * y' i + h))
+      = ∑ i, (spin n σ i * (Real.sqrt (1 - t) * y i + h)
+          - spin n σ i * (Real.sqrt (1 - t) * y' i + h)) := by
+        rw [Finset.sum_sub_distrib]; ring
+    _ = ∑ i, Real.sqrt (1 - t) * (spin n σ i * (y i - y' i)) :=
+        Finset.sum_congr rfl fun i _ => hsplit i
+
+theorem abs_guerraHDeriv_le (n : ℕ) (U : EnergySpace n) (t : ℝ) (y : Fin n → ℝ) (σ : Config n) :
+    |guerraHDeriv n U t y σ|
+      ≤ |U σ| / (2 * Real.sqrt t) + l1 y / (2 * Real.sqrt (1 - t)) := by
+  unfold guerraHDeriv
+  refine (abs_sub _ _).trans ?_
+  have hd1 : (0 : ℝ) ≤ 2 * Real.sqrt t := by positivity
+  have hd2 : (0 : ℝ) ≤ 2 * Real.sqrt (1 - t) := by positivity
+  have h1 : |U σ / (2 * Real.sqrt t)| = |U σ| / (2 * Real.sqrt t) := by
+    rw [abs_div, abs_of_nonneg hd1]
+  have h2 : |(∑ i, spin n σ i * y i) / (2 * Real.sqrt (1 - t))|
+      ≤ l1 y / (2 * Real.sqrt (1 - t)) := by
+    rw [abs_div, abs_of_nonneg hd2]
+    refine div_le_div_of_nonneg_right ?_ hd2
+    refine (Finset.abs_sum_le_sum_abs _ _).trans ?_
+    refine le_of_eq (Finset.sum_congr rfl fun i _ => ?_)
+    rw [abs_mul, abs_spin, one_mul]
+  linarith
+
+/-! Measurability in the cascade field. -/
+
+theorem measurable_guerraH (n : ℕ) (U : EnergySpace n) (h t : ℝ) (σ : Config n) :
+    Measurable (fun y : Fin n → ℝ => guerraH n U h t y σ) := by
+  unfold guerraH
+  refine measurable_const.add (Finset.measurable_sum _ fun i _ => ?_)
+  exact measurable_const.mul ((measurable_const.mul (measurable_pi_apply i)).add measurable_const)
+
+theorem measurable_guerraHDeriv (n : ℕ) (U : EnergySpace n) (t : ℝ) (σ : Config n) :
+    Measurable (fun y : Fin n → ℝ => guerraHDeriv n U t y σ) := by
+  unfold guerraHDeriv
+  refine measurable_const.sub ?_
+  exact (Finset.measurable_sum _ fun i _ => measurable_const.mul (measurable_pi_apply i)).div_const _
+
+theorem measurable_guerraBase (n : ℕ) (U : EnergySpace n) (h t : ℝ) :
+    Measurable (guerraBase n U h t) := by
+  unfold guerraBase
+  exact Real.measurable_log.comp
+    (Finset.measurable_sum _ fun σ _ => Real.measurable_exp.comp (measurable_guerraH n U h t σ))
+
+theorem measurable_guerraBaseDeriv (n : ℕ) (U : EnergySpace n) (h t : ℝ) :
+    Measurable (guerraBaseDeriv n U h t) := by
+  unfold guerraBaseDeriv gibbsAvg
+  refine Measurable.div ?_ ?_
+  · exact Finset.measurable_sum _ fun σ _ =>
+      (Real.measurable_exp.comp (measurable_guerraH n U h t σ)).mul (measurable_guerraHDeriv n U t σ)
+  · exact Finset.measurable_sum _ fun σ _ => Real.measurable_exp.comp (measurable_guerraH n U h t σ)
+
+/-! The three bounds the induction consumes. -/
+
+/-- `ℓ¹` growth of the base, uniform in `t ∈ [0,1]`. -/
+theorem abs_guerraBase_le (n : ℕ) (U : EnergySpace n) (h : ℝ) {t : ℝ} (ht0 : 0 ≤ t) (ht1 : t ≤ 1)
+    (y : Fin n → ℝ) :
+    |guerraBase n U h t y|
+      ≤ (Real.log (Fintype.card (Config n)) + uAbs n U + Fintype.card (Config n) * (n * |h|))
+        + Fintype.card (Config n) * l1 y := by
+  refine (abs_log_sum_exp_le _).trans ?_
+  have : (∑ σ : Config n, |guerraH n U h t y σ|)
+      ≤ uAbs n U + Fintype.card (Config n) * (l1 y + n * |h|) := by
+    calc (∑ σ : Config n, |guerraH n U h t y σ|)
+        ≤ ∑ σ : Config n, (|U σ| + (l1 y + n * |h|)) :=
+          Finset.sum_le_sum fun σ _ => abs_guerraH_le n U h ht0 ht1 y σ
+      _ = uAbs n U + Fintype.card (Config n) * (l1 y + n * |h|) := by
+          rw [Finset.sum_add_distrib, Finset.sum_const, Finset.card_univ, nsmul_eq_mul, uAbs]
+  linarith
+
+/-- The base is `1`-Lipschitz in `ℓ¹`, for `t ≤ 1`. -/
+theorem guerraBase_lipschitz (n : ℕ) (U : EnergySpace n) (h : ℝ) {t : ℝ} (ht0 : 0 ≤ t)
+    (ht1 : t ≤ 1) (y y' : Fin n → ℝ) :
+    |guerraBase n U h t y - guerraBase n U h t y'| ≤ 1 * l1 (y - y') := by
+  unfold guerraBase
+  refine abs_log_sum_exp_sub_le fun σ => ?_
+  rw [guerraH_sub, one_mul, abs_mul, abs_of_nonneg (Real.sqrt_nonneg _)]
+  have hs1 : Real.sqrt (1 - t) ≤ 1 := by
+    have := Real.sqrt_le_sqrt (show 1 - t ≤ 1 by linarith); rwa [Real.sqrt_one] at this
+  have hsum : |∑ i, spin n σ i * (y i - y' i)| ≤ l1 (y - y') := by
+    refine (Finset.abs_sum_le_sum_abs _ _).trans ?_
+    refine le_of_eq (Finset.sum_congr rfl fun i _ => ?_)
+    rw [abs_mul, abs_spin, one_mul, Pi.sub_apply]
+  nlinarith [abs_nonneg (∑ i, spin n σ i * (y i - y' i)), Real.sqrt_nonneg (1 - t)]
+
+/-- `ℓ¹` growth of `∂_t F_{k+1,t}`, with constants controlled by `1/(2√t)`, `1/(2√(1-t))`. -/
+theorem abs_guerraBaseDeriv_le (n : ℕ) (U : EnergySpace n) (h t : ℝ) (y : Fin n → ℝ) :
+    |guerraBaseDeriv n U h t y|
+      ≤ uAbs n U / (2 * Real.sqrt t)
+        + (Fintype.card (Config n) / (2 * Real.sqrt (1 - t))) * l1 y := by
+  refine (abs_gibbsAvg_le _ _).trans ?_
+  calc (∑ σ : Config n, |guerraHDeriv n U t y σ|)
+      ≤ ∑ σ : Config n, (|U σ| / (2 * Real.sqrt t) + l1 y / (2 * Real.sqrt (1 - t))) :=
+        Finset.sum_le_sum fun σ _ => abs_guerraHDeriv_le n U t y σ
+    _ = uAbs n U / (2 * Real.sqrt t)
+          + (Fintype.card (Config n) / (2 * Real.sqrt (1 - t))) * l1 y := by
+        rw [Finset.sum_add_distrib, Finset.sum_const, Finset.card_univ, nsmul_eq_mul,
+          ← Finset.sum_div, uAbs]
+        ring
+
 /-! ## 3. The two analytic cores of the paper -/
 
 /--
