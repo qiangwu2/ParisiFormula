@@ -44,7 +44,12 @@ right statements: `parisiFunctional` typechecked both before and after an off-by
 
 ## Phase 2 — Milestone 2: the Parisi functional  (M–L)
 
-- [ ] Port `port/ParisiOperator.lean` (operator `T_{m,v}`, semigroup law) to Lean 4.32. (S–M)
+- [x] Port `port/ParisiOperator.lean` (operator `T_{m,v}`, semigroup law) to Lean 4.32.
+      **Done**, as `ParisiFormula/ParisiOperator.lean`.  The 4.28 → 4.32 gap turned out to
+      be *zero renames*: the only change needed was adding
+      `import Mathlib.MeasureTheory.Integral.Prod` (`Integral.Bochner.Basic` does not pull
+      in `integral_prod`).  `Measure.conv`, the `∗` notation and
+      `gaussianReal_conv_gaussianReal` all survive unchanged.
 - [ ] Reconcile `Targets.parisiStep` with `Parisi.T` (probably: define `parisiStep` via `T`). (S)
 - [x] **2a** `parisiFunctional_rsScheme` — sanity check of normalisations. **Done.**
       The definitions are correct as written: the `parisiF` off-by-one fixed in `fa63079`
@@ -69,6 +74,16 @@ right statements: `parisiFunctional` typechecked both before and after an off-by
 
 Blueprint chapter to be written after Phase 3. Starting point: RSAT's
 `SpinGlass.AT.twoReplica_GT_bound` (the RS-level coupled-replica bound).
+
+## Correctness of the goal statement — **fixed**
+
+- [x] `parisiValue` is `sInf` of the set of finite-step functionals.  Mathlib sends `sInf`
+      of a set that is not bounded below to the junk value `sInf ∅ = 0`
+      (`csInf_of_not_bddBelow`), so **Target 4 was asserting convergence to `0`** unless
+      that set is bounded below.  Now proved in `Targets/Milestones.lean`:
+      `parisiFunctional_ge : log 2 - β²/4 ≤ 𝒫_k(m,q)` uniformly in `k`, hence
+      `bddBelow_parisiSet`, `parisiSet_nonempty`, `parisiValue_le`, `parisiValue_ge`.
+      `parisiValue_le` is the form Target 3' consumes.
 
 ## Housekeeping (any time)
 
