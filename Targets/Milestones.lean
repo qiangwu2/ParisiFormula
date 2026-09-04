@@ -398,6 +398,63 @@ theorem hasLinearGrowth_parisiStep {A : ℝ → ℝ}
           field_simp
           ring
 
+/--
+**The smoothing step does not increase the Lipschitz constant.**
+
+If `A` is `L`-Lipschitz then so is `parisiStep m v A`, *uniformly in `m` and `v`*.
+
+This is a corollary of `parisiStep_dist_le`, by a translation trick: comparing `A` with
+`y ↦ A (y + (x' - x))` turns a change of *evaluation point* into a change of *function*, and
+the two differ uniformly by at most `L |x - x'|`.
+
+With `log_cosh_dist_le` as the base case this gives: every level `F_p` of the Parisi
+recursion is 1-Lipschitz.  That is what makes a perturbation of the variance `v` tractable
+in Target 2b — the argument `x + √v z` then moves by `(√v - √v') z`, and Lipschitz control
+converts that into something integrable against the Gaussian.
+-/
+theorem parisiStep_lipschitz {m v L : ℝ} {A : ℝ → ℝ}
+    (hL : ∀ y y', |A y - A y'| ≤ L * |y - y'|)
+    (hA : HasLinearGrowth A) (hmeas : Measurable A) (x x' : ℝ) :
+    |parisiStep m v A x - parisiStep m v A x'| ≤ L * |x - x'| := by
+  classical
+  set c : ℝ := x' - x with hc
+  set A' : ℝ → ℝ := fun y => A (y + c) with hA'def
+  -- `A'` inherits measurability and linear growth
+  have hmeas' : Measurable A' := hmeas.comp (measurable_id.add_const c)
+  have hgrow' : HasLinearGrowth A' := by
+    obtain ⟨C, D, hC, hD, hb⟩ := hA
+    refine ⟨C + D * |c|, D, by positivity, hD, fun y => ?_⟩
+    refine (hb (y + c)).trans ?_
+    have htri : |y + c| ≤ |y| + |c| := abs_add_le _ _
+    nlinarith [abs_nonneg y, abs_nonneg c]
+  -- translating the argument turns the point change into a function change
+  have hshift : ∀ z : ℝ, A' (x + Real.sqrt v * z) = A (x' + Real.sqrt v * z) := by
+    intro z
+    show A (x + Real.sqrt v * z + c) = A (x' + Real.sqrt v * z)
+    congr 1
+    rw [hc]; ring
+  have heq : parisiStep m v A' x = parisiStep m v A x' := by
+    simp only [parisiStep]
+    by_cases hm : m = 0
+    · rw [if_pos hm, if_pos hm]
+      exact integral_congr_ae (Filter.Eventually.of_forall hshift)
+    · rw [if_neg hm, if_neg hm]
+      congr 2
+      exact integral_congr_ae
+        (Filter.Eventually.of_forall (fun z => by rw [hshift z]))
+  have hunif : ∀ y, |A y - A' y| ≤ L * |x - x'| := by
+    intro y
+    have h := hL y (y + c)
+    have hrw : |y - (y + c)| = |x - x'| := by
+      rw [show y - (y + c) = -c by ring, abs_neg, hc, abs_sub_comm]
+    rwa [hrw] at h
+  rw [← heq]
+  exact parisiStep_dist_le hunif
+    (integrable_of_hasLinearGrowth hA hmeas x v)
+    (integrable_of_hasLinearGrowth hgrow' hmeas' x v)
+    (integrable_exp_mul_of_hasLinearGrowth hA hmeas m x v)
+    (integrable_exp_mul_of_hasLinearGrowth hgrow' hmeas' m x v)
+
 /-- Backward Parisi recursion for the SK model (`ξ(x) = x²/2`, so `ξ'(x) = x`).
 
 `parisiF s β j` is the function `F_{k+2-j}` of Talagrand's recursion:
