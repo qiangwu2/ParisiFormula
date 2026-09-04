@@ -720,6 +720,239 @@ theorem abs_guerraD_top_le {k : ℕ} (n : ℕ) (s : RSBScheme k) (β : ℝ) (h :
   have h3 := mul_le_mul_of_nonneg_left (uAbs_le_card_mul_norm n U) hb'
   nlinarith
 
+/-! ## 2e. Differentiating `φ` under the expectation over the disorder
+
+`φ(t) = (1/N) 𝔼_ω F_{1,t}(0)` with `F_{1,t}` depending on `ω` through `U ω`.  Two inputs:
+measurability of `U ↦ F_{1,t}(0)` and of `U ↦ ∂_t F_{1,t}(0)` (an induction jointly in
+`(U, x)`, the same parametric-integral argument as §2d), and the domination
+`|∂_t F_{1,t}(0)| ≤ a + b‖U‖` of §2d with `‖U ω‖` integrable
+(`integrable_norm_of_gaussian`).  Then `hasDerivAt_integral_of_dominated_loc_of_deriv_le`
+over `ℙ` gives `φ'(t) = (1/N) 𝔼_ω ∂_t F_{1,t}(0)`, i.e. Talagrand's (3.2) with the outer
+expectation in place.
+-/
+
+/-- Coordinates of the energy space are measurable. -/
+theorem measurable_coord (n : ℕ) (σ : Config n) : Measurable (fun U : EnergySpace n => U σ) := by
+  have hc : Continuous (fun U : EnergySpace n =>
+      (PiLp.continuousLinearEquiv 2 ℝ (fun _ : Config n => ℝ) U) σ) :=
+    (continuous_apply σ).comp (PiLp.continuousLinearEquiv 2 ℝ (fun _ : Config n => ℝ)).continuous
+  exact hc.measurable
+
+section Joint
+
+variable {n : ℕ}
+
+/-- The shift `((U, x), z) ↦ x + √v z`, jointly measurable. -/
+theorem measurable_shift_joint (v : ℝ) :
+    Measurable (fun q : (EnergySpace n × (Fin n → ℝ)) × (Fin n → ℝ) =>
+      fun i => q.1.2 i + Real.sqrt v * q.2 i) :=
+  measurable_pi_lambda _ fun i =>
+    ((measurable_pi_apply i).comp measurable_fst.snd).add
+      (measurable_const.mul ((measurable_pi_apply i).comp measurable_snd))
+
+/-- One `N`-site level of a family `F U`, measurable jointly in `(U, x)`. -/
+theorem measurable_parisiStepPi_joint {F : EnergySpace n → (Fin n → ℝ) → ℝ}
+    (hF : Measurable (fun p : EnergySpace n × (Fin n → ℝ) => F p.1 p.2)) (m v : ℝ) :
+    Measurable (fun p : EnergySpace n × (Fin n → ℝ) => parisiStepPi n m v (F p.1) p.2) := by
+  classical
+  have hj : Measurable (fun q : (EnergySpace n × (Fin n → ℝ)) × (Fin n → ℝ) =>
+      F q.1.1 (fun i => q.1.2 i + Real.sqrt v * q.2 i)) :=
+    hF.comp (measurable_fst.fst.prodMk (measurable_shift_joint v))
+  have hint0 : Measurable (fun p : EnergySpace n × (Fin n → ℝ) =>
+      ∫ z, F p.1 (fun i => p.2 i + Real.sqrt v * z i) ∂(piGauss n)) :=
+    (hj.stronglyMeasurable.integral_prod_right').measurable
+  have hint1 : Measurable (fun p : EnergySpace n × (Fin n → ℝ) =>
+      ∫ z, Real.exp (m * F p.1 (fun i => p.2 i + Real.sqrt v * z i)) ∂(piGauss n)) :=
+    ((Real.measurable_exp.comp (hj.const_mul m)).stronglyMeasurable.integral_prod_right').measurable
+  by_cases hm : m = 0
+  · simp only [parisiStepPi, if_pos hm]; exact hint0
+  · simp only [parisiStepPi, if_neg hm]
+    exact (Real.measurable_log.comp hint1).const_mul _
+
+/-- The tilted average of a family `G U` against a family `F U`, jointly measurable. -/
+theorem measurable_tiltAvg_joint {F G : EnergySpace n → (Fin n → ℝ) → ℝ}
+    (hF : Measurable (fun p : EnergySpace n × (Fin n → ℝ) => F p.1 p.2))
+    (hG : Measurable (fun p : EnergySpace n × (Fin n → ℝ) => G p.1 p.2)) (m v : ℝ) :
+    Measurable (fun p : EnergySpace n × (Fin n → ℝ) =>
+      ∫ z, G p.1 (fun i => p.2 i + Real.sqrt v * z i)
+        * tiltWeightPi n m v (F p.1) p.2 z ∂(piGauss n)) := by
+  classical
+  have hjG : Measurable (fun q : (EnergySpace n × (Fin n → ℝ)) × (Fin n → ℝ) =>
+      G q.1.1 (fun i => q.1.2 i + Real.sqrt v * q.2 i)) :=
+    hG.comp (measurable_fst.fst.prodMk (measurable_shift_joint v))
+  have hjF : Measurable (fun q : (EnergySpace n × (Fin n → ℝ)) × (Fin n → ℝ) =>
+      F q.1.1 (fun i => q.1.2 i + Real.sqrt v * q.2 i)) :=
+    hF.comp (measurable_fst.fst.prodMk (measurable_shift_joint v))
+  have hI : Measurable (fun p : EnergySpace n × (Fin n → ℝ) =>
+      ∫ w, Real.exp (m * F p.1 (fun i => p.2 i + Real.sqrt v * w i)) ∂(piGauss n)) :=
+    ((Real.measurable_exp.comp (hjF.const_mul m)).stronglyMeasurable.integral_prod_right').measurable
+  by_cases hm : m = 0
+  · have hfun : (fun p : EnergySpace n × (Fin n → ℝ) =>
+          ∫ z, G p.1 (fun i => p.2 i + Real.sqrt v * z i)
+            * tiltWeightPi n m v (F p.1) p.2 z ∂(piGauss n))
+        = fun p => ∫ z, G p.1 (fun i => p.2 i + Real.sqrt v * z i) ∂(piGauss n) := by
+      funext p
+      refine integral_congr_ae (Filter.Eventually.of_forall fun z => ?_)
+      show G p.1 (fun i => p.2 i + Real.sqrt v * z i) * tiltWeightPi n m v (F p.1) p.2 z
+          = G p.1 (fun i => p.2 i + Real.sqrt v * z i)
+      rw [tiltWeightPi, if_pos hm, mul_one]
+    rw [hfun]
+    exact (hjG.stronglyMeasurable.integral_prod_right').measurable
+  · have hfun : (fun p : EnergySpace n × (Fin n → ℝ) =>
+          ∫ z, G p.1 (fun i => p.2 i + Real.sqrt v * z i)
+            * tiltWeightPi n m v (F p.1) p.2 z ∂(piGauss n))
+        = fun p => ∫ z, (G p.1 (fun i => p.2 i + Real.sqrt v * z i)
+            * Real.exp (m * F p.1 (fun i => p.2 i + Real.sqrt v * z i)))
+            / (∫ w, Real.exp (m * F p.1 (fun i => p.2 i + Real.sqrt v * w i)) ∂(piGauss n))
+            ∂(piGauss n) := by
+      funext p
+      refine integral_congr_ae (Filter.Eventually.of_forall fun z => ?_)
+      show G p.1 (fun i => p.2 i + Real.sqrt v * z i) * tiltWeightPi n m v (F p.1) p.2 z
+          = (G p.1 (fun i => p.2 i + Real.sqrt v * z i)
+              * Real.exp (m * F p.1 (fun i => p.2 i + Real.sqrt v * z i)))
+            / (∫ w, Real.exp (m * F p.1 (fun i => p.2 i + Real.sqrt v * w i)) ∂(piGauss n))
+      rw [tiltWeightPi, if_neg hm, mul_div_assoc]
+    rw [hfun]
+    have hjoint : Measurable (fun q : (EnergySpace n × (Fin n → ℝ)) × (Fin n → ℝ) =>
+        (G q.1.1 (fun i => q.1.2 i + Real.sqrt v * q.2 i)
+          * Real.exp (m * F q.1.1 (fun i => q.1.2 i + Real.sqrt v * q.2 i)))
+          / (∫ w, Real.exp (m * F q.1.1 (fun i => q.1.2 i + Real.sqrt v * w i)) ∂(piGauss n))) :=
+      (hjG.mul (Real.measurable_exp.comp (hjF.const_mul m))).div (hI.comp measurable_fst)
+    exact (hjoint.stronglyMeasurable.integral_prod_right').measurable
+
+theorem measurable_guerraH_joint (h t : ℝ) (σ : Config n) :
+    Measurable (fun p : EnergySpace n × (Fin n → ℝ) => guerraH n p.1 h t p.2 σ) := by
+  unfold guerraH
+  refine (measurable_const.mul ((measurable_coord n σ).comp measurable_fst)).add
+    (Finset.measurable_sum _ fun i _ => ?_)
+  exact measurable_const.mul
+    ((measurable_const.mul ((measurable_pi_apply i).comp measurable_snd)).add measurable_const)
+
+theorem measurable_guerraHDeriv_joint (t : ℝ) (σ : Config n) :
+    Measurable (fun p : EnergySpace n × (Fin n → ℝ) => guerraHDeriv n p.1 t p.2 σ) := by
+  unfold guerraHDeriv
+  refine (((measurable_coord n σ).comp measurable_fst).div_const _).sub ?_
+  exact (Finset.measurable_sum _ fun i _ =>
+    measurable_const.mul ((measurable_pi_apply i).comp measurable_snd)).div_const _
+
+theorem measurable_guerraBase_joint (h t : ℝ) :
+    Measurable (fun p : EnergySpace n × (Fin n → ℝ) => guerraBase n p.1 h t p.2) := by
+  unfold guerraBase
+  exact Real.measurable_log.comp (Finset.measurable_sum _ fun σ _ =>
+    Real.measurable_exp.comp (measurable_guerraH_joint h t σ))
+
+theorem measurable_guerraBaseDeriv_joint (h t : ℝ) :
+    Measurable (fun p : EnergySpace n × (Fin n → ℝ) => guerraBaseDeriv n p.1 h t p.2) := by
+  unfold guerraBaseDeriv gibbsAvg
+  refine Measurable.div ?_ ?_
+  · exact Finset.measurable_sum _ fun σ _ =>
+      (Real.measurable_exp.comp (measurable_guerraH_joint h t σ)).mul
+        (measurable_guerraHDeriv_joint t σ)
+  · exact Finset.measurable_sum _ fun σ _ =>
+      Real.measurable_exp.comp (measurable_guerraH_joint h t σ)
+
+/-- Every level, and its derivative, is measurable jointly in `(U, x)`. -/
+theorem measurable_cascade_joint {k : ℕ} (s : RSBScheme k) (β h t : ℝ) (j : ℕ) :
+    Measurable (fun p : EnergySpace n × (Fin n → ℝ) =>
+        cascadeT n s β 1 (guerraBase n p.1 h t) j p.2) ∧
+    Measurable (fun p : EnergySpace n × (Fin n → ℝ) => guerraD n s β p.1 h j t p.2) := by
+  induction j with
+  | zero => exact ⟨measurable_guerraBase_joint h t, measurable_guerraBaseDeriv_joint h t⟩
+  | succ j ih =>
+      obtain ⟨hF, hD⟩ := ih
+      constructor
+      · have hfun : (fun p : EnergySpace n × (Fin n → ℝ) =>
+              cascadeT n s β 1 (guerraBase n p.1 h t) (j + 1) p.2)
+            = fun p => parisiStepPi n (s.m (k + 1 - j))
+                (1 * (β ^ 2 * (s.q (k + 2 - j) - s.q (k + 1 - j))))
+                (cascadeT n s β 1 (guerraBase n p.1 h t) j) p.2 := by
+          funext p; rfl
+        rw [hfun]
+        exact measurable_parisiStepPi_joint
+          (F := fun U => cascadeT n s β 1 (guerraBase n U h t) j) hF _ _
+      · have hfun : (fun p : EnergySpace n × (Fin n → ℝ) => guerraD n s β p.1 h (j + 1) t p.2)
+            = fun p => ∫ z, guerraD n s β p.1 h j t
+                (fun i => p.2 i + Real.sqrt (1 * (β ^ 2 * (s.q (k + 2 - j) - s.q (k + 1 - j)))) * z i)
+                * tiltWeightPi n (s.m (k + 1 - j)) (1 * (β ^ 2 * (s.q (k + 2 - j) - s.q (k + 1 - j))))
+                    (cascadeT n s β 1 (guerraBase n p.1 h t) j) p.2 z ∂(piGauss n) := by
+          funext p; rfl
+        rw [hfun]
+        exact measurable_tiltAvg_joint
+          (F := fun U => cascadeT n s β 1 (guerraBase n U h t) j)
+          (G := fun U => guerraD n s β U h j t) hF hD _ _
+
+theorem measurable_cascade_top_U {k : ℕ} (s : RSBScheme k) (β h t : ℝ) :
+    Measurable (fun U : EnergySpace n => cascadeT n s β 1 (guerraBase n U h t) (k + 2) 0) := by
+  have hm := (measurable_cascade_joint (n := n) s β h t (k + 2)).1.comp
+    (measurable_id.prodMk (measurable_const : Measurable (fun _ : EnergySpace n => (0 : Fin n → ℝ))))
+  exact hm
+
+theorem measurable_guerraD_top_U {k : ℕ} (s : RSBScheme k) (β h t : ℝ) :
+    Measurable (fun U : EnergySpace n => guerraD n s β U h (k + 2) t 0) := by
+  have hm := (measurable_cascade_joint (n := n) s β h t (k + 2)).2.comp
+    (measurable_id.prodMk (measurable_const : Measurable (fun _ : EnergySpace n => (0 : Fin n → ℝ))))
+  exact hm
+
+end Joint
+
+/--
+**(3.2) with the expectation over the disorder**: for `0 < t < 1`,
+
+  `φ'(t) = (1/N) 𝔼_ω [∂_t F_{1,t}(0)]`,
+
+the outer expectation of the nested tilted average `guerraD (k+2)`.
+-/
+theorem hasDerivAt_guerraPhi {N : ℕ} (β h : ℝ) (sk : SKDisorder (Ω := Ω) N β h)
+    {k : ℕ} (s : RSBScheme k) {t₀ : ℝ} (ht₀ : t₀ ∈ Set.Ioo (0 : ℝ) 1) :
+    HasDerivAt (guerraPhi N s β h sk.U)
+      ((1 / (N : ℝ)) * ∫ ω, guerraD N s β (sk.U ω) h (k + 2) t₀ 0 ∂ℙ) t₀ := by
+  classical
+  obtain ⟨a, b, hb, hbound⟩ := abs_guerraD_top_le N s β h ht₀ (k := k)
+  obtain ⟨a₀, b₀, D, L, a', b', D', hb₀, -, -, -, -, hU⟩ :=
+    guerra_cascade_hasDerivAt N s β h ht₀ (k + 2)
+  have hUmeas : Measurable sk.U := sk.hU.repr_measurable
+  have hnormint : Integrable (fun ω => ‖sk.U ω‖) (ℙ : Measure Ω) :=
+    PhysLean.Probability.GaussianIBP.integrable_norm_of_gaussian sk.hU
+  have hbint : Integrable (fun ω => a + b * ‖sk.U ω‖) (ℙ : Measure Ω) :=
+    (integrable_const _).add (hnormint.const_mul _)
+  have hs : talNbhd t₀ ∈ 𝓝 t₀ := talNbhd_mem_nhds ht₀ (self_mem_talNbhd ht₀)
+  have hb2 : Integrable (fun ω => a₀ + b₀ * (Fintype.card (Config N) * ‖sk.U ω‖))
+      (ℙ : Measure Ω) :=
+    (integrable_const _).add ((hnormint.const_mul _).const_mul _)
+  have hF0 : Integrable
+      (fun ω => cascadeT N s β 1 (guerraBase N (sk.U ω) h t₀) (k + 2) 0) (ℙ : Measure Ω) := by
+    refine Integrable.mono hb2
+      ((measurable_cascade_top_U s β h t₀).comp hUmeas).aestronglyMeasurable ?_
+    filter_upwards with ω
+    have h1 := (hU (sk.U ω)).2.2.1 t₀ (self_mem_talNbhd ht₀) 0
+    have h2 : l1 (0 : Fin N → ℝ) = 0 := by simp [l1]
+    rw [h2, mul_zero, add_zero] at h1
+    have h3 := mul_le_mul_of_nonneg_left (uAbs_le_card_mul_norm N (sk.U ω)) hb₀
+    have hnn : 0 ≤ a₀ + b₀ * (Fintype.card (Config N) * ‖sk.U ω‖) := by
+      linarith [abs_nonneg (cascadeT N s β 1 (guerraBase N (sk.U ω) h t₀) (k + 2) 0)]
+    show ‖cascadeT N s β 1 (guerraBase N (sk.U ω) h t₀) (k + 2) 0‖
+        ≤ ‖a₀ + b₀ * (Fintype.card (Config N) * ‖sk.U ω‖)‖
+    rw [Real.norm_eq_abs, Real.norm_eq_abs, abs_of_nonneg hnn]
+    linarith
+  have hmain : HasDerivAt
+      (fun t => ∫ ω, cascadeT N s β 1 (guerraBase N (sk.U ω) h t) (k + 2) 0 ∂ℙ)
+      (∫ ω, guerraD N s β (sk.U ω) h (k + 2) t₀ 0 ∂ℙ) t₀ := by
+    refine (hasDerivAt_integral_of_dominated_loc_of_deriv_le (μ := (ℙ : Measure Ω))
+      (F := fun t ω => cascadeT N s β 1 (guerraBase N (sk.U ω) h t) (k + 2) 0)
+      (F' := fun t ω => guerraD N s β (sk.U ω) h (k + 2) t 0)
+      (bound := fun ω => a + b * ‖sk.U ω‖) (s := talNbhd t₀) hs ?_ hF0 ?_ ?_ hbint ?_).2
+    · filter_upwards [hs] with t ht
+      exact ((measurable_cascade_top_U s β h t).comp hUmeas).aestronglyMeasurable
+    · exact ((measurable_guerraD_top_U s β h t₀).comp hUmeas).aestronglyMeasurable
+    · filter_upwards with ω t ht
+      rw [Real.norm_eq_abs]
+      exact hbound (sk.U ω) t ht
+    · filter_upwards with ω t ht
+      exact hasDerivAt_cascade_top N s β (sk.U ω) h (talNbhd_subset_Ioo ht₀ ht)
+  show HasDerivAt (fun t => (1 / (N : ℝ))
+      * ∫ ω, cascadeT N s β 1 (guerraBase N (sk.U ω) h t) (k + 2) 0 ∂ℙ) _ t₀
+  exact hmain.const_mul (1 / (N : ℝ))
+
 /-! ## 3. The two analytic cores of the paper -/
 
 /--
