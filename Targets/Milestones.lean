@@ -250,12 +250,18 @@ theorem parisiFunctional_rsScheme (β h q : ℝ) (hq0 : 0 ≤ q) (hq1 : q ≤ 1)
         = ∫ z, Real.log (Real.cosh (β * Real.sqrt q * z + h)) ∂(gaussianReal 0 1) := by
     rcases le_or_gt 0 β with hβ | hβ
     · rw [abs_of_nonneg hβ]
-      exact integral_congr_ae (Filter.Eventually.of_forall (fun z => by rw [add_comm]))
+      refine integral_congr_ae (Filter.Eventually.of_forall (fun z => ?_))
+      show Real.log (Real.cosh (h + β * Real.sqrt q * z))
+          = Real.log (Real.cosh (β * Real.sqrt q * z + h))
+      rw [add_comm]
     · rw [abs_of_neg hβ]
       have hre := integral_reflect_stdGaussian
         (f := fun y : ℝ => Real.log (Real.cosh y)) hlogcosh_cont (β * Real.sqrt q) h
       rw [show -β * Real.sqrt q = -(β * Real.sqrt q) by ring, ← hre]
-      exact integral_congr_ae (Filter.Eventually.of_forall (fun z => by rw [add_comm]))
+      refine integral_congr_ae (Filter.Eventually.of_forall (fun z => ?_))
+      show Real.log (Real.cosh (h + β * Real.sqrt q * z))
+          = Real.log (Real.cosh (β * Real.sqrt q * z + h))
+      rw [add_comm]
   rw [parisiFunctional, hF0, hsum, hrefl]
   ring
 
