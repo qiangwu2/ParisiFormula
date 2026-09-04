@@ -251,15 +251,15 @@ theorem parisiStep_dist_le {m v ε x : ℝ} {A A' : ℝ → ℝ}
           - Real.log (∫ z, Real.exp (m * A' (x + Real.sqrt v * z)) ∂(gaussianReal 0 1))
           ≤ |m| * ε := by
       have h := Real.log_le_log hIpos h1
-      rwa [Real.log_mul (Real.exp_ne_zero _) (ne_of_gt hI'pos), Real.log_exp,
-        ← sub_le_iff_le_add'] at h
+      rw [Real.log_mul (Real.exp_ne_zero _) (ne_of_gt hI'pos), Real.log_exp] at h
+      linarith
     have hlog2 :
         Real.log (∫ z, Real.exp (m * A' (x + Real.sqrt v * z)) ∂(gaussianReal 0 1))
           - Real.log (∫ z, Real.exp (m * A (x + Real.sqrt v * z)) ∂(gaussianReal 0 1))
           ≤ |m| * ε := by
       have h := Real.log_le_log hI'pos h2
-      rwa [Real.log_mul (Real.exp_ne_zero _) (ne_of_gt hIpos), Real.log_exp,
-        ← sub_le_iff_le_add'] at h
+      rw [Real.log_mul (Real.exp_ne_zero _) (ne_of_gt hIpos), Real.log_exp] at h
+      linarith
     have habs :
         |Real.log (∫ z, Real.exp (m * A (x + Real.sqrt v * z)) ∂(gaussianReal 0 1))
           - Real.log (∫ z, Real.exp (m * A' (x + Real.sqrt v * z)) ∂(gaussianReal 0 1))|

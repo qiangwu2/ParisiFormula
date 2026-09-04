@@ -186,4 +186,97 @@ theorem integral_comp_sqrt_mul_gaussianReal (v : ℝ≥0) {f : ℝ → ℝ} (hf 
   rw [hmap] at h
   exact h.symm
 
+/-! ## 6. Linear growth and the integrability it buys
+
+Target 2b's inductive engine (`Targets.parisiStep_dist_le`) carries integrability
+hypotheses.  Discharging them for `parisiF` at every level is the "moderate growth" item of
+Phase 2 in `docs/ROADMAP.md`.  The right invariant is *linear* growth: the base of the Parisi
+recursion is `log cosh`, which satisfies `0 ≤ log cosh y ≤ |y|`, and each smoothing step
+preserves linear growth.
+-/
+
+/-- `exp (a |z|)` is `γ`-integrable, for every real `a`. -/
+theorem integrable_exp_abs_mul_stdGaussian (a : ℝ) :
+    Integrable (fun z : ℝ => Real.exp (a * |z|)) (gaussianReal 0 1) := by
+  have hdom : Integrable
+      (fun z : ℝ => Real.exp (a * z) + Real.exp (-a * z)) (gaussianReal 0 1) :=
+    (integrable_exp_mul_stdGaussian a).add (integrable_exp_mul_stdGaussian (-a))
+  have hmeas : AEStronglyMeasurable
+      (fun z : ℝ => Real.exp (a * |z|)) (gaussianReal 0 1) :=
+    (Real.continuous_exp.comp (continuous_const.mul continuous_abs)).aestronglyMeasurable
+  refine hdom.mono' hmeas (Filter.Eventually.of_forall (fun z => ?_))
+  rw [Real.norm_eq_abs, abs_of_nonneg (Real.exp_pos _).le]
+  rcases le_or_gt 0 z with hz | hz
+  · rw [abs_of_nonneg hz]
+    have : 0 < Real.exp (-a * z) := Real.exp_pos _
+    linarith
+  · rw [abs_of_neg hz, show a * -z = -a * z by ring]
+    have : 0 < Real.exp (a * z) := Real.exp_pos _
+    linarith
+
+/-- `A` has at most linear growth: `|A y| ≤ C + D |y|` for some `C, D ≥ 0`. -/
+def HasLinearGrowth (A : ℝ → ℝ) : Prop :=
+  ∃ C D : ℝ, 0 ≤ C ∧ 0 ≤ D ∧ ∀ y, |A y| ≤ C + D * |y|
+
+/-- The base of the Parisi recursion has linear growth: `|log cosh y| ≤ |y|`. -/
+theorem hasLinearGrowth_log_cosh :
+    HasLinearGrowth (fun y => Real.log (Real.cosh y)) := by
+  refine ⟨0, 1, le_rfl, zero_le_one, fun y => ?_⟩
+  rw [abs_of_nonneg (log_cosh_nonneg y)]
+  simpa using log_cosh_le_abs y
+
+/-- A linearly growing measurable function is `γ`-integrable along `z ↦ x + √v z`. -/
+theorem integrable_of_hasLinearGrowth {A : ℝ → ℝ}
+    (hA : HasLinearGrowth A) (hmeas : Measurable A) (x v : ℝ) :
+    Integrable (fun z : ℝ => A (x + Real.sqrt v * z)) (gaussianReal 0 1) := by
+  obtain ⟨C, D, hC, hD, hbound⟩ := hA
+  have hmeas' : AEStronglyMeasurable
+      (fun z : ℝ => A (x + Real.sqrt v * z)) (gaussianReal 0 1) :=
+    (hmeas.comp (measurable_const_add x |>.comp (measurable_id.const_mul _)))
+      |>.aestronglyMeasurable
+  have hdom : Integrable
+      (fun z : ℝ => (C + D * |x|) + (D * |Real.sqrt v|) * |z|) (gaussianReal 0 1) :=
+    (integrable_const _).add
+      ((integrable_id_stdGaussian.abs).const_mul _)
+  refine hdom.mono' hmeas' (Filter.Eventually.of_forall (fun z => ?_))
+  rw [Real.norm_eq_abs]
+  refine (hbound (x + Real.sqrt v * z)).trans ?_
+  have habs : |x + Real.sqrt v * z| ≤ |x| + |Real.sqrt v| * |z| := by
+    calc |x + Real.sqrt v * z| ≤ |x| + |Real.sqrt v * z| := abs_add _ _
+      _ = |x| + |Real.sqrt v| * |z| := by rw [abs_mul]
+  nlinarith [abs_nonneg z, abs_nonneg (Real.sqrt v)]
+
+/-- The exponential of a linearly growing measurable function is `γ`-integrable. -/
+theorem integrable_exp_mul_of_hasLinearGrowth {A : ℝ → ℝ}
+    (hA : HasLinearGrowth A) (hmeas : Measurable A) (m x v : ℝ) :
+    Integrable (fun z : ℝ => Real.exp (m * A (x + Real.sqrt v * z))) (gaussianReal 0 1) := by
+  obtain ⟨C, D, hC, hD, hbound⟩ := hA
+  set a : ℝ := |m| * (D * |Real.sqrt v|) with ha
+  set b : ℝ := |m| * (C + D * |x|) with hb
+  have hmeas' : AEStronglyMeasurable
+      (fun z : ℝ => Real.exp (m * A (x + Real.sqrt v * z))) (gaussianReal 0 1) :=
+    ((Real.continuous_exp.measurable).comp
+      ((hmeas.comp (measurable_const_add x |>.comp (measurable_id.const_mul _))).const_mul m))
+      |>.aestronglyMeasurable
+  have hdom : Integrable
+      (fun z : ℝ => Real.exp b * Real.exp (a * |z|)) (gaussianReal 0 1) :=
+    (integrable_exp_abs_mul_stdGaussian a).const_mul _
+  refine hdom.mono' hmeas' (Filter.Eventually.of_forall (fun z => ?_))
+  rw [Real.norm_eq_abs, abs_of_nonneg (Real.exp_pos _).le, ← Real.exp_add]
+  refine Real.exp_le_exp.2 ?_
+  have habs : |x + Real.sqrt v * z| ≤ |x| + |Real.sqrt v| * |z| := by
+    calc |x + Real.sqrt v * z| ≤ |x| + |Real.sqrt v * z| := abs_add _ _
+      _ = |x| + |Real.sqrt v| * |z| := by rw [abs_mul]
+  have h1 : m * A (x + Real.sqrt v * z) ≤ |m| * |A (x + Real.sqrt v * z)| := by
+    calc m * A (x + Real.sqrt v * z) ≤ |m * A (x + Real.sqrt v * z)| := le_abs_self _
+      _ = |m| * |A (x + Real.sqrt v * z)| := abs_mul _ _
+  have h2 : |A (x + Real.sqrt v * z)| ≤ C + D * (|x| + |Real.sqrt v| * |z|) := by
+    refine (hbound (x + Real.sqrt v * z)).trans ?_
+    nlinarith [abs_nonneg z, abs_nonneg (Real.sqrt v)]
+  have h3 : |m| * |A (x + Real.sqrt v * z)| ≤ |m| * (C + D * (|x| + |Real.sqrt v| * |z|)) :=
+    mul_le_mul_of_nonneg_left h2 (abs_nonneg m)
+  have h4 : |m| * (C + D * (|x| + |Real.sqrt v| * |z|)) = b + a * |z| := by
+    rw [ha, hb]; ring
+  linarith
+
 end SpinGlass
