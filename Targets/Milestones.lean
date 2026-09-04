@@ -1,4 +1,5 @@
 import ParisiFormula.GuerraToninelli
+import ParisiFormula.AnnealedBound
 import Mathlib.Probability.Distributions.Gaussian.Real
 
 /-!
@@ -67,8 +68,8 @@ Reference: Talagrand Vol. I, (1.24) and the discussion after it. -/
 theorem free_entropy_le_annealed {N : ℕ} (hN : 0 < N) (β h : ℝ)
     (sk : SKDisorder (Ω := Ω) N β h) :
     free_entropy (Ω := Ω) (N := N) (β := β) (h := h) sk.U
-      ≤ Real.log 2 + β ^ 2 / 4 + |h| := by
-  sorry
+      ≤ Real.log 2 + β ^ 2 / 4 + |h| :=
+  _root_.SpinGlass.free_entropy_le_annealed hN β h sk
 
 /-- **Target 1b (Gaussian comparison).**  The Guerra–Toninelli interpolation
 `Φ(t) = E log Z_{N+M}(√t · K_{N+M} + √(1-t) · (K_N ⊕ K_M))` is non-decreasing on `[0,1]`.

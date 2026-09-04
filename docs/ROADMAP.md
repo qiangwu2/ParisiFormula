@@ -19,11 +19,17 @@ right statements: `parisiFunctional` typechecked both before and after an off-by
 
 ## Phase 1 — Milestone 1: the thermodynamic limit  (M–L)
 
-- [ ] Make `cov_deriv_diag` and `cov_deriv_offdiag_nonpos` in
+- [x] Make `cov_deriv_diag` and `cov_deriv_offdiag_nonpos` in
       `ParisiFormula/GuerraToninelli.lean` non-`private` (they are needed by 1b).
-- [ ] **1a** `free_entropy_le_annealed`: Jensen + Gaussian mgf. (S–M)
-      Ingredients exist: `abs_magnetization_le`, `exp_magnetization_le`, and the Gaussian
-      moment lemmas in `Lemmas/SpinGlass/Gaussian_IBP_Hilbert.lean`.
+- [x] **1a** `free_entropy_le_annealed`: Jensen + Gaussian mgf. **Done**, in
+      `ParisiFormula/AnnealedBound.lean`.  Jensen is proved elementarily from
+      `log x ≤ x - 1` (`integral_log_le_log_integral`).  The Gaussian moment came out
+      as `mgf_inner_isGaussianHilbert`: the mgf of a coordinate `⟪g ·, v⟫` of an
+      `IsGaussianHilbert` vector is `exp (⟪Σ v, v⟫ / 2)`, obtained from the ONB
+      representation via `iIndepFun.mgf_sum` and `mgf_gaussianReal`.  Note this
+      *sidesteps* the missing "continuous linear images of Hilbert Gaussians are
+      Gaussian" lemma, which the vendored core does not provide and which would
+      otherwise have been the expensive part.
 - [ ] **1b** `Φ_monotoneOn`, in three sub-steps mirroring `port/GuerraPipeline.lean`:
   - [ ] dominated differentiation of `Φ` (adapt `hasDerivAt_guerraPhi` from
         `port/GuerraInterpolation.lean` — port needed, or reuse `hasDerivAt_nu` from
