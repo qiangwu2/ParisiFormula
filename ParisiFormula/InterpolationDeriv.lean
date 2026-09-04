@@ -188,6 +188,56 @@ theorem covDiff_hessian_sum_nonneg (hN : 0 < N) (hM : 0 < M) (H : EnergySpace (N
 
 end Sign
 
+/-! ## 3. The domination bound for step 2 -/
+
+section GradientBound
+
+variable {N : ℕ}
+
+/--
+**`|d(free_energy_density)_H (v)| ≤ (1/N) ‖v‖`.**
+
+By `fderiv_free_energy_density_apply` the derivative is `-(1/N) ∑_σ g_σ v_σ`, where the
+Gibbs weights `g_σ` are non-negative and sum to `1`; so the sum is a convex combination of
+coordinates of `v`, each bounded by `‖v‖` (`PiLp.norm_apply_le`).
+
+RSAT does not provide this.  `port/GuerraInterpolation.lean` had it as
+`abs_fderiv_free_energy_density_apply_le`, but that file is unusable here (fork mismatch,
+see `port/README.md`), so it is reproved from RSAT's own `fderiv_free_energy_density_apply`.
+
+This is the bound that step 2 of Target 1b needs in order to dominate the difference
+quotients and differentiate `Φ` under the expectation.
+-/
+theorem abs_fderiv_free_energy_density_apply_le (H v : EnergySpace N) :
+    |fderiv ℝ (fun H' : EnergySpace N => free_energy_density (N := N) H') H v|
+      ≤ (1 / (N : ℝ)) * ‖v‖ := by
+  classical
+  have hg_nonneg : ∀ σ : Config N, 0 ≤ gibbs_pmf N H σ :=
+    fun σ => gibbs_pmf_nonneg (N := N) (H := H) σ
+  have hcoord : ∀ σ : Config N, |v σ| ≤ ‖v‖ := by
+    intro σ
+    simpa using PiLp.norm_apply_le v σ
+  have hsum : |∑ σ : Config N, gibbs_pmf N H σ * v σ| ≤ ‖v‖ := by
+    calc |∑ σ : Config N, gibbs_pmf N H σ * v σ|
+        ≤ ∑ σ : Config N, |gibbs_pmf N H σ * v σ| :=
+          Finset.abs_sum_le_sum_abs _ _
+      _ = ∑ σ : Config N, gibbs_pmf N H σ * |v σ| := by
+          refine Finset.sum_congr rfl (fun σ _ => ?_)
+          rw [abs_mul, abs_of_nonneg (hg_nonneg σ)]
+      _ ≤ ∑ σ : Config N, gibbs_pmf N H σ * ‖v‖ :=
+          Finset.sum_le_sum (fun σ _ =>
+            mul_le_mul_of_nonneg_left (hcoord σ) (hg_nonneg σ))
+      _ = ‖v‖ := by
+          rw [← Finset.sum_mul, sum_gibbs_pmf (N := N) (H := H), one_mul]
+  have hN : (0 : ℝ) ≤ 1 / (N : ℝ) := by positivity
+  rw [fderiv_free_energy_density_apply]
+  calc |(-(1 / (N : ℝ))) * ∑ σ : Config N, gibbs_pmf N H σ * v σ|
+      = (1 / (N : ℝ)) * |∑ σ : Config N, gibbs_pmf N H σ * v σ| := by
+        rw [abs_mul, abs_neg, abs_of_nonneg hN]
+    _ ≤ (1 / (N : ℝ)) * ‖v‖ := mul_le_mul_of_nonneg_left hsum hN
+
+end GradientBound
+
 /-!
 ## What remains for Target 1b
 
