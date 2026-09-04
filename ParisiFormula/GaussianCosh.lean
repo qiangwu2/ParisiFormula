@@ -988,4 +988,230 @@ theorem integral_second_le {A A' A'' : ℝ → ℝ} {m v : ℝ}
   rwa [integral_sub heint hRint] at hmono
 
 
+/-! ## 13. The tilted integrals, and `T'' ≤ 1 - (T')²`
+
+The derivative formulas of §11 are stated in terms of four integrals against the tilting
+weight `e = exp (m A(x + √v ·))`.  Naming them makes the algebra legible:
+
+  `E = ∫ e`,  `P = ∫ A' e`,  `R = ∫ (A')² e`,  `Q = ∫ A'' e`.
+
+Then `T' = P/E` and `T'' = Q/E + m (R/E - (P/E)²)`, and the invariant is preserved.
+-/
+
+/-- `E = ∫ e`, the normalising constant of the tilted measure. -/
+noncomputable def tiltE (A : ℝ → ℝ) (m v x : ℝ) : ℝ :=
+  ∫ z, Real.exp (m * A (x + Real.sqrt v * z)) ∂(gaussianReal 0 1)
+
+/-- `P = ∫ A' e`. -/
+noncomputable def tiltP (A A' : ℝ → ℝ) (m v x : ℝ) : ℝ :=
+  ∫ z, A' (x + Real.sqrt v * z)
+    * Real.exp (m * A (x + Real.sqrt v * z)) ∂(gaussianReal 0 1)
+
+/-- `R = ∫ (A')² e`. -/
+noncomputable def tiltR (A A' : ℝ → ℝ) (m v x : ℝ) : ℝ :=
+  ∫ z, A' (x + Real.sqrt v * z) ^ 2
+    * Real.exp (m * A (x + Real.sqrt v * z)) ∂(gaussianReal 0 1)
+
+/-- `Q = ∫ A'' e`. -/
+noncomputable def tiltQ (A A'' : ℝ → ℝ) (m v x : ℝ) : ℝ :=
+  ∫ z, A'' (x + Real.sqrt v * z)
+    * Real.exp (m * A (x + Real.sqrt v * z)) ∂(gaussianReal 0 1)
+
+theorem tiltE_pos {A : ℝ → ℝ} {m v : ℝ}
+    (hA : HasLinearGrowth A) (hmeas : Measurable A) (x : ℝ) :
+    0 < tiltE A m v x :=
+  smoothing_integral_pos hA hmeas x
+
+section TiltIntegrability
+
+variable {A A' A'' : ℝ → ℝ} {m v : ℝ}
+
+/-- Measurability of the shift, reused throughout. -/
+theorem measurable_tilt_shift (v x : ℝ) :
+    Measurable (fun z : ℝ => x + Real.sqrt v * z) :=
+  (measurable_id.const_mul (Real.sqrt v)).const_add x
+
+/-- `A' e` is integrable when `|A'| ≤ 1`. -/
+theorem integrable_tiltP (hA'bd : ∀ y, |A' y| ≤ 1)
+    (hA : HasLinearGrowth A) (hmeas : Measurable A) (hmeas' : Measurable A') (x : ℝ) :
+    Integrable (fun z => A' (x + Real.sqrt v * z)
+      * Real.exp (m * A (x + Real.sqrt v * z))) (gaussianReal 0 1) := by
+  have heint : Integrable (fun z => Real.exp (m * A (x + Real.sqrt v * z)))
+      (gaussianReal 0 1) := integrable_exp_mul_of_hasLinearGrowth hA hmeas m x v
+  have hemeas : Measurable (fun z => Real.exp (m * A (x + Real.sqrt v * z))) :=
+    (Real.continuous_exp.measurable).comp
+      ((hmeas.comp (measurable_tilt_shift v x)).const_mul m)
+  refine heint.mono' ((hmeas'.comp (measurable_tilt_shift v x)).mul
+    hemeas).aestronglyMeasurable (Filter.Eventually.of_forall (fun z => ?_))
+  rw [Real.norm_eq_abs, abs_mul, abs_of_nonneg (Real.exp_pos _).le]
+  have h1 : |A' (x + Real.sqrt v * z)| ≤ 1 := hA'bd _
+  nlinarith [(Real.exp_pos (m * A (x + Real.sqrt v * z))).le,
+    abs_nonneg (A' (x + Real.sqrt v * z))]
+
+/-- `(A')² e` is integrable when `|A'| ≤ 1`. -/
+theorem integrable_tiltR (hA'bd : ∀ y, |A' y| ≤ 1)
+    (hA : HasLinearGrowth A) (hmeas : Measurable A) (hmeas' : Measurable A') (x : ℝ) :
+    Integrable (fun z => A' (x + Real.sqrt v * z) ^ 2
+      * Real.exp (m * A (x + Real.sqrt v * z))) (gaussianReal 0 1) := by
+  have heint : Integrable (fun z => Real.exp (m * A (x + Real.sqrt v * z)))
+      (gaussianReal 0 1) := integrable_exp_mul_of_hasLinearGrowth hA hmeas m x v
+  have hemeas : Measurable (fun z => Real.exp (m * A (x + Real.sqrt v * z))) :=
+    (Real.continuous_exp.measurable).comp
+      ((hmeas.comp (measurable_tilt_shift v x)).const_mul m)
+  refine heint.mono' (((hmeas'.comp (measurable_tilt_shift v x)).pow_const 2).mul
+    hemeas).aestronglyMeasurable (Filter.Eventually.of_forall (fun z => ?_))
+  rw [Real.norm_eq_abs, abs_mul, abs_of_nonneg (sq_nonneg _),
+    abs_of_nonneg (Real.exp_pos _).le]
+  have h1 : A' (x + Real.sqrt v * z) ^ 2 ≤ 1 := by
+    have := hA'bd (x + Real.sqrt v * z)
+    nlinarith [abs_nonneg (A' (x + Real.sqrt v * z)),
+      sq_abs (A' (x + Real.sqrt v * z))]
+  nlinarith [(Real.exp_pos (m * A (x + Real.sqrt v * z))).le]
+
+/-- `A'' e` is integrable when `|A''| ≤ 1`. -/
+theorem integrable_tiltQ (hA''bd : ∀ y, |A'' y| ≤ 1)
+    (hA : HasLinearGrowth A) (hmeas : Measurable A) (hmeas'' : Measurable A'') (x : ℝ) :
+    Integrable (fun z => A'' (x + Real.sqrt v * z)
+      * Real.exp (m * A (x + Real.sqrt v * z))) (gaussianReal 0 1) := by
+  have heint : Integrable (fun z => Real.exp (m * A (x + Real.sqrt v * z)))
+      (gaussianReal 0 1) := integrable_exp_mul_of_hasLinearGrowth hA hmeas m x v
+  have hemeas : Measurable (fun z => Real.exp (m * A (x + Real.sqrt v * z))) :=
+    (Real.continuous_exp.measurable).comp
+      ((hmeas.comp (measurable_tilt_shift v x)).const_mul m)
+  refine heint.mono' ((hmeas''.comp (measurable_tilt_shift v x)).mul
+    hemeas).aestronglyMeasurable (Filter.Eventually.of_forall (fun z => ?_))
+  rw [Real.norm_eq_abs, abs_mul, abs_of_nonneg (Real.exp_pos _).le]
+  have h1 : |A'' (x + Real.sqrt v * z)| ≤ 1 := hA''bd _
+  nlinarith [(Real.exp_pos (m * A (x + Real.sqrt v * z))).le,
+    abs_nonneg (A'' (x + Real.sqrt v * z))]
+
+end TiltIntegrability
+
+/-- `∫ m A' e = m P`. -/
+theorem integral_mul_deriv_eq {A A' : ℝ → ℝ} {m v : ℝ} (hA'bd : ∀ y, |A' y| ≤ 1)
+    (hA : HasLinearGrowth A) (hmeas : Measurable A) (hmeas' : Measurable A') (x : ℝ) :
+    (∫ z, m * A' (x + Real.sqrt v * z)
+        * Real.exp (m * A (x + Real.sqrt v * z)) ∂(gaussianReal 0 1))
+      = m * tiltP A A' m v x := by
+  rw [tiltP, ← integral_const_mul]
+  refine integral_congr_ae (Filter.Eventually.of_forall (fun z => ?_))
+  show m * A' (x + Real.sqrt v * z) * Real.exp (m * A (x + Real.sqrt v * z))
+    = m * (A' (x + Real.sqrt v * z) * Real.exp (m * A (x + Real.sqrt v * z)))
+  ring
+
+/-- `∫ (m A'' + m² (A')²) e = m Q + m² R`. -/
+theorem integral_second_expand {A A' A'' : ℝ → ℝ} {m v : ℝ}
+    (hA'bd : ∀ y, |A' y| ≤ 1) (hA''bd : ∀ y, |A'' y| ≤ 1)
+    (hA : HasLinearGrowth A) (hmeas : Measurable A) (hmeas' : Measurable A')
+    (hmeas'' : Measurable A'') (x : ℝ) :
+    (∫ z, (m * A'' (x + Real.sqrt v * z)
+          + m ^ 2 * A' (x + Real.sqrt v * z) ^ 2)
+        * Real.exp (m * A (x + Real.sqrt v * z)) ∂(gaussianReal 0 1))
+      = m * tiltQ A A'' m v x + m ^ 2 * tiltR A A' m v x := by
+  have hQ : Integrable (fun z => m * (A'' (x + Real.sqrt v * z)
+      * Real.exp (m * A (x + Real.sqrt v * z)))) (gaussianReal 0 1) :=
+    (integrable_tiltQ hA''bd hA hmeas hmeas'' x).const_mul m
+  have hR : Integrable (fun z => m ^ 2 * (A' (x + Real.sqrt v * z) ^ 2
+      * Real.exp (m * A (x + Real.sqrt v * z)))) (gaussianReal 0 1) :=
+    (integrable_tiltR hA'bd hA hmeas hmeas' x).const_mul (m ^ 2)
+  have hpt : ∀ z, (m * A'' (x + Real.sqrt v * z)
+        + m ^ 2 * A' (x + Real.sqrt v * z) ^ 2)
+      * Real.exp (m * A (x + Real.sqrt v * z))
+      = m * (A'' (x + Real.sqrt v * z) * Real.exp (m * A (x + Real.sqrt v * z)))
+        + m ^ 2 * (A' (x + Real.sqrt v * z) ^ 2
+          * Real.exp (m * A (x + Real.sqrt v * z))) := by
+    intro z; ring
+  rw [integral_congr_ae (Filter.Eventually.of_forall hpt), integral_add hQ hR,
+    integral_const_mul, integral_const_mul, tiltQ, tiltR]
+
+/-- `T' = P/E`. -/
+theorem smoothing_first_deriv_eq {A A' : ℝ → ℝ} {m v : ℝ} (hm : m ≠ 0)
+    (hA'bd : ∀ y, |A' y| ≤ 1)
+    (hA : HasLinearGrowth A) (hmeas : Measurable A) (hmeas' : Measurable A') (x : ℝ) :
+    (1 / m) * ((∫ z, m * A' (x + Real.sqrt v * z)
+          * Real.exp (m * A (x + Real.sqrt v * z)) ∂(gaussianReal 0 1))
+        / ∫ z, Real.exp (m * A (x + Real.sqrt v * z)) ∂(gaussianReal 0 1))
+      = tiltP A A' m v x / tiltE A m v x := by
+  rw [integral_mul_deriv_eq hA'bd hA hmeas hmeas' x]
+  show (1 / m) * ((m * tiltP A A' m v x) / tiltE A m v x)
+    = tiltP A A' m v x / tiltE A m v x
+  field_simp
+
+/-- `T'' = Q/E + m (R/E - (P/E)²)`. -/
+theorem smoothing_second_deriv_eq {A A' A'' : ℝ → ℝ} {m v : ℝ} (hm : m ≠ 0)
+    (hA'bd : ∀ y, |A' y| ≤ 1) (hA''bd : ∀ y, |A'' y| ≤ 1)
+    (hA : HasLinearGrowth A) (hmeas : Measurable A) (hmeas' : Measurable A')
+    (hmeas'' : Measurable A'') (x : ℝ) :
+    (1 / m)
+      * (((∫ z, (m * A'' (x + Real.sqrt v * z)
+              + m ^ 2 * A' (x + Real.sqrt v * z) ^ 2)
+            * Real.exp (m * A (x + Real.sqrt v * z)) ∂(gaussianReal 0 1))
+            * (∫ z, Real.exp (m * A (x + Real.sqrt v * z)) ∂(gaussianReal 0 1))
+          - (∫ z, m * A' (x + Real.sqrt v * z)
+              * Real.exp (m * A (x + Real.sqrt v * z)) ∂(gaussianReal 0 1))
+            * ∫ z, m * A' (x + Real.sqrt v * z)
+              * Real.exp (m * A (x + Real.sqrt v * z)) ∂(gaussianReal 0 1))
+        / (∫ z, Real.exp (m * A (x + Real.sqrt v * z)) ∂(gaussianReal 0 1)) ^ 2)
+      = tiltQ A A'' m v x / tiltE A m v x
+        + m * (tiltR A A' m v x / tiltE A m v x
+          - (tiltP A A' m v x / tiltE A m v x) ^ 2) := by
+  have hE : tiltE A m v x ≠ 0 := ne_of_gt (tiltE_pos hA hmeas x)
+  rw [integral_second_expand hA'bd hA''bd hA hmeas hmeas' hmeas'' x,
+    integral_mul_deriv_eq hA'bd hA hmeas hmeas' x]
+  show (1 / m)
+      * (((m * tiltQ A A'' m v x + m ^ 2 * tiltR A A' m v x) * tiltE A m v x
+          - (m * tiltP A A' m v x) * (m * tiltP A A' m v x))
+        / (tiltE A m v x) ^ 2)
+    = tiltQ A A'' m v x / tiltE A m v x
+      + m * (tiltR A A' m v x / tiltE A m v x
+        - (tiltP A A' m v x / tiltE A m v x) ^ 2)
+  field_simp
+  ring
+
+/--
+**The smoothing step preserves the second-order invariant**: `T'' ≤ 1 - (T')²`.
+
+This is the goal of §§10–13.  It combines
+`integral_second_le` (`Q ≤ E - R`, the invariant integrated against the tilt),
+`sq_integral_mul_le` (`P² ≤ R E`, i.e. `Var ≥ 0`), and `m ≤ 1`, through the pure algebra of
+`tilted_bound_algebra`.
+-/
+theorem smoothing_second_deriv_le {A A' A'' : ℝ → ℝ} {m v : ℝ}
+    (hm0 : 0 ≤ m) (hm1 : m ≤ 1)
+    (hA'bd : ∀ y, |A' y| ≤ 1) (hA''bd : ∀ y, |A'' y| ≤ 1)
+    (hinv : ∀ y, A'' y ≤ 1 - A' y ^ 2)
+    (hA : HasLinearGrowth A) (hmeas : Measurable A) (hmeas' : Measurable A')
+    (hmeas'' : Measurable A'') (x : ℝ) :
+    tiltQ A A'' m v x / tiltE A m v x
+        + m * (tiltR A A' m v x / tiltE A m v x
+          - (tiltP A A' m v x / tiltE A m v x) ^ 2)
+      ≤ 1 - (tiltP A A' m v x / tiltE A m v x) ^ 2 := by
+  refine tilted_bound_algebra (tiltE_pos hA hmeas x) ?_ ?_ hm0 hm1
+  · exact integral_second_le hA'bd hA''bd hinv hA hmeas hmeas' hmeas'' x
+  · exact sq_integral_mul_le hA'bd hA hmeas hmeas' x
+
+/-- The smoothing step's second derivative is also non-negative, the other half of the
+invariant: `T'' ≥ 0` follows from `A'' ≥ 0` and `Var ≥ 0`. -/
+theorem smoothing_second_deriv_nonneg {A A' A'' : ℝ → ℝ} {m v : ℝ}
+    (hm0 : 0 ≤ m)
+    (hA'bd : ∀ y, |A' y| ≤ 1) (hA''bd : ∀ y, |A'' y| ≤ 1)
+    (hA''nn : ∀ y, 0 ≤ A'' y)
+    (hA : HasLinearGrowth A) (hmeas : Measurable A) (hmeas' : Measurable A')
+    (hmeas'' : Measurable A'') (x : ℝ) :
+    0 ≤ tiltQ A A'' m v x / tiltE A m v x
+        + m * (tiltR A A' m v x / tiltE A m v x
+          - (tiltP A A' m v x / tiltE A m v x) ^ 2) := by
+  have hEpos : 0 < tiltE A m v x := tiltE_pos hA hmeas x
+  have hQnn : 0 ≤ tiltQ A A'' m v x := by
+    refine integral_nonneg (fun z => ?_)
+    exact mul_nonneg (hA''nn _) (Real.exp_pos _).le
+  have hCS : tiltP A A' m v x ^ 2 ≤ tiltR A A' m v x * tiltE A m v x :=
+    sq_integral_mul_le hA'bd hA hmeas hmeas' x
+  have hvar : 0 ≤ tiltR A A' m v x / tiltE A m v x
+      - (tiltP A A' m v x / tiltE A m v x) ^ 2 := by
+    rw [sub_nonneg, div_pow, div_le_div_iff₀ (by positivity) hEpos]
+    nlinarith [hCS, hEpos.le]
+  have h1 : 0 ≤ tiltQ A A'' m v x / tiltE A m v x := div_nonneg hQnn hEpos.le
+  nlinarith [mul_nonneg hm0 hvar]
+
 end SpinGlass
