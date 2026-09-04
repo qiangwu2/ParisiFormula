@@ -1038,6 +1038,59 @@ theorem parisiStep_zero_sandwich {A : ℝ → ℝ} {m v : ℝ}
       calc (1 / m) * Real.log (∫ z, Real.exp (m * f z) ∂(gaussianReal 0 1))
           ≤ (∫ z, f z ∂(gaussianReal 0 1)) + m * v / 2 := hhigh
 
+/-! ### Target 2b, split
+
+Reading Talagrand's Annals paper directly (see `docs/ROADMAP.md`) shows that the parameter
+regularity his proof consumes is **not** a Lipschitz estimate.  Immediately after (1.13) he
+declines that viewpoint:
+
+> "Guerra proves that this definition can be extended by a continuity argument to any
+> probability measure µ on [0,1] … *We do not adopt this point of view since an essential
+> ingredient of our approach is that we need only consider discrete objects rather than
+> continuous ones.*"
+
+What he uses instead is (2.17) — that the infimum defining `𝒫` is *attained* — obtained "by
+a compactness argument", and he remarks that allowing equality in (1.6)–(1.7) is precisely
+what makes that argument available.  Section 5 then works with partial derivatives of the
+functional **at** that minimiser.
+
+So the target splits:
+
+* `exists_minimizer_parisiFunctional` (**2b-i**) — Talagrand's (2.17).  On the critical path
+  to Target 4.  Needs only continuity of `𝒫_k` in `(m,q)` for *fixed* `k`: no modulus, no
+  uniformity in `k`.  The one delicate point is continuity where some `m_p = 0`, since
+  `parisiStep` branches there; `parisiStep_zero_sandwich` above supplies exactly that,
+  with a bound uniform in `x`.
+* `parisiFunctional_lipschitz` (**2b-ii**) — Guerra's uniform-in-`k` Lipschitz bound, needed
+  to pass from discrete schemes to general Parisi measures.  Kept, but **off** the critical
+  path for the Talagrand route.
+-/
+
+/--
+**Target 2b-i (Talagrand 2006, (2.17)).**  For each fixed number of levels `k`, the
+infimum of `𝒫_k(m,q)` over admissible schemes is **attained**.
+
+This is the form of parameter regularity that Talagrand's proof actually consumes: (2.16)
+and (2.17) are the standing hypotheses of Theorem 2.2, and §5 differentiates the functional
+at the minimising scheme.  He obtains it "by a compactness argument", noting that it is to
+permit that argument that equality is allowed in (1.6) and (1.7) — i.e. the admissible set
+
+  `0 = m_0 ≤ m_1 ≤ … ≤ m_k ≤ m_{k+1} = 1`,  `0 = q_0 ≤ … ≤ q_{k+2} = 1`
+
+is *closed*, hence compact, exactly because the inequalities are not strict.
+
+Proof plan: the admissible schemes form a compact subset of `ℝ^{k+2} × ℝ^{k+3}`
+(`isCompact_Icc`, `IsCompact.prod`, intersected with the closed monotonicity constraints);
+`𝒫_k` is continuous on it — level by level through `parisiF`, using `parisiStep_dist_le` to
+propagate a sup-norm perturbation and dominated convergence for the parameter dependence of
+a single step, with `parisiStep_zero_sandwich` covering the `m_p = 0` branch point — and
+`IsCompact.exists_isMinOn` finishes.
+-/
+theorem exists_minimizer_parisiFunctional (k : ℕ) (β h : ℝ) :
+    ∃ s : RSBScheme k, ∀ s' : RSBScheme k,
+      parisiFunctional s β h ≤ parisiFunctional s' β h := by
+  sorry
+
 /-- **Target 2b (Lipschitz continuity in the scheme).**  Guerra's estimate:
 
   `|𝒫_k(m,q) - 𝒫_k(m',q')| ≤ C(β,h) · ∑_p (|m_p - m'_p| + |q_p - q'_p|)`,
