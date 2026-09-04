@@ -748,4 +748,150 @@ theorem hasDerivAt_integral_exp_mul_deriv {A A' A'' : ℝ → ℝ} {m v : ℝ}
   exact hmain.2
 
 
+/-! ## 11. Derivatives of the smoothing step itself
+
+Composing the two differentiations of §10 with `T = (1/m) log G` gives `T'` and `T''`.
+Writing `⟨f⟩ = ∫ f e^{mA} / ∫ e^{mA}` for the tilted average, these are
+
+  `T' = ⟨A'⟩`,   `T'' = ⟨A''⟩ + m (⟨(A')²⟩ - ⟨A'⟩²) = ⟨A''⟩ + m Var_tilt(A')`,
+
+and the second is the identity that propagates `0 ≤ A'' ≤ 1 - (A')²`.
+-/
+
+/-- The exponential integral `G` is strictly positive. -/
+theorem smoothing_integral_pos {A : ℝ → ℝ} {m v : ℝ}
+    (hA : HasLinearGrowth A) (hmeas : Measurable A) (x : ℝ) :
+    0 < ∫ z, Real.exp (m * A (x + Real.sqrt v * z)) ∂(gaussianReal 0 1) :=
+  integral_exp_pos (integrable_exp_mul_of_hasLinearGrowth hA hmeas m x v)
+
+/--
+**First derivative of the smoothing step.**  `T' = G'/(mG)`, which is the tilted average
+`⟨A'⟩` once the factor `m` is cancelled.
+-/
+theorem hasDerivAt_smoothing_step {A A' : ℝ → ℝ} {m v : ℝ}
+    (hderiv : ∀ y, HasDerivAt A (A' y) y) (hA'bd : ∀ y, |A' y| ≤ 1)
+    (hA : HasLinearGrowth A) (hmeas : Measurable A) (hmeas' : Measurable A') (x : ℝ) :
+    HasDerivAt
+      (fun t : ℝ => (1 / m)
+        * Real.log (∫ z, Real.exp (m * A (t + Real.sqrt v * z)) ∂(gaussianReal 0 1)))
+      ((1 / m)
+        * ((∫ z, m * A' (x + Real.sqrt v * z)
+              * Real.exp (m * A (x + Real.sqrt v * z)) ∂(gaussianReal 0 1))
+            / ∫ z, Real.exp (m * A (x + Real.sqrt v * z)) ∂(gaussianReal 0 1))) x := by
+  have hGpos : 0 < ∫ z, Real.exp (m * A (x + Real.sqrt v * z)) ∂(gaussianReal 0 1) :=
+    smoothing_integral_pos hA hmeas x
+  have hG := hasDerivAt_integral_exp_mul hderiv hA'bd hA hmeas hmeas' (m := m) (v := v) x
+  exact (hG.log (ne_of_gt hGpos)).const_mul (1 / m)
+
+/--
+**Second derivative of the smoothing step**, in the raw quotient form
+`T'' = (1/m) (G'' G - (G')²)/G²`.
+
+The rearrangement into `⟨A''⟩ + m Var_tilt(A')` is `smoothing_step_second_deriv_eq` below.
+-/
+theorem hasDerivAt_smoothing_step_deriv {A A' A'' : ℝ → ℝ} {m v : ℝ}
+    (hderiv : ∀ y, HasDerivAt A (A' y) y) (hderiv' : ∀ y, HasDerivAt A' (A'' y) y)
+    (hA'bd : ∀ y, |A' y| ≤ 1) (hA''bd : ∀ y, |A'' y| ≤ 1)
+    (hA : HasLinearGrowth A) (hmeas : Measurable A) (hmeas' : Measurable A')
+    (hmeas'' : Measurable A'') (x : ℝ) :
+    HasDerivAt
+      (fun t : ℝ => (1 / m)
+        * ((∫ z, m * A' (t + Real.sqrt v * z)
+              * Real.exp (m * A (t + Real.sqrt v * z)) ∂(gaussianReal 0 1))
+            / ∫ z, Real.exp (m * A (t + Real.sqrt v * z)) ∂(gaussianReal 0 1)))
+      ((1 / m)
+        * (((∫ z, (m * A'' (x + Real.sqrt v * z)
+                + m ^ 2 * A' (x + Real.sqrt v * z) ^ 2)
+              * Real.exp (m * A (x + Real.sqrt v * z)) ∂(gaussianReal 0 1))
+              * (∫ z, Real.exp (m * A (x + Real.sqrt v * z)) ∂(gaussianReal 0 1))
+            - (∫ z, m * A' (x + Real.sqrt v * z)
+                * Real.exp (m * A (x + Real.sqrt v * z)) ∂(gaussianReal 0 1))
+              * ∫ z, m * A' (x + Real.sqrt v * z)
+                * Real.exp (m * A (x + Real.sqrt v * z)) ∂(gaussianReal 0 1))
+          / (∫ z, Real.exp (m * A (x + Real.sqrt v * z)) ∂(gaussianReal 0 1)) ^ 2)) x := by
+  have hGpos : 0 < ∫ z, Real.exp (m * A (x + Real.sqrt v * z)) ∂(gaussianReal 0 1) :=
+    smoothing_integral_pos hA hmeas x
+  have hG := hasDerivAt_integral_exp_mul hderiv hA'bd hA hmeas hmeas' (m := m) (v := v) x
+  have hG1 := hasDerivAt_integral_exp_mul_deriv hderiv hderiv' hA'bd hA''bd hA
+    hmeas hmeas' hmeas'' (m := m) (v := v) x
+  exact ((hG1.div hG (ne_of_gt hGpos))).const_mul (1 / m)
+
+/--
+**Cauchy–Schwarz for the tilted average**: `(∫ A' e)² ≤ (∫ (A')² e) (∫ e)`, i.e. the tilted
+variance of `A'` is non-negative.  This is the `Var ≥ 0` used in the propagation.
+-/
+theorem sq_integral_mul_le {A A' : ℝ → ℝ} {m v : ℝ}
+    (hA'bd : ∀ y, |A' y| ≤ 1)
+    (hA : HasLinearGrowth A) (hmeas : Measurable A) (hmeas' : Measurable A') (x : ℝ) :
+    (∫ z, A' (x + Real.sqrt v * z)
+        * Real.exp (m * A (x + Real.sqrt v * z)) ∂(gaussianReal 0 1)) ^ 2
+      ≤ (∫ z, A' (x + Real.sqrt v * z) ^ 2
+            * Real.exp (m * A (x + Real.sqrt v * z)) ∂(gaussianReal 0 1))
+        * ∫ z, Real.exp (m * A (x + Real.sqrt v * z)) ∂(gaussianReal 0 1) := by
+  classical
+  set μ : Measure ℝ := gaussianReal 0 1 with hμ
+  set e : ℝ → ℝ := fun z => Real.exp (m * A (x + Real.sqrt v * z)) with hedef
+  set g : ℝ → ℝ := fun z => A' (x + Real.sqrt v * z) with hgdef
+  have hepos : ∀ z, 0 < e z := fun z => Real.exp_pos _
+  have heint : Integrable e μ := integrable_exp_mul_of_hasLinearGrowth hA hmeas m x v
+  have hshift_meas : Measurable (fun z : ℝ => x + Real.sqrt v * z) :=
+    (measurable_id.const_mul (Real.sqrt v)).const_add x
+  have hgmeas : Measurable g := hmeas'.comp hshift_meas
+  -- `|g| ≤ 1`, so `g² e ≤ e` and `|g e| ≤ e`; all three integrals exist
+  have hg2e_int : Integrable (fun z => g z ^ 2 * e z) μ := by
+    refine heint.mono' ((hgmeas.pow_const 2).mul
+      ((Real.continuous_exp.measurable).comp
+        ((hmeas.comp hshift_meas).const_mul m))).aestronglyMeasurable
+      (Filter.Eventually.of_forall (fun z => ?_))
+    rw [Real.norm_eq_abs, abs_mul, abs_of_nonneg (sq_nonneg _),
+      abs_of_nonneg (hepos z).le]
+    have h1 : g z ^ 2 ≤ 1 := by
+      have := hA'bd (x + Real.sqrt v * z)
+      nlinarith [abs_nonneg (g z), sq_abs (g z)]
+    nlinarith [(hepos z).le]
+  have hge_int : Integrable (fun z => g z * e z) μ := by
+    refine heint.mono' (hgmeas.mul
+      ((Real.continuous_exp.measurable).comp
+        ((hmeas.comp hshift_meas).const_mul m))).aestronglyMeasurable
+      (Filter.Eventually.of_forall (fun z => ?_))
+    rw [Real.norm_eq_abs, abs_mul, abs_of_nonneg (hepos z).le]
+    have h1 : |g z| ≤ 1 := hA'bd (x + Real.sqrt v * z)
+    nlinarith [(hepos z).le, abs_nonneg (g z)]
+  -- Elementary route rather than an L² Cauchy-Schwarz lemma: expand
+  -- `∫ (g z - c)² e z ≥ 0` and optimise over the constant `c`.
+  have hnonneg : ∀ c : ℝ, 0 ≤ ∫ z, (g z - c) ^ 2 * e z ∂μ := by
+    intro c
+    refine integral_nonneg (fun z => ?_)
+    exact mul_nonneg (sq_nonneg _) (hepos z).le
+  have hexpand : ∀ c : ℝ,
+      (∫ z, (g z - c) ^ 2 * e z ∂μ)
+        = (∫ z, g z ^ 2 * e z ∂μ) - 2 * c * (∫ z, g z * e z ∂μ)
+          + c ^ 2 * ∫ z, e z ∂μ := by
+    intro c
+    have hpt : ∀ z, (g z - c) ^ 2 * e z
+        = g z ^ 2 * e z - 2 * c * (g z * e z) + c ^ 2 * e z := by
+      intro z; ring
+    rw [integral_congr_ae (Filter.Eventually.of_forall hpt)]
+    rw [integral_add ((hg2e_int.sub (hge_int.const_mul (2 * c)))) (heint.const_mul (c ^ 2)),
+      integral_sub hg2e_int (hge_int.const_mul (2 * c)),
+      integral_const_mul, integral_const_mul]
+  have hEpos : 0 < ∫ z, e z ∂μ := integral_exp_pos heint
+  set S : ℝ := ∫ z, g z ^ 2 * e z ∂μ with hS
+  set P : ℝ := ∫ z, g z * e z ∂μ with hP
+  set E : ℝ := ∫ z, e z ∂μ with hE
+  have hquad : ∀ c : ℝ, 0 ≤ S - 2 * c * P + c ^ 2 * E := by
+    intro c
+    have := hnonneg c
+    rwa [hexpand c] at this
+  have hkey := hquad (P / E)
+  have hEne : E ≠ 0 := ne_of_gt hEpos
+  have hrw : S - 2 * (P / E) * P + (P / E) ^ 2 * E = S - P ^ 2 / E := by
+    field_simp
+    ring
+  rw [hrw] at hkey
+  have : P ^ 2 / E ≤ S := by linarith
+  calc P ^ 2 = (P ^ 2 / E) * E := by field_simp
+    _ ≤ S * E := mul_le_mul_of_nonneg_right this hEpos.le
+
+
 end SpinGlass
