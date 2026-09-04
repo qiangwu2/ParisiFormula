@@ -64,6 +64,19 @@ right statements: `parisiFunctional` typechecked both before and after an off-by
 
 ## Phase 3 — Milestone 3: Guerra's RSB bound  (L–XL)
 
+**Blocker found (CI run 33823189093).**  The four `port/` Guerra files cannot be compiled
+against this project: they were cut from **or4nge19/SpinGlass** `d1342fd`, whereas
+`Lemmas/SpinGlass/` is vendored from **njimaMath/research_public** (RSAT) `f3b34d2`, a
+trimmed fork.  They reference or4nge19 API that RSAT never vendored — the whole
+`FiniteGibbs` namespace, `SKDisorder.measU`/`SimpleDisorder.measV`, `disorderPair`,
+`abs_free_energy_density_le`, `integrable_norm_of_isGaussian_map`, `norm_dH_t_le_on_ball`.
+Vendoring the or4nge19 modules alongside would collide in the shared `SpinGlass` namespace.
+So Phase 3's k = 0 case must be **rebuilt on RSAT's API**, not ported.  RSAT already supplies
+`H_t`, `hasDerivAt_H_t`, `hasDerivAt_nu`, `trace_formula`, `trace_sk`, `trace_simple` and
+`guerra_derivative_bound_algebra`; the missing link is the Gaussian-IBP step from the
+derivative of `∫ free_energy_density (H_t ·)` to the trace expression.  See `port/README.md`.
+
+
 - [ ] Finite Gaussian tree: the field `∑ᵢ σᵢ ∑_p z_p^i √(β²(q_{p+1}-q_p))` as an
       `IsGaussianHilbert` vector in `EnergySpace N`, with its covariance kernel. (L)
 - [ ] Hierarchical expectation `Z_p = (E_p Z_{p+1}^{m_p})^{1/m_p}` and endpoint `φ(0)`. (L)
