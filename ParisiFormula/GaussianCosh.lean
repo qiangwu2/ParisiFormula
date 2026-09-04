@@ -608,4 +608,144 @@ theorem hasDerivAt_integral_exp_mul {A A' : ℝ → ℝ} {m v : ℝ}
   exact hmain.2
 
 
+/--
+**Second derivative of the smoothing integral.**
+
+`d/dx ∫ m A' (x+√v z) exp (m A (x+√v z)) dγ`
+  `= ∫ (m A''(x+√v z) + m² A'(x+√v z)²) exp (m A (x+√v z)) dγ`.
+
+Same technique as `hasDerivAt_integral_exp_mul`; the integrand is now a product, so its
+derivative picks up the extra `m² (A')²` term.  Domination again uses the linear growth of
+`A` together with `|A'| ≤ 1` and `|A''| ≤ 1`, both supplied by the second-order invariant
+`HasParisiC2`.
+-/
+theorem hasDerivAt_integral_exp_mul_deriv {A A' A'' : ℝ → ℝ} {m v : ℝ}
+    (hderiv : ∀ y, HasDerivAt A (A' y) y) (hderiv' : ∀ y, HasDerivAt A' (A'' y) y)
+    (hA'bd : ∀ y, |A' y| ≤ 1) (hA''bd : ∀ y, |A'' y| ≤ 1)
+    (hA : HasLinearGrowth A) (hmeas : Measurable A) (hmeas' : Measurable A')
+    (hmeas'' : Measurable A'') (x : ℝ) :
+    HasDerivAt
+      (fun t : ℝ => ∫ z, m * A' (t + Real.sqrt v * z)
+        * Real.exp (m * A (t + Real.sqrt v * z)) ∂(gaussianReal 0 1))
+      (∫ z, (m * A'' (x + Real.sqrt v * z)
+          + m ^ 2 * A' (x + Real.sqrt v * z) ^ 2)
+        * Real.exp (m * A (x + Real.sqrt v * z)) ∂(gaussianReal 0 1)) x := by
+  classical
+  obtain ⟨C, D, hC, hD, hb⟩ := hA
+  set b : ℝ := |m| * (C + D * (|x| + 1)) with hbdef
+  set a : ℝ := |m| * (D * |Real.sqrt v|) with hadef
+  set F : ℝ → ℝ → ℝ := fun t z =>
+    m * A' (t + Real.sqrt v * z) * Real.exp (m * A (t + Real.sqrt v * z)) with hFdef
+  set F' : ℝ → ℝ → ℝ := fun t z =>
+    (m * A'' (t + Real.sqrt v * z) + m ^ 2 * A' (t + Real.sqrt v * z) ^ 2)
+      * Real.exp (m * A (t + Real.sqrt v * z)) with hF'def
+  have hshift_meas : ∀ t : ℝ, Measurable (fun z : ℝ => t + Real.sqrt v * z) :=
+    fun t => (measurable_id.const_mul (Real.sqrt v)).const_add t
+  have hAshift : ∀ t : ℝ, Measurable (fun z : ℝ => A (t + Real.sqrt v * z)) :=
+    fun t => hmeas.comp (hshift_meas t)
+  have hA'shift : ∀ t : ℝ, Measurable (fun z : ℝ => A' (t + Real.sqrt v * z)) :=
+    fun t => hmeas'.comp (hshift_meas t)
+  have hA''shift : ∀ t : ℝ, Measurable (fun z : ℝ => A'' (t + Real.sqrt v * z)) :=
+    fun t => hmeas''.comp (hshift_meas t)
+  have hexpmeas : ∀ t : ℝ,
+      Measurable (fun z : ℝ => Real.exp (m * A (t + Real.sqrt v * z))) := fun t =>
+    (Real.continuous_exp.measurable).comp ((hAshift t).const_mul m)
+  have hFmeas : ∀ t : ℝ, Measurable (F t) := fun t =>
+    ((hA'shift t).const_mul m).mul (hexpmeas t)
+  have hF'meas : ∀ t : ℝ, Measurable (F' t) := fun t =>
+    (((hA''shift t).const_mul m).add
+      (((hA'shift t).pow_const 2).const_mul (m ^ 2))).mul (hexpmeas t)
+  set bound : ℝ → ℝ := fun z =>
+    (|m| + m ^ 2) * (Real.exp b * Real.exp (a * |z|)) with hbounddef
+  have hbound_int : Integrable bound (gaussianReal 0 1) :=
+    ((integrable_exp_abs_mul_stdGaussian a).const_mul _).const_mul _
+  have hdom : ∀ᵐ z ∂(gaussianReal 0 1), ∀ t ∈ Metric.ball x 1, ‖F' t z‖ ≤ bound z := by
+    refine Filter.Eventually.of_forall (fun z t ht => ?_)
+    have ht' : |t - x| ≤ 1 := by
+      have h := Metric.mem_ball.mp ht
+      rw [Real.dist_eq] at h
+      linarith
+    have hexp : Real.exp (m * A (t + Real.sqrt v * z)) ≤ Real.exp b * Real.exp (a * |z|) := by
+      rw [hbdef, hadef]
+      exact exp_mul_shift_ball_le hD hb m x v ht' z
+    have hep : (0 : ℝ) < Real.exp (m * A (t + Real.sqrt v * z)) := Real.exp_pos _
+    have hcoef : |m * A'' (t + Real.sqrt v * z)
+        + m ^ 2 * A' (t + Real.sqrt v * z) ^ 2| ≤ |m| + m ^ 2 := by
+      have h1 : |m * A'' (t + Real.sqrt v * z)| ≤ |m| := by
+        rw [abs_mul]
+        have := hA''bd (t + Real.sqrt v * z)
+        nlinarith [abs_nonneg m, abs_nonneg (A'' (t + Real.sqrt v * z))]
+      have h2 : |m ^ 2 * A' (t + Real.sqrt v * z) ^ 2| ≤ m ^ 2 := by
+        rw [abs_mul, abs_of_nonneg (sq_nonneg m), abs_of_nonneg (sq_nonneg _)]
+        have hb1 : A' (t + Real.sqrt v * z) ^ 2 ≤ 1 := by
+          nlinarith [hA'bd (t + Real.sqrt v * z), abs_nonneg (A' (t + Real.sqrt v * z)),
+            sq_abs (A' (t + Real.sqrt v * z))]
+        nlinarith [sq_nonneg m]
+      calc |m * A'' (t + Real.sqrt v * z) + m ^ 2 * A' (t + Real.sqrt v * z) ^ 2|
+          ≤ |m * A'' (t + Real.sqrt v * z)| + |m ^ 2 * A' (t + Real.sqrt v * z) ^ 2| :=
+            abs_add_le _ _
+        _ ≤ |m| + m ^ 2 := by linarith
+    rw [Real.norm_eq_abs, hF'def, hbounddef, abs_mul,
+      abs_of_nonneg (Real.exp_pos _).le]
+    calc |m * A'' (t + Real.sqrt v * z) + m ^ 2 * A' (t + Real.sqrt v * z) ^ 2|
+          * Real.exp (m * A (t + Real.sqrt v * z))
+        ≤ (|m| + m ^ 2) * Real.exp (m * A (t + Real.sqrt v * z)) :=
+          mul_le_mul_of_nonneg_right hcoef hep.le
+      _ ≤ (|m| + m ^ 2) * (Real.exp b * Real.exp (a * |z|)) :=
+          mul_le_mul_of_nonneg_left hexp (by positivity)
+  have hdiff : ∀ᵐ z ∂(gaussianReal 0 1), ∀ t ∈ Metric.ball x 1,
+      HasDerivAt (fun t : ℝ => F t z) (F' t z) t := by
+    refine Filter.Eventually.of_forall (fun z t _ => ?_)
+    have hshift : HasDerivAt (fun s : ℝ => s + Real.sqrt v * z) 1 t := by
+      simpa using (hasDerivAt_id t).add_const (Real.sqrt v * z)
+    have hA0 : HasDerivAt (fun s : ℝ => A (s + Real.sqrt v * z))
+        (A' (t + Real.sqrt v * z) * 1) t := (hderiv (t + Real.sqrt v * z)).comp t hshift
+    have hAd : HasDerivAt (fun s : ℝ => A (s + Real.sqrt v * z))
+        (A' (t + Real.sqrt v * z)) t := by rw [mul_one] at hA0; exact hA0
+    have hA'0 : HasDerivAt (fun s : ℝ => A' (s + Real.sqrt v * z))
+        (A'' (t + Real.sqrt v * z) * 1) t := (hderiv' (t + Real.sqrt v * z)).comp t hshift
+    have hA'd : HasDerivAt (fun s : ℝ => A' (s + Real.sqrt v * z))
+        (A'' (t + Real.sqrt v * z)) t := by rw [mul_one] at hA'0; exact hA'0
+    have hleft : HasDerivAt (fun s : ℝ => m * A' (s + Real.sqrt v * z))
+        (m * A'' (t + Real.sqrt v * z)) t := hA'd.const_mul m
+    have hexpd : HasDerivAt (fun s : ℝ => Real.exp (m * A (s + Real.sqrt v * z)))
+        (Real.exp (m * A (t + Real.sqrt v * z)) * (m * A' (t + Real.sqrt v * z))) t :=
+      (hAd.const_mul m).exp
+    have hprod := hleft.mul hexpd
+    have heq :
+        m * A'' (t + Real.sqrt v * z) * Real.exp (m * A (t + Real.sqrt v * z))
+          + m * A' (t + Real.sqrt v * z)
+            * (Real.exp (m * A (t + Real.sqrt v * z)) * (m * A' (t + Real.sqrt v * z)))
+        = (m * A'' (t + Real.sqrt v * z)
+            + m ^ 2 * A' (t + Real.sqrt v * z) ^ 2)
+          * Real.exp (m * A (t + Real.sqrt v * z)) := by ring
+    rw [heq] at hprod
+    exact hprod
+  have hFint : Integrable (F x) (gaussianReal 0 1) := by
+    have hdomx : Integrable (fun z : ℝ => |m| * (Real.exp b * Real.exp (a * |z|)))
+        (gaussianReal 0 1) :=
+      ((integrable_exp_abs_mul_stdGaussian a).const_mul _).const_mul _
+    refine hdomx.mono' (hFmeas x).aestronglyMeasurable
+      (Filter.Eventually.of_forall (fun z => ?_))
+    have hexp : Real.exp (m * A (x + Real.sqrt v * z)) ≤ Real.exp b * Real.exp (a * |z|) := by
+      rw [hbdef, hadef]
+      exact exp_mul_shift_ball_le hD hb m x v (by simp) z
+    have hep : (0 : ℝ) < Real.exp (m * A (x + Real.sqrt v * z)) := Real.exp_pos _
+    rw [Real.norm_eq_abs, hFdef, abs_mul, abs_mul,
+      abs_of_nonneg (Real.exp_pos _).le]
+    calc |m| * |A' (x + Real.sqrt v * z)| * Real.exp (m * A (x + Real.sqrt v * z))
+        ≤ |m| * 1 * Real.exp (m * A (x + Real.sqrt v * z)) :=
+          mul_le_mul_of_nonneg_right
+            (mul_le_mul_of_nonneg_left (hA'bd _) (abs_nonneg m)) hep.le
+      _ = |m| * Real.exp (m * A (x + Real.sqrt v * z)) := by ring
+      _ ≤ |m| * (Real.exp b * Real.exp (a * |z|)) :=
+          mul_le_mul_of_nonneg_left hexp (abs_nonneg m)
+  have hmain := hasDerivAt_integral_of_dominated_loc_of_deriv_le
+    (μ := gaussianReal 0 1) (F := F) (F' := F') (x₀ := x) (bound := bound)
+    (s := Metric.ball x 1) (Metric.ball_mem_nhds x one_pos)
+    (Filter.Eventually.of_forall (fun t => (hFmeas t).aestronglyMeasurable))
+    hFint (hF'meas x).aestronglyMeasurable hdom hbound_int hdiff
+  exact hmain.2
+
+
 end SpinGlass
