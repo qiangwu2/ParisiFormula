@@ -4,6 +4,7 @@ import ParisiFormula.GaussianCosh
 import ParisiFormula.ParisiOperator
 import ParisiFormula.GaussianConcentration1D
 import ParisiFormula.GaussianExpCompare
+import Lemmas.SmartPath.Interpolation
 import Mathlib.Probability.Distributions.Gaussian.Real
 
 /-!
@@ -1803,6 +1804,93 @@ theorem parisiFunctional_lipschitz (β h : ℝ) :
   sorry
 
 /-! ## Milestone 3 — Guerra's replica-symmetry-breaking bound -/
+
+/-! ### Guerra's bound, replica-symmetric case (`k = 0`)
+
+The `k = 0` case of Target 3 is **proved**, by combining two things that already exist:
+
+* RSAT's **Guerra sum rule** `SpinGlass.GeneralizedLatala.replica_symmetric_sum_rule`,
+
+    `rsPressure β h q - interpolatedPressure … 1 = (β²/4) ∫₀¹ overlapVariance t dt`,
+
+  whose right-hand side is `≥ 0` because `overlapVariance` is a variance
+  (`overlapVariance_nonneg`).  This is exactly Guerra's interpolation: RSAT carries out the
+  differentiation of the pressure along the smart path (`pressure_derivative`), the Gaussian
+  integration by parts (`pressure_derivative_ibp_trace`), and the endpoint evaluation
+  (`endpoint_pressure`).
+* our **Target 2a** `parisiFunctional_rsScheme`, which evaluates the `k = 0` Parisi
+  functional in closed form.
+
+The two closed forms agree on the nose — RSAT's
+
+    `rsPressure β h q = log 2 + 𝔼 log cosh (h + β√q z) + (β²/4)(1-q)²`
+
+is our `𝒫_0(m,q)` after `add_comm` inside the `cosh`, since RSAT's
+`standardGaussianExpectation` *is* `∫ · ∂(gaussianReal 0 1)`.  That is
+`rsPressure_eq_parisiFunctional` below.
+
+**What this does and does not settle.**  It settles Target 3 at `k = 0`: the SK free energy
+is at most the replica-symmetric Parisi functional, for every `q ∈ [0,1]` — a genuine
+finite-`N` theorem with no `O(1/N)` error, and the historically first form of Guerra's bound.
+It does *not* settle Target 3 for general `k`: there the comparison field is the
+Ruelle-type **cascade** attached to a `k+2`-level tree, and the free energy is computed
+through the iterated `(1/m_p) log 𝔼_p exp(m_p ·)` — that is, through `parisiStep`.  RSAT's
+smart path compares against a *single* Gaussian field (`SimpleDisorder`, covariance
+`Nβ²q·R`), which is the `k = 0` cascade.
+
+**Note on the pressure conventions.**  The statement is in terms of RSAT's
+`interpolatedPressure … 1`, i.e. `𝔼[(1/N) log ∑_σ exp (-(U(σ) + h·mag σ))]`, whereas
+`free_entropy` in this project is `𝔼[(1/N) log ∑_σ exp (U(σ) + h·mag σ)]`.  The two agree in
+value — `-U` has the same law as `U` because `sk_cov_kernel` depends on the overlap only
+through `R²`, and `cosh` is even — but that is an equality *in law*, not definitional, so it
+is deliberately not asserted here.  Bridging the two conventions is a separate (routine but
+non-trivial) lemma; stating the bound in RSAT's own convention keeps this theorem honest.
+-/
+
+/-- RSAT's replica-symmetric pressure is our `k = 0` Parisi functional. -/
+theorem rsPressure_eq_parisiFunctional (β h q : ℝ) (hq0 : 0 ≤ q) (hq1 : q ≤ 1) :
+    SpinGlass.GeneralizedLatala.rsPressure β h q
+      = parisiFunctional (rsScheme q hq0 hq1) β h := by
+  rw [parisiFunctional_rsScheme β h q hq0 hq1, SpinGlass.GeneralizedLatala.rsPressure]
+  have hc : SpinGlass.GeneralizedLatala.standardGaussianExpectation
+      (fun z => Real.log (Real.cosh (h + β * Real.sqrt q * z)))
+      = ∫ z, Real.log (Real.cosh (β * Real.sqrt q * z + h)) ∂(gaussianReal 0 1) := by
+    rw [SpinGlass.GeneralizedLatala.standardGaussianExpectation]
+    refine integral_congr_ae (Filter.Eventually.of_forall (fun z => ?_))
+    show Real.log (Real.cosh (h + β * Real.sqrt q * z))
+        = Real.log (Real.cosh (β * Real.sqrt q * z + h))
+    rw [add_comm]
+  rw [hc]
+
+/--
+**Guerra's bound, replica-symmetric case — Target 3 for `k = 0`.**
+
+For every `N`, every `(β, h)` and every `q ∈ [0,1]`, the finite-volume SK pressure is at most
+the `k = 0` Parisi functional:
+
+  `𝔼[(1/N) log Z_N] ≤ 𝒫_0(m, q)`.
+
+No `O(1/N)` error term, because the covariance kernel is exactly `(Nβ²/2) R²`.
+
+The proof is the Guerra sum rule together with non-negativity of the overlap variance; the
+interpolation itself (differentiation of the pressure, Gaussian integration by parts,
+endpoint evaluation) is RSAT's.
+-/
+theorem guerra_rs_bound {N : ℕ} [NeZero N] (hN : 0 < N) (β h q : ℝ)
+    (hq0 : 0 ≤ q) (hq1 : q ≤ 1)
+    (sk : SpinGlass.SKDisorder (Ω := Ω) N β h)
+    (sim : SpinGlass.SimpleDisorder (Ω := Ω) N β q)
+    (hIndep : IndepFun sk.U sim.V (ℙ : Measure Ω)) :
+    SpinGlass.GeneralizedLatala.interpolatedPressure N β h q sk sim 1
+      ≤ parisiFunctional (rsScheme q hq0 hq1) β h := by
+  obtain ⟨-, heq⟩ := SpinGlass.GeneralizedLatala.replica_symmetric_sum_rule
+    N β h q sk sim hN hq0 hIndep
+  have hnn : 0 ≤ ∫ t in Set.Icc (0 : ℝ) 1,
+      SpinGlass.GeneralizedLatala.overlapVariance N β h q sk sim t :=
+    setIntegral_nonneg measurableSet_Icc
+      (fun t _ => SpinGlass.GeneralizedLatala.overlapVariance_nonneg N β h q sk sim t)
+  rw [← rsPressure_eq_parisiFunctional β h q hq0 hq1]
+  nlinarith [heq, hnn, sq_nonneg β]
 
 /-- **Target 3 (Guerra 2003).**  For every `N`, every `(β, h)` and every finite-step scheme,
 `(1/N) E log Z_N ≤ 𝒫_k(m,q)`.
