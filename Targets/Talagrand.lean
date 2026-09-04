@@ -5,8 +5,8 @@ New work for the ParisiFormula project (not vendored).
 
 ## What this file is
 
-The top-down skeleton of Talagrand (Annals 2006) §2, with Targets 3 and 4 *derived* from the
-two analytic cores of the paper rather than assumed separately.  The point is legibility:
+The SK formalisation of Talagrand (Annals 2006) §2, with Targets 3 and 4 *derived* from the
+two analytic cores of the paper rather than assumed separately.
 Theorem 2.1 is proved below. The only remaining `sorry` on the critical path is Theorem
 2.2, and the deduction of the Parisi formula from these results is machine-checked.
 

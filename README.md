@@ -12,8 +12,9 @@ checks live in [`Targets/GuerraAudit.lean`](Targets/GuerraAudit.lean).
 
 **The full Parisi formula is not yet complete:** Theorem 2.2 remains the one open theorem
 on the current critical path. Three older, off-path placeholders remain in
-`Targets/Milestones.lean`. See [`docs/ROADMAP.md`](docs/ROADMAP.md) for the current status;
-the older [`blueprint/blueprint.tex`](blueprint/blueprint.tex) records the broader milestones.
+[`Targets/Milestones.lean`](Targets/Milestones.lean). See [`docs/ROADMAP.md`](docs/ROADMAP.md)
+for the current status and [`blueprint/blueprint.tex`](blueprint/blueprint.tex) for the
+mathematical outline and its formalisation status.
 
 ## Project milestones
 
@@ -29,8 +30,8 @@ the separate Guerra–Toninelli development in milestone 1.
 
 ## Setting up (no prior Lean experience assumed)
 
-You need about 30 minutes and ~10 GB of disk. Steps are for macOS/Linux; on Windows use
-WSL or follow the equivalent installer links.
+Steps are for macOS/Linux; on Windows use WSL or follow the equivalent installer links.
+Allow time and disk space for Lean, the dependencies, and the Mathlib build cache.
 
 ### 1. Install `elan` (the Lean version manager)
 
@@ -49,24 +50,33 @@ Download [VS Code](https://code.visualstudio.com/), open it, go to Extensions
 ### 3. Get this repository and the prebuilt Mathlib
 
 ```bash
-git clone <your-repo-url> ParisiFormula
+git clone --branch worktree-parisi-phase1 https://github.com/qiangwu2/ParisiFormula.git
 cd ParisiFormula
-lake exe cache get      # downloads compiled Mathlib (~5–10 min). Do NOT skip this:
-                        # compiling Mathlib from source takes hours.
+lake exe cache get      # fetch the compiled Mathlib cache
 ```
+
+The current proof development is on `worktree-parisi-phase1`. `lake-manifest.json`
+locks the dependency revisions; no dependency update is needed to reproduce this build.
 
 ### 4. Build
 
 ```bash
-lake build              # Tier 1: the vendored, verified core. First run: ~5–15 min.
+lake build                       # default: the ParisiFormula library and its dependencies
+lake build ParisiFormula Targets  # both local libraries, including the axiom guards
+bash scripts/check.sh            # both builds plus source-placeholder checks/report
 ```
 
-If this succeeds, your setup works. Then:
+For just the completed Theorem 2.1 and upper-bound dependency audit:
 
 ```bash
-lake build ParisiFormula   # Tier 2: our own work
-lake build Targets         # Tier 3: target statements (warnings about `sorry` are expected)
+lake build Targets.GuerraAudit
 ```
+
+`Targets` contains proved results alongside four remaining placeholders. Those warnings
+do not mean a failed build, but a successful build alone does not certify the full Parisi
+formula. `GuerraAudit` checks that Theorem 2.1 and both upper bounds depend only on
+`propext`, `Classical.choice`, and `Quot.sound`—not `sorryAx` or extra axioms. CI requires
+both local libraries to build; it does not ignore target or audit failures.
 
 Open the folder in VS Code and click into any `.lean` file: the Lean extension shows the
 proof state live in the side panel ("Lean Infoview").
@@ -78,47 +88,56 @@ VS Code) and paste it to your collaborator/assistant. Most first-run errors are 
 
 - forgot `lake exe cache get` (symptom: build runs for hours, or "missing .olean" errors);
 - network hiccup during cache download (just rerun `lake exe cache get`);
-- Tier 3 elaboration errors (expected; these files were drafted without a Lean environment).
+- Lean elaboration errors: these are not expected and must be fixed. Only the recorded
+  placeholder warnings are allowed.
 
 ---
 
-## Project layout and the three build tiers
+## Project layout and build targets
 
 ```
 ParisiFormula/
-├── lakefile.lean            build configuration (three targets, see below)
-├── lean-toolchain           pins Lean v4.32.1
-├── lake-manifest.json       pins Mathlib v4.32.1 and transitive deps (identical to RSAT)
-│
-├── Lemmas/SpinGlass/        TIER 1  vendored core, verbatim from RSAT (verified, no sorry)
-│   ├── Defs.lean                configurations, overlap, Gibbs weights, free energy, Hessian
-│   ├── Calculus.lean            smoothness/Lipschitz bounds for the free energy
-│   ├── GaussianIntegrationByParts.lean   1-D Gaussian IBP (Stein's lemma)
-│   ├── Gaussian_IBP_Hilbert.lean         Hilbert-space Gaussian IBP with covariance operator
-│   ├── gaussian_concentration.lean       Gaussian concentration of measure
-│   ├── SKModel.lean             SK disorder as a Gaussian vector with prescribed covariance
-│   ├── Replicas.lean            replica calculus, derivative of the smart path
-│   └── GuerraBound.lean         algebraic core of Guerra's RS bound (Talagrand (1.65))
-│
-├── ParisiFormula/           TIER 2  our work
-│   └── GuerraToninelli.lean     ported from RSAT; superadditivity conditional on 2 hypotheses
-│
-├── Targets/                 TIER 3  precise statements of every milestone, with `sorry`
-│   └── Milestones.lean
-│
-├── port/                    upstream files on an OLDER Lean (4.28); not built; to be ported
-│   ├── GuerraInterpolation.lean, GuerraIBP.lean, GuerraTrace.lean, GuerraPipeline.lean
-│   │                            the three-step derivative pipeline for Guerra's RS smart path
-│   └── ParisiOperator.lean      the operator T_{m,v} and its semigroup law
-│
-├── blueprint/blueprint.tex  the mathematical plan, lemma by lemma, with Lean names
-├── docs/ROADMAP.md          what to do next, concretely
-├── docs/PROVENANCE.md       exact origin (repo, path, commit) of every vendored file
-└── scripts/check.sh         builds all tiers and scans Tier 1–2 for `sorry`
+├── lakefile.lean                 two local libraries; Mathlib and RSAT dependencies
+├── lean-toolchain                Lean v4.32.1
+├── lake-manifest.json            locked dependency revisions, including RSAT
+├── ParisiFormula/                default library; no source placeholders
+│   ├── AnnealedBound.lean            Gaussian moments and the annealed upper bound
+│   ├── GuerraToninelli.lean          conditional superadditivity and Fekete argument
+│   ├── InterpolationDeriv.lean       covariance/Hessian sign calculations
+│   ├── ParisiOperator.lean           ported bounded-function smoothing semigroup
+│   ├── ParisiOperatorGrowth.lean     semigroup extended to linear growth
+│   ├── GaussianCosh.lean             Gaussian integrability and cosh identities
+│   ├── GaussianConcentration1D.lean  one-dimensional concentration estimates
+│   ├── GaussianExpCompare.lean       comparison of Gaussian log-exp integrals
+│   ├── GaussianStein.lean            one-dimensional Stein identity
+│   ├── CoordStein.lean               Gaussian-Hilbert coordinate/trace IBP
+│   └── PiStein.lean                  product-Gaussian coordinate IBP
+├── Targets/                     second library; completed proofs and open targets
+│   ├── Milestones.lean               Parisi recursion, continuity, minimizer; 3 open lemmas
+│   ├── CascadeEndpoint.lean          N-site cascade and endpoint factorization
+│   ├── CascadeDeriv.lean             one-dimensional tilted chain rule
+│   ├── CascadeDerivPi.lean           N-site tilted chain rule and growth bounds
+│   ├── CascadeSecondPi.lean          second derivatives of tilted averages
+│   ├── CascadeFieldPi.lean           conditional field integration by parts
+│   ├── CascadeContinuityPi.lean      parameter continuity through smoothing
+│   ├── Talagrand.lean                Theorem 2.1 proved; Theorem 2.2 open; final deduction
+│   └── GuerraAudit.lean              axiom-regression guards for the completed upper bound
+├── .lake/packages/              generated dependency checkout; not tracked
+│   ├── mathlib/                      Mathlib v4.32.1
+│   └── QuantitativeStrictAT/         active RSAT source for Lemmas.* imports
+├── Lemmas/SpinGlass/             historical RSAT copies; NOT a local build target
+├── port/                        historical Lean 4.28 sources; NOT built (see port/README.md)
+├── blueprint/blueprint.tex       mathematical outline and proof-status annotations
+├── docs/ROADMAP.md               current critical path and historical checkpoints
+├── docs/PROVENANCE.md            dependency pins and origins of copied/ported sources
+├── scripts/check.sh             strict local build/check entry point
+└── .github/workflows/build.yml   required builds for both libraries
 ```
 
-**Why three tiers?** So that a mistake in new, unverified code can never block you from
-building the verified base. `lake build` alone only touches Tier 1.
+Only `ParisiFormula` and `Targets` are declared as local `lean_lib` targets.
+The imported `Lemmas.*` modules come from the `QuantitativeStrictAT` dependency, not
+the historical copies under the repository's `Lemmas/` directory. Older notes call these
+the upstream tier, Tier 2, and Tier 3; those are not three local build targets.
 
 ---
 
@@ -137,6 +156,6 @@ All vendored files keep their original copyright headers. See `NOTICE` and
 
 ## Contributing
 
-Not yet open for external contributions; the plan is to announce on the
-[Lean Zulip](https://leanprover.zulipchat.com) once Milestone 1 is complete and the
-blueprint website is up. Until then, issues and questions are welcome.
+Not yet open for external contributions; issues and questions are welcome. Development
+should follow the current critical path in `docs/ROADMAP.md`, retain the Talagrand (2006)
+proof route, and preserve the completed-theorem axiom guards.

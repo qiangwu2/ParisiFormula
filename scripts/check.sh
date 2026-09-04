@@ -1,18 +1,32 @@
 #!/usr/bin/env bash
-# Full project check: build both local tiers, then scan the verified tier for placeholders.
+# Build both local libraries (including axiom guards), then scan/report placeholders.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-echo "== Tier 2: ParisiFormula =="
+echo "== Supporting library: ParisiFormula =="
 lake build ParisiFormula
-echo "== Tier 3: Targets (sorry warnings expected) =="
-lake build Targets || echo "WARNING: Targets failed to build; see errors above (allowed for now)."
+echo "== Targets and completed-theorem axiom guards =="
+lake build Targets
 
-echo "== Placeholder scan (Tier 2) =="
-if grep -rnE "\bsorry\b|\badmit\b|^axiom " --include='*.lean' ParisiFormula; then
-  echo "FAIL: placeholder or project-local axiom found in verified tier"; exit 1
+echo "== Placeholder scan (ParisiFormula) =="
+if grep -rnE '(^|[^[:alnum:]_])(sorry|admit)([^[:alnum:]_]|$)|^[[:space:]]*axiom[[:space:]]' --include='*.lean' ParisiFormula; then
+  echo "FAIL: placeholder or project-local axiom found in ParisiFormula/"
+  exit 1
+else
+  scan_status=$?
+  if [ "$scan_status" -ne 1 ]; then
+    exit "$scan_status"
+  fi
 fi
 echo "OK: no sorry/admit/axiom in ParisiFormula/"
 
-echo "== Remaining sorries in Targets =="
-grep -cn "sorry" Targets/Milestones.lean || true
+echo "== Remaining explicit proof placeholders in Targets (not comment mentions) =="
+if grep -rnE '^[[:space:]]*(sorry|admit)([[:space:]]|$)' --include='*.lean' Targets; then
+  echo "These targets remain open; GuerraAudit separately checks completed results."
+else
+  scan_status=$?
+  if [ "$scan_status" -ne 1 ]; then
+    exit "$scan_status"
+  fi
+  echo "No standalone sorry/admit lines found."
+fi

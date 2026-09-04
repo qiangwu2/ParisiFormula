@@ -21,33 +21,41 @@ verify that Theorem 2.1 and the upper bounds have no placeholder dependencies.
 **Milestone 1 (Targets 1b, 1c) is *not* on this critical path.**  Target 4 is strictly
 stronger than 1c — convergence to `parisiValue` subsumes existence of a limit — and deriving
 4 from 3' plus the lower bound never invokes 1c.  Milestone 1 is the classical
-Guerra–Toninelli (2002) result and a useful warm-up that exercises the same interpolation +
-Gaussian-IBP machinery Milestone 3 needs, but work there should not be mistaken for progress
-toward Target 4.  (Caveat: Talagrand's own exposition sometimes uses existence of the limit
-as a convenience; if the Milestone 4 blueprint turns out to need it, 1c moves onto the path.)
+Guerra–Toninelli (2002) result and exercises related interpolation and Gaussian-IBP
+machinery, but work there should not be mistaken for completing Theorem 2.2. The current
+deduction of `parisi_formula` does not use the separate thermodynamic-limit target.
 
-Infrastructure that serves *both* (and so is never wasted): the generalisation of
-`isGaussianHilbert_UV` to independent `IsGaussianHilbert` vectors, needed for Gaussian IBP in
-Milestone 3 as well as in Target 1b.
+The completed Theorem 2.1 uses the local coordinate Stein lemmas and finite cascade
+modules. The older Gaussian-triple packaging plan below belongs to Target 1b, not to the
+current lower-bound task.
 
-Concrete, ordered work items. Each maps to a statement in `Targets/Milestones.lean` and a
-numbered result in `blueprint/blueprint.tex`. Items are sized roughly
-(S = hours, M = days, L = weeks, XL = months).
+The phases below retain development history as well as current status. Main statements
+live in `Targets/Milestones.lean` and `Targets/Talagrand.lean`; the current file map is in
+`README.md`. Historical effort estimates are rough (S = hours, M = days, L = weeks,
+XL = months), not promises for the remaining proof.
 
 ## Phase 0 — make the skeleton build  (S–M)  — **done**
 
-- [x] `lake exe cache get && lake build` succeeds (Tier 1). Unchanged code, as expected.
-- [x] `lake build ParisiFormula` succeeds (Tier 2). Three repairs were needed after all
+- [x] `lake build` succeeds for the default local library, `ParisiFormula`, and its
+      dependencies. `lake exe cache get` supplies the prebuilt Mathlib cache.
+- [x] `lake build ParisiFormula` succeeds. Three repairs were needed after all
       (`Fin.addCases_castAdd_natAdd` is now pointwise; two `simpa`s that no longer close
       their goals). See `docs/PROVENANCE.md`.
-- [x] `lake build Targets` elaborates (Tier 3), with only `sorry` warnings.
-- [x] CI green on GitHub (`.github/workflows/build.yml`).
+- [x] `lake build Targets` succeeds, including `Targets.GuerraAudit`; four explicit
+      proof placeholders remain, with warnings rather than build errors.
+- [x] CI (`.github/workflows/build.yml`) is configured to require both library builds;
+      target/audit failures are no longer tolerated. `bash scripts/check.sh` does the
+      same locally and reports remaining proof holes.
 
-Note that Tier 3 elaborating means the *statements* are well-formed, not that they are the
-right statements: `parisiFunctional` typechecked both before and after an off-by-one in the
-`parisiF` index was corrected. Only Target 2a can catch that class of mistake — do it early.
+Elaboration alone does not validate the intended mathematical statement:
+`parisiFunctional` typechecked both before and after an off-by-one in the `parisiF` index
+was corrected. The now-proved Target 2a checks the RS normalization; axiom guards check
+proof dependencies, not whether a specification matches the paper.
 
 ## Phase 1 — Milestone 1: the thermodynamic limit  (M–L)
+
+This is an off-path, unfinished development. Its older implementation plan is retained
+for reference; it is not the next step for the Parisi formula.
 
 - [x] Make `cov_deriv_diag` and `cov_deriv_offdiag_nonpos` in
       `ParisiFormula/GuerraToninelli.lean` non-`private` (they are needed by 1b).
@@ -66,7 +74,8 @@ right statements: `parisiFunctional` typechecked both before and after an off-by
         `Lemmas/SpinGlass/Replicas.lean`); (M)
   - [ ] Gaussian IBP rewrite of `Φ'` (`port/GuerraIBP.lean` is *not* adaptable — fork
         mismatch, see `port/README.md`); (M, but see the blocker below)
-  - [ ] **BLOCKER, newly identified:** `IsGaussianHilbert (K_block …)`.  The IBP lemma needs
+  - [ ] **Historical Gaussian-packaging obstacle; alternative not yet assembled.**
+        The original plan requested `IsGaussianHilbert (K_block …)`. The IBP lemma needs
         `(skL.U, K_block)` packaged as one Gaussian-Hilbert vector (RSAT has `UV` /
         `isGaussianHilbert_UV` for an independent *pair*, which is what `IndepTriple` is for),
         and that first needs `K_block` itself to be `IsGaussianHilbert`.  It is never shown
@@ -92,7 +101,7 @@ right statements: `parisiFunctional` typechecked both before and after an off-by
 - [ ] **1c** `free_entropy_tendsto`: plug 1a, 1b into `free_entropy_tendsto_of_bddAbove`. (S)
 - [ ] Remove the `hmono`/`hbdd` hypotheses from the ported file's final theorems.
 
-**Deliverable:** first unconditional theorem of the project; announce on Zulip.
+**Optional deliverable:** a standalone Guerra–Toninelli proof of limit existence.
 
 ## Phase 2 — Milestone 2: the Parisi functional  (M–L)
 
@@ -123,18 +132,15 @@ right statements: `parisiFunctional` typechecked both before and after an off-by
       the two integrability side conditions.  `Targets.parisiF_props` packages these with
       measurability and 1-Lipschitzness as a simultaneous induction over levels.
 
-- [ ] **BLOCKER for the variance-change assembly: `Parisi.T_add` is unusable as ported.**
+- [x] **Resolved: extend the bounded-function semigroup law to linear growth.**
       It assumes `HasUniformBound A := ∃ C, ∀ x, |A x| ≤ C`, but the Parisi recursion is
       *not* uniformly bounded — its base `log cosh y` grows like `|y|`, and every level
       inherits linear growth, not boundedness.  So the semigroup law, which is the natural
       route for factoring a change of `q_p` as an extra smoothing step
       (`T_{m,v'} = T_{m,v} ∘ T_{m,v'-v}`), does not apply.
-      **Fix:** re-prove `T_add` under `HasLinearGrowth` instead.  The proof structure
-      (Gaussian convolution + Fubini) should carry; the two appeals to
-      `integrable_exp_mul_of_measurable_of_hasUniformBound` become
-      `integrable_exp_mul_of_hasLinearGrowth`, and the Fubini step needs product-measure
-      integrability, which follows from `exp (a|p₁ + p₂|) ≤ exp(a|p₁|) exp(a|p₂|)` and
-      `integrable_exp_abs_mul_stdGaussian` on each factor.  (M)
+      **Done:** `Parisi.T_add_of_hasLinearGrowth` in
+      `ParisiFormula/ParisiOperatorGrowth.lean`, using Gaussian convolution, Fubini,
+      and exponential integrability on the product measure.
 - [x] **2b-i** Continuity in `(m,q)` at fixed `k`, compactness, and existence of a
       minimiser — Talagrand's (2.17).  **DONE**, `sorry`-free
       (`Targets.exists_minimizer_parisiFunctional`).  This is the regularity the Annals proof
@@ -142,14 +148,13 @@ right statements: `parisiFunctional` typechecked both before and after an off-by
 - [ ] **2b-ii** The uniform-in-`k` Lipschitz bound (`parisiFunctional_lipschitz`). (L) —
       Guerra's route, needed only to extend `𝒫` to general measures on `[0,1]`, which
       Talagrand explicitly avoids.  **Off the critical path.**  No longer blocked either: the
-      note below records a derivative-free argument giving `0 ≤ ψ'(m) ≤ 2v` for all `β`.
+      note below records a proposed convexity-and-concentration argument giving
+      `0 ≤ ψ'(m) ≤ 2v` for all `β`.
       It previously read `∀ k, ∃ C, ∀ s s'`, allowing the constant to depend on `k`, which
       cannot control `parisiValue = inf_k inf_{(m,q)} 𝒫_k`: nothing survives the infimum over
-      all `k` unless `C` is uniform in `k`.  `∃ C` is now hoisted outside `∀ k`.  Under the
-      Talagrand route this target is **load-bearing** (the induction on RSB levels needs
-      regularity of `𝒫_k` in the parameters), not optional.
-      The `ℓ¹` form of the right-hand side should still be checked against Talagrand when the
-      Milestone 4 blueprint is written; the uniformity in `k` is not negotiable.
+      all `k` unless `C` is uniform in `k`. `∃ C` is now hoisted outside `∀ k` in this
+      legacy target. It is **not used** by the current Talagrand deduction: fixed-`k`
+      continuity and existence of a minimizer (2b-i) supply the required regularity.
       Proof route (partly built): `parisiStep` is non-expansive in the sup-norm of its
       argument (`Targets.parisiStep_dist_le`, uniformly in `m`), which propagates a parameter
       perturbation through the backward recursion level by level; a change of `q_p` is
@@ -157,7 +162,7 @@ right statements: `parisiFunctional` typechecked both before and after an off-by
       (`Parisi.T_add_of_hasLinearGrowth`) and bounded by
       `Targets.abs_parisiStep_sub_self_le`.
 
-      **Open question about the statement — the modulus in `q` may be wrong.**
+      **Historical obstacle, resolved by second-derivative control below.**
       `abs_parisiStep_sub_self_le` gives
       `|T_{m,w} A - A| ≤ L √w 𝔼|Z| + |m| L² w / 2`, whose leading term is **`√w`**, not `w`.
       Chained over levels that yields a **1/2-Hölder** modulus in `q`, not the Lipschitz
@@ -168,11 +173,11 @@ right statements: `parisiFunctional` typechecked both before and after an off-by
       Lipschitz-in-`q` requires the first-order term to vanish and **second-derivative**
       control: `∫ A (x + √w z) dγ - A x = (w/2) A''(x) + O(w²)` for `A ∈ C²` with bounded
       `A''`.  The levels `F_p` *are* smooth (they are Gaussian smoothings), so this is
-      available in principle, but it needs a bound on `F_p''` propagated through the
+      available, but it needs a bound on `F_p''` propagated through the
       recursion as an extra invariant alongside
-      `Targets.parisiF_props` — which has not been built.
+      `Targets.parisiF_props`.
 
-      **Decision taken: (ii), keep Talagrand's Lipschitz form.**  The second-derivative
+      **Decision taken: retain the legacy Lipschitz target off-path.** The second-derivative
       invariant is now built and verified — see `ParisiFormula/GaussianCosh.lean` §§9–15:
       `HasParisiC2` (`0 ≤ A'' ≤ 1 - (A')²`), preserved by the smoothing step
       (`Targets.hasParisiC2_parisiStep`), giving `|A''| ≤ 1` uniformly in the level and in
@@ -318,9 +323,9 @@ exponential moments (`GTFrame.ExpMoments`).
    `ℝ × ℝ` with a distinguished λ, while `parisiF` is one-dimensional with parameters
    `(m,q)`.  So this is an **instantiation/adaptation job**, not new mathematics.
 
-**Recommended plan for 2b:** restate it as joint continuity (and then Lipschitz) in the
-scheme parameters, and instantiate RSAT's `GoodFam` / `step0_good` / `stepM_good` rather than
-carrying our own hand-rolled invariant.  (M, and mostly bookkeeping.)
+**Outcome for 2b-i:** joint continuity and the fixed-level minimizer are now proved in
+`Targets/Milestones.lean`. The preceding framework comparison records the investigation,
+not a pending prerequisite. The separate uniform Lipschitz target remains off-path.
 
 ### Historical checkpoint before completion of Theorem 2.1 (2026-09-04)
 
@@ -355,7 +360,7 @@ i.e. differentiating under the expectation and identifying the derivative by Gau
 integration by parts.  Mathlib has no Gaussian comparison theorem (no Slepian, no
 Sudakov–Fernique, no interpolation formula), so this cannot be short-circuited.
 
-**Recommended order.**  Prove the engine in the *simpler* of its two settings first —
+**Recommended order at that checkpoint (superseded).** Prove the engine in the *simpler* of its two settings first —
 Target 1b, where the interpolation is between two fields on the same space and no cascade is
 involved — then reuse it for Target 3, where the comparison field is the RSB cascade.  1b
 also closes Milestone 1: 1c is explicitly "assembles 1a and 1b with the already-formalised
@@ -523,28 +528,27 @@ and it prunes a large branch of prerequisites — we do **not** need any of:
 * Ruelle probability cascades / Poisson–Dirichlet,
 * the Aizenman–Sims–Starr scheme.
 
-What Talagrand's route *does* require, on top of Milestone 3:
+The next task is the proof of `talagrand_theorem_2_2` in `Targets/Talagrand.lean`,
+following Proposition 2.3 and the coupled-replica estimates of §3–§5. The current
+statement asks for convergence `φ_N(t) → ψ(t)` on `0 ≤ t ≤ t₀ < 1` for schemes that
+are sufficiently close to `parisiValue` and minimize at their own fixed level.
+The deduction from this theorem and Theorem 2.1 to `parisi_formula` is already written.
 
-* the overlap-constrained two-replica partition function
-  `Z_N(u) = ∑_{R(σ¹,σ²)=u} exp(-H(σ¹)-H(σ²))`;
-* the Guerra–Talagrand interpolation for that coupled system, with a Lagrange multiplier
-  conjugate to the constraint;
-* induction on the number of RSB levels `k`, using **convexity/regularity of the `k`-step
-  functional in the coupling parameter**;
-* Gaussian concentration of the free energy — **already available**, as
-  `gaussian_lipschitz_concentration` in `Lemmas/SpinGlass/gaussian_concentration.lean`.
+Supporting results available through the **active RSAT dependency** include:
 
-**Consequence for sequencing:** Target 2b (Lipschitz continuity of `parisiFunctional` in the
-scheme) is *load-bearing* for this route, not a nice-to-have, because the induction needs
-regularity in the parameters.  Its statement in `Targets/Milestones.lean` is currently
-marked provisional and should be pinned down before Phase 4 starts.
+* `SpinGlass.AT.twoReplica_GT_bound` in `Lemmas/GuerraTalagrand/Bound.lean`;
+* `SYK.gaussian_lipschitz_concentration` in
+  `Lemmas/SpinGlass/gaussian_concentration.lean`;
+* the parameter-continuity framework under `Lemmas/AT/`.
 
-Note: the starting point named below is **not in this repository** — `grep` finds no
-`SpinGlass.AT.twoReplica_GT_bound`; it exists in RSAT upstream and would have to be vendored
-(and reconciled with the fork mismatch described in `port/README.md`).
+These are supporting ingredients, not an existing proof of the local Theorem 2.2.
+Their physical files are under `.lake/packages/QuantitativeStrictAT/RSAT/`; no new
+vendoring or mixing of the two historical forks is needed to import them.
 
-Blueprint chapter still to be written after Phase 3.  Prior starting point: RSAT's
-`SpinGlass.AT.twoReplica_GT_bound` (the RS-level coupled-replica bound).
+Fixed-`k` continuity and existence of a minimizer (Target 2b-i) are already proved.
+The uniform-in-`k` Lipschitz placeholder (2b-ii) is **not** a prerequisite of the
+current final deduction. Keep the lower-bound work focused on the Annals argument,
+not on this legacy target or the separate Guerra–Toninelli limit proof.
 
 ## Correctness of the goal statement — **fixed**
 
@@ -561,5 +565,7 @@ Blueprint chapter still to be written after Phase 3.  Prior starting point: RSAT
 - [ ] Set up `leanblueprint` so `blueprint/blueprint.tex` renders as a website with the
       dependency graph.
 - [ ] Consider upstreaming the Gaussian IBP lemmas to Mathlib (general-purpose).
-- [ ] Decide whether to keep the `Lemmas.SpinGlass` module names (zero-diff vendoring)
-      or rename to `ParisiFormula.Core.*` (cleaner, but touches every import).
+- [x] Document the two local libraries and the active RSAT dependency; retain the
+      historical `Lemmas/` and `port/` copies without adding duplicate build targets.
+- [ ] Keep `README.md`, this roadmap, the blueprint, and dependency provenance aligned
+      with future proof milestones and manifest changes.

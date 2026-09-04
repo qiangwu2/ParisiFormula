@@ -8,18 +8,19 @@ import Lemmas.SmartPath.Interpolation
 import Mathlib.Probability.Distributions.Gaussian.Real
 
 /-!
-# Target statements for the ParisiFormula project
+# The finite-step Parisi functional and supporting milestones
 
-This file states, with `sorry`, the theorems the project aims to prove.  It is the
-Lean-side counterpart of `blueprint/blueprint.tex`.  Nothing here is proved; the
-point is to pin down *exact statements* against the vendored API so that every
-milestone has a precise, machine-checkable finish line.
+This file contains the Parisi recursion, its fixed-level parameter continuity and
+minimizer, the replica-symmetric case, and the well-definedness of `parisiValue`.
+These are proved. Three legacy targets remain open: `Φ_monotoneOn`,
+`free_entropy_tendsto`, and `parisiFunctional_lipschitz`; none is used by the current
+final deduction in `Targets/Talagrand.lean`.
 
-This file is built by `lake build Targets`, never by the default build, because it
-contains `sorry` on purpose (and, being written before the project had a working
-Lean environment, may need small syntactic repairs).
+The completed SK Theorem 2.1, the still-open Theorem 2.2, and the deduction of the
+Parisi formula are in `Targets/Talagrand.lean`. `lake build Targets` builds both files
+and the axiom guards in `Targets/GuerraAudit.lean`; elaboration errors are not allowed.
 
-## Conventions (inherited from the vendored core, `Lemmas/SpinGlass/`)
+## Conventions (inherited from the RSAT dependency's `Lemmas.SpinGlass` modules)
 
 * A configuration on `N` spins is `Config N := Fin N → Bool`, with `spin N σ i ∈ {±1}`.
 * An SK disorder `sk : SKDisorder N β h` is a centred Gaussian random vector
@@ -118,8 +119,9 @@ of non-decreasing sequences
   `0 = m₀ ≤ m₁ ≤ ⋯ ≤ m_k ≤ m_{k+1} = 1`,   `0 = q₀ ≤ q₁ ≤ ⋯ ≤ q_{k+1} ≤ q_{k+2} = 1`.
 
 The functional is defined by a *finite backward recursion* through the Gaussian smoothing
-operator `T_{m,v}`, so no Parisi PDE is needed.  (The vendored file `port/ParisiOperator.lean`
-contains an upstream formalisation of `T_{m,v}` and its semigroup law, awaiting port.)
+operator `T_{m,v}`, so no Parisi PDE is needed. The compiled port
+`ParisiFormula/ParisiOperator.lean` provides the bounded-function semigroup law;
+`ParisiFormula/ParisiOperatorGrowth.lean` extends it to linear growth.
 -/
 
 /-- A `k`-step RSB scheme.  Sequences are indexed by `ℕ` (values beyond the stated range are
@@ -1789,14 +1791,15 @@ otherwise nothing survives the infimum over all `k`.  So `∃ C` is now hoisted 
 `∀ k`.  (`0 ≤ C` is added for convenience downstream; it costs nothing, since any witness
 can be replaced by its absolute value.)
 
-This is what lets one pass from discrete to general Parisi measures, and — under the
-Talagrand (2006) route fixed in `docs/ROADMAP.md` — it is **load-bearing** rather than
-optional: the induction on the number of RSB levels needs regularity of `𝒫_k` in the
-parameters.
+This is a legacy target for uniform control and passage from discrete to general
+Parisi measures. It is not a hypothesis of the current `parisi_formula` deduction:
+that deduction uses the proved fixed-`k` continuity and minimizer, together with
+Theorems 2.1 and 2.2. Do not confuse this open uniform estimate with the completed
+`continuousOn_parisiFunctionalRaw`.
 
-The precise form of the right-hand side (the `ℓ¹` distance between the two schemes) should
-still be confirmed against Talagrand when the Milestone 4 blueprint chapter is written; what
-is *not* negotiable is the uniformity in `k`. -/
+This retained target is not a claim that the Annals proof uses this particular `ℓ¹`
+estimate. Any future work on it should audit its intended purpose separately from
+the current Theorem 2.2 task. -/
 theorem parisiFunctional_lipschitz (β h : ℝ) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ (k : ℕ) (s s' : RSBScheme k),
       |parisiFunctional s β h - parisiFunctional s' β h|

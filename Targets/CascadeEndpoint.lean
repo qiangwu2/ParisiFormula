@@ -6,9 +6,10 @@ New work for the ParisiFormula project (not vendored).
 ## What this file is for
 
 Target 3 (Guerra's bound) for a `k`-step scheme interpolates between the SK Hamiltonian and
-a comparison field organised along a `(k+2)`-level cascade.  The `k = 0` case is settled
-(`Targets.guerra_rs_bound`, using RSAT's smart path against a single Gaussian).  For general
-`k` two things are needed: the endpoint evaluation at `t = 0`, and the sign of `φ'(t)`.
+a comparison field organised along a `(k+2)`-level cascade. The general finite-`k` bound
+is now proved in `Targets/Talagrand.lean`, using the endpoint evaluation here and the
+assembled Theorem 2.1 identity. The earlier `k = 0` result (`Targets.guerra_rs_bound`)
+uses RSAT's smart path against a single Gaussian.
 
 **This file does the endpoint.**  The point is that at `t = 0` the comparison Hamiltonian is
 

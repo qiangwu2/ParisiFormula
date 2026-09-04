@@ -9,8 +9,7 @@ on:
 # Those are visible to anyone on the public run page, without downloading logs.
 
 jobs:
-  # Tier 2 must always build and must contain no `sorry`.
-  # (Tier 1 is now the RSAT dependency, verified upstream.)
+  # The supporting library must build and contain no source placeholders.
   verified:
     runs-on: ubuntu-latest
     steps:
@@ -20,16 +19,17 @@ jobs:
           build: false
           use-mathlib-cache: true
           use-github-cache: true
-      - name: Build Tier 1-2 and report Lean errors
+      - name: Build ParisiFormula and report Lean errors
         shell: bash
         run: |
           set +e
           lake build ParisiFormula 2>&1 | tee build.log
           status=${PIPESTATUS[0]}
-          python3 - build.log "Tier 2 (ParisiFormula)" <<'PYEOF'
+          python3 - build.log "ParisiFormula" "$status" <<'PYEOF'
           import re, sys, os
           log = open(sys.argv[1], errors="replace").read().splitlines()
           title = sys.argv[2]
+          status = int(sys.argv[3])
           pat = re.compile(r"^error: ([^:\s]+\.lean):(\d+):(\d+): (.*)$")
           stop = ("error:", "warning:", "info:", "✔", "✖", "⚠", "Build completed", "Some required")
           errs, i = [], 0
@@ -42,7 +42,7 @@ jobs:
                   errs.append((m.group(1), m.group(2), m.group(3), block)); i = j
               else:
                   i += 1
-          out = [f"## {title}: {'FAILED' if errs else 'OK'} - {len(errs)} Lean error(s)", ""]
+          out = [f"## {title}: {'FAILED' if status else 'OK'} - {len(errs)} Lean error(s)", ""]
           for f, l, c, b in errs[:30]:
               out += [f"### `{f}:{l}:{c}`", "```"] + b + ["```", ""]
           summ = os.environ.get("GITHUB_STEP_SUMMARY")
@@ -53,19 +53,24 @@ jobs:
               print(f"::error file={f},line={l},col={c}::{msg}")
           PYEOF
           exit $status
-      - name: Reject sorry / admit / axiom in Tier 2
+      - name: Reject sorry / admit / axiom in ParisiFormula
         # `always()`: run the placeholder scan even when the build step failed, so a red
-        # build never hides a `sorry` that slipped into a verified tier.
+        # build never hides a `sorry` that slipped into the supporting library.
         if: always()
         run: |
-          if grep -rnE "\bsorry\b|\badmit\b|^axiom " --include='*.lean' ParisiFormula; then
-            echo "::error::placeholder or project-local axiom found in verified tiers"; exit 1
+          if grep -rnE '(^|[^[:alnum:]_])(sorry|admit)([^[:alnum:]_]|$)|^[[:space:]]*axiom[[:space:]]' --include='*.lean' ParisiFormula; then
+            echo "::error::placeholder or project-local axiom found in ParisiFormula/"
+            exit 1
+          else
+            scan_status=$?
+            if [ "$scan_status" -ne 1 ]; then
+              exit "$scan_status"
+            fi
           fi
 
-  # Tier 3 is allowed to contain `sorry` and, early on, allowed to fail.
+  # Open targets may warn about `sorry`, but build/axiom-audit failures must fail CI.
   targets:
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: leanprover/lean-action@v1
@@ -73,16 +78,17 @@ jobs:
           build: false
           use-mathlib-cache: true
           use-github-cache: true
-      - name: Build Tier 3 and report Lean errors
+      - name: Build Targets and axiom guards and report Lean errors
         shell: bash
         run: |
           set +e
           lake build Targets 2>&1 | tee build.log
           status=${PIPESTATUS[0]}
-          python3 - build.log "Tier 3 (Targets)" <<'PYEOF'
+          python3 - build.log "Targets (including GuerraAudit)" "$status" <<'PYEOF'
           import re, sys, os
           log = open(sys.argv[1], errors="replace").read().splitlines()
           title = sys.argv[2]
+          status = int(sys.argv[3])
           pat = re.compile(r"^error: ([^:\s]+\.lean):(\d+):(\d+): (.*)$")
           stop = ("error:", "warning:", "info:", "✔", "✖", "⚠", "Build completed", "Some required")
           errs, i = [], 0
@@ -95,7 +101,7 @@ jobs:
                   errs.append((m.group(1), m.group(2), m.group(3), block)); i = j
               else:
                   i += 1
-          out = [f"## {title}: {'FAILED' if errs else 'OK'} - {len(errs)} Lean error(s)", ""]
+          out = [f"## {title}: {'FAILED' if status else 'OK'} - {len(errs)} Lean error(s)", ""]
           for f, l, c, b in errs[:30]:
               out += [f"### `{f}:{l}:{c}`", "```"] + b + ["```", ""]
           summ = os.environ.get("GITHUB_STEP_SUMMARY")

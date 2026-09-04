@@ -16,11 +16,14 @@ The argument has three parts:
 3. **sign** — `covDiff_hessian_sum_nonneg` below.
 
 Parts 1 and 3 are proved here.  Part 2 is what remains.
+This is the separate, off-path Guerra–Toninelli target. The SK RSB interpolation
+identity (Theorem 2.1) is already proved in `Targets/Talagrand.lean` using the local
+Stein and cascade modules; the missing assembly here does not affect that result.
 
 ## Note on the `port/` files
 
 `port/GuerraInterpolation.lean` etc. are *not* a source for step 2: they were cut from
-or4nge19/SpinGlass, whereas `Lemmas/SpinGlass/` is vendored from the RSAT fork, and they use
+or4nge19/SpinGlass, whereas active `Lemmas.*` imports come from the RSAT dependency, and they use
 or4nge19 API (`FiniteGibbs`, `SKDisorder.measU`, `disorderPair`, …) that RSAT never
 vendored.  They also interpolate a *different* path (`H_t`: SK against a `SimpleDisorder`
 reference at a single size `N`), not `K_interpol` (size `N+M` against `N ⊕ M`).
@@ -253,7 +256,7 @@ Only step 2, in two halves:
   `PhysLean.Probability.GaussianIBP.gaussian_integration_by_parts_hilbert_cov_op`
   together with `SpinGlass.trace_formula`.
 
-  **Obstacle (not recorded in the roadmap).**  That IBP lemma needs the *pair*
+  **Historical obstacle (also recorded in the roadmap).** That IBP lemma needs the *pair*
   `(skL.U, K_block)` packaged as one `IsGaussianHilbert` vector — RSAT does this for a pair
   of independent Gaussian-Hilbert vectors in `Lemmas/SpinGlass/Replicas.lean`
   (`UV`, `isGaussianHilbert_UV`), which is what Target 1b's `IndepTriple` hypothesis is for.

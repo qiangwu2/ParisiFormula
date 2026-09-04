@@ -18,7 +18,8 @@ Two reasons this is better than the vendoring it replaces:
   available — `Lemmas.AT.PsiContinuity` (continuity of the Guerra–Talagrand functional in
   its parameters), `Lemmas.GuerraTalagrand.Bound.*` (the GT bound, including the coupled
   two-field form), `Lemmas.Cavity.TalagrandCavity`, `Lemmas.Concentration.*` — which is
-  where the machinery for Milestones 3 and 4 already lives, fully proved.
+  where supporting interpolation and concentration results live. These do not replace
+  the still-open local Theorem 2.2 in `Targets/Talagrand.lean`.
 
 The narrowness of the original vendoring is also what made `port/` unusable: those files
 were cut from a *different* fork (`or4nge19/SpinGlass`) and referenced API that the
@@ -28,8 +29,11 @@ eight-file slice did not include.  See `port/README.md`.
 
 ## Build targets
 
-* `ParisiFormula` (default): our own work.
-* `Targets`: statements of the theorems we are aiming for; contains `sorry` by design.
+* `ParisiFormula` (default): the local supporting library, without source placeholders.
+* `Targets`: the finite-step functional and cascade proofs, the completed SK Theorem 2.1,
+  and four remaining placeholders (Theorem 2.2 plus three off-path legacy lemmas).
+  This target also builds `Targets.GuerraAudit`, which guards the completed results
+  against placeholder or additional-axiom dependencies. Both libraries must build.
 -/
 
 package ParisiFormula where
@@ -41,11 +45,11 @@ require mathlib from git
 require QuantitativeStrictAT from git
   "https://github.com/njimaMath/research_public.git" @ "main" / "RSAT"
 
-/-- Tier 2: new work for this project. -/
+/-- Supporting library: local proofs and adapted upstream results. -/
 @[default_target]
 lean_lib ParisiFormula where
   globs := #[.submodules `ParisiFormula]
 
-/-- Tier 3: target statements (contain `sorry` on purpose). -/
+/-- Cascade proofs, remaining targets, and completed-theorem axiom audits. -/
 lean_lib Targets where
   globs := #[.submodules `Targets]
