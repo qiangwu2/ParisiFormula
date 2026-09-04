@@ -948,6 +948,96 @@ theorem parisiFunctional_rsScheme (β h q : ℝ) (hq0 : 0 ≤ q) (hq1 : q ≤ 1)
   rw [parisiFunctional, hF0, hsum, hrefl]
   ring
 
+/-! ### The `m = 0` boundary of the smoothing operator
+
+`parisiStep` branches at `m = 0`, and Talagrand's admissible sequences (1.6) *allow*
+`m_0 = 0` — indeed he notes that equality in (1.6)–(1.7) is exactly what makes the
+compactness argument behind (2.17) work.  So the two branches must be reconciled
+quantitatively before anything can be said about `𝒫_k` as a function of its parameters.
+
+`parisiStep_zero_sandwich` does that: the `m`-branch sits above the `0`-branch (Jensen) and
+overshoots it by at most `m·v/2` (Herbst).  Two features matter downstream:
+
+* the estimate is **uniform in `x`** — the constant involves only the Lipschitz constant of
+  `A` and the variance `v`, never `sup |A|` (which is infinite for `log cosh`); and
+* it is **linear in `m`**, not `√m`, so it survives summation over the `k+2` levels of the
+  recursion with a constant independent of `k`.
+
+Both are consequences of using the sub-Gaussian form of the Herbst bound rather than the
+naive `𝔼[exp (a|Z|)] ≤ 2 exp (a²/2)`, whose `(log 2)/m` term blows up as `m → 0`.
+-/
+
+/--
+**The `m`-branch and the `0`-branch of `parisiStep` differ by at most `m·v/2`.**
+
+For `A` 1-Lipschitz of linear growth, `0 < m` and `0 ≤ v`:
+
+  `parisiStep 0 v A x ≤ parisiStep m v A x ≤ parisiStep 0 v A x + m·v/2`,
+
+uniformly in `x`.  The lower bound is Jensen's inequality, the upper bound is the Herbst
+sub-Gaussian estimate for the `√v`-Lipschitz function `z ↦ A (x + √v z)`.
+-/
+theorem parisiStep_zero_sandwich {A : ℝ → ℝ} {m v : ℝ}
+    (hm : 0 < m) (hv : 0 ≤ v)
+    (hLip : ∀ y y', |A y - A y'| ≤ |y - y'|)
+    (hA : HasLinearGrowth A) (hmeas : Measurable A) (x : ℝ) :
+    parisiStep 0 v A x ≤ parisiStep m v A x
+      ∧ parisiStep m v A x ≤ parisiStep 0 v A x + m * v / 2 := by
+  classical
+  -- the smoothed function, and the two branches written out
+  set f : ℝ → ℝ := fun z => A (x + Real.sqrt v * z) with hf
+  have hfmeas : Measurable f := hmeas.comp ((measurable_id.const_mul (Real.sqrt v)).const_add x)
+  have hfint : Integrable f (gaussianReal 0 1) := integrable_of_hasLinearGrowth hA hmeas x v
+  have hfexp : Integrable (fun z => Real.exp (m * f z)) (gaussianReal 0 1) :=
+    integrable_exp_mul_of_hasLinearGrowth hA hmeas m x v
+  have hzero : parisiStep 0 v A x = ∫ z, f z ∂(gaussianReal 0 1) := by
+    rw [parisiStep, if_pos rfl]
+  have hpos : parisiStep m v A x
+      = (1 / m) * Real.log (∫ z, Real.exp (m * f z) ∂(gaussianReal 0 1)) := by
+    rw [parisiStep, if_neg hm.ne']
+  rcases eq_or_lt_of_le hv with hv0 | hvpos
+  · -- degenerate variance: both branches equal `A x`
+    have hfconst : ∀ z : ℝ, f z = A x := by
+      intro z
+      rw [hf]
+      simp [← hv0]
+    have h0 : parisiStep 0 v A x = A x := by
+      rw [hzero]
+      rw [show (∫ z, f z ∂(gaussianReal 0 1)) = ∫ _z : ℝ, A x ∂(gaussianReal 0 1) from
+        integral_congr_ae (Filter.Eventually.of_forall hfconst)]
+      simp
+    have hm' : parisiStep m v A x = A x := by
+      rw [hpos]
+      rw [show (∫ z, Real.exp (m * f z) ∂(gaussianReal 0 1))
+            = ∫ _z : ℝ, Real.exp (m * A x) ∂(gaussianReal 0 1) from
+        integral_congr_ae (Filter.Eventually.of_forall (fun z => by
+          show Real.exp (m * f z) = Real.exp (m * A x)
+          rw [hfconst z]))]
+      rw [integral_const, probReal_univ, one_smul, Real.log_exp]
+      field_simp
+    rw [h0, hm', ← hv0]
+    constructor
+    · exact le_rfl
+    · simp
+  · -- non-degenerate: Jensen below, Herbst above
+    have hsq : Real.sqrt v > 0 := Real.sqrt_pos.2 hvpos
+    have hLipf : LipschitzWith (Real.sqrt v).toNNReal f := by
+      refine LipschitzWith.of_dist_le_mul (fun z z' => ?_)
+      rw [Real.dist_eq, Real.dist_eq, Real.coe_toNNReal _ (Real.sqrt_nonneg v)]
+      have h := hLip (x + Real.sqrt v * z) (x + Real.sqrt v * z')
+      rwa [show (x + Real.sqrt v * z) - (x + Real.sqrt v * z')
+            = Real.sqrt v * (z - z') by ring,
+        abs_mul, abs_of_nonneg (Real.sqrt_nonneg v)] at h
+    have hlow := SpinGlass.integral_le_inv_mul_log_integral_exp (f := f) hm hfint hfexp
+    have hhigh := SpinGlass.inv_mul_log_integral_exp_le (f := f) (L := Real.sqrt v)
+      hm hsq hLipf hfmeas hfexp
+    rw [Real.sq_sqrt hv] at hhigh
+    refine ⟨?_, ?_⟩
+    · rw [hzero, hpos]; exact hlow
+    · rw [hzero, hpos]
+      calc (1 / m) * Real.log (∫ z, Real.exp (m * f z) ∂(gaussianReal 0 1))
+          ≤ (∫ z, f z ∂(gaussianReal 0 1)) + m * v / 2 := hhigh
+
 /-- **Target 2b (Lipschitz continuity in the scheme).**  Guerra's estimate:
 
   `|𝒫_k(m,q) - 𝒫_k(m',q')| ≤ C(β,h) · ∑_p (|m_p - m'_p| + |q_p - q'_p|)`,
