@@ -277,5 +277,144 @@ theorem parisiFPi_top_eq_parisiFunctional {k : ℕ} (n : ℕ) (hn : 0 < n)
   field_simp
   ring
 
+
+/-! ## 6. Zero variance: the cascade collapses
+
+At the `t = 1` end of Guerra's interpolation every level has variance
+`(1-t)·β²(q_{p+1} - q_p) = 0`, so no smoothing happens at all and the whole `(k+2)`-fold
+cascade is the identity.  That is the mechanism behind the second endpoint evaluation, and
+it holds for either branch of `parisiStep`: for `m = 0` because the measure is a probability
+measure, and for `m ≠ 0` because `(1/m) log exp (m c) = c`.
+-/
+
+/-- A smoothing step with zero variance does nothing. -/
+@[simp] theorem parisiStep_zero_var (m : ℝ) (A : ℝ → ℝ) (x : ℝ) :
+    parisiStep m 0 A x = A x := by
+  by_cases hm : m = 0
+  · simp only [parisiStep, if_pos hm, Real.sqrt_zero, zero_mul, add_zero]
+    rw [integral_const, probReal_univ, one_smul]
+  · simp only [parisiStep, if_neg hm, Real.sqrt_zero, zero_mul, add_zero]
+    rw [integral_const, probReal_univ, one_smul, Real.log_exp]
+    field_simp
+
+/-- An `N`-site smoothing step with zero variance does nothing. -/
+@[simp] theorem parisiStepPi_zero_var {n : ℕ} (m : ℝ) (A : (Fin n → ℝ) → ℝ) (x : Fin n → ℝ) :
+    parisiStepPi n m 0 A x = A x := by
+  by_cases hm : m = 0
+  · simp only [parisiStepPi, if_pos hm, Real.sqrt_zero, zero_mul, add_zero]
+    rw [integral_const, probReal_univ, one_smul]
+  · simp only [parisiStepPi, if_neg hm, Real.sqrt_zero, zero_mul, add_zero]
+    rw [integral_const, probReal_univ, one_smul, Real.log_exp]
+    field_simp
+
+/-! ## 7. The interpolating cascade
+
+Guerra's interpolation carries two things that the `t = 0` cascade of §5 does not: an
+arbitrary *base* function (at `t > 0` the innermost level is `log ∑_σ exp (√t·U(σ) + …)`,
+which no longer factorises over sites once the SK field is present), and a *scale* on the
+variances, namely `1 - t`.
+
+`cascadeT` below is that general form.  Both endpoints are instances:
+
+* `scale = 1` with the factorised base recovers `parisiFPi` — the `t = 0` endpoint of §5;
+* `scale = 0` collapses to the base — the `t = 1` endpoint, `cascadeT_zero_scale`.
+
+Keeping the base abstract means this definition commits to no Hamiltonian sign convention.
+-/
+
+/--
+The interpolating cascade: `k+2` smoothing levels with the `parisiF` parameters, variances
+scaled by `scale`, over an arbitrary base function.
+-/
+noncomputable def cascadeT {k : ℕ} (n : ℕ) (s : RSBScheme k) (β scale : ℝ)
+    (base : (Fin n → ℝ) → ℝ) : ℕ → ((Fin n → ℝ) → ℝ)
+  | 0 => base
+  | j + 1 =>
+      parisiStepPi n (s.m (k + 1 - j))
+        (scale * (β ^ 2 * (s.q (k + 2 - j) - s.q (k + 1 - j))))
+        (cascadeT n s β scale base j)
+
+/-- **The `t = 1` endpoint.**  At zero scale every level has zero variance, so the cascade
+is the identity: `φ(1)` is just the base, i.e. the SK free energy. -/
+theorem cascadeT_zero_scale {k : ℕ} (n : ℕ) (s : RSBScheme k) (β : ℝ)
+    (base : (Fin n → ℝ) → ℝ) (j : ℕ) (y : Fin n → ℝ) :
+    cascadeT n s β 0 base j y = base y := by
+  induction j generalizing y with
+  | zero => rfl
+  | succ j ih =>
+      show parisiStepPi n (s.m (k + 1 - j))
+        (0 * (β ^ 2 * (s.q (k + 2 - j) - s.q (k + 1 - j))))
+        (cascadeT n s β 0 base j) y = base y
+      rw [zero_mul, parisiStepPi_zero_var]
+      exact ih y
+
+/-- **The `t = 0` endpoint.**  At unit scale over the factorised base, `cascadeT` is the
+cascade of §5, hence collapses to `N` copies of `parisiF`. -/
+theorem cascadeT_one_scale {k : ℕ} (n : ℕ) (s : RSBScheme k) (β : ℝ) (j : ℕ) (y : Fin n → ℝ) :
+    cascadeT n s β 1 (fun w => ∑ i, Real.log (2 * Real.cosh (w i))) j y
+      = ∑ i, (Real.log 2 + parisiF s β j (y i)) := by
+  rw [← parisiFPi_eq]
+  induction j generalizing y with
+  | zero => rfl
+  | succ j ih =>
+      show parisiStepPi n (s.m (k + 1 - j))
+          (1 * (β ^ 2 * (s.q (k + 2 - j) - s.q (k + 1 - j))))
+          (cascadeT n s β 1 (fun w => ∑ i, Real.log (2 * Real.cosh (w i))) j) y
+        = parisiStepPi n (s.m (k + 1 - j))
+            (β ^ 2 * (s.q (k + 2 - j) - s.q (k + 1 - j))) (parisiFPi n s β j) y
+      rw [one_mul]
+      congr 1
+      funext w
+      exact ih w
+
+
+/-! ## 8. Constant base: the other route to the `t = 1` endpoint
+
+Guerra's interpolation can be set up either by scaling the *variances* by `1 - t` (§7) or by
+holding the variances fixed and scaling the Gaussian shift *inside the base*, i.e. taking
+
+  `base_t(y) = log ∑_σ exp (√t·U(σ) + ∑_i σ_i (√(1-t)·y_i + h))`.
+
+The second is more convenient for differentiating, since then `t` occurs in one place only.
+In that formulation the `t = 1` endpoint is a *constant* base — `base_1` does not depend on
+`y` at all, being `log Z_N` — and the cascade of a constant is that constant.
+-/
+
+/-- A smoothing step applied to a constant function returns it. -/
+@[simp] theorem parisiStep_const (m v c : ℝ) (x : ℝ) :
+    parisiStep m v (fun _ => c) x = c := by
+  by_cases hm : m = 0
+  · simp only [parisiStep, if_pos hm]
+    rw [integral_const, probReal_univ, one_smul]
+  · simp only [parisiStep, if_neg hm]
+    rw [integral_const, probReal_univ, one_smul, Real.log_exp]
+    field_simp
+
+/-- An `N`-site smoothing step applied to a constant function returns it. -/
+@[simp] theorem parisiStepPi_const {n : ℕ} (m v c : ℝ) (x : Fin n → ℝ) :
+    parisiStepPi n m v (fun _ => c) x = c := by
+  by_cases hm : m = 0
+  · simp only [parisiStepPi, if_pos hm]
+    rw [integral_const, probReal_univ, one_smul]
+  · simp only [parisiStepPi, if_neg hm]
+    rw [integral_const, probReal_univ, one_smul, Real.log_exp]
+    field_simp
+
+/-- **The `t = 1` endpoint, fixed-variance formulation.**  The cascade over a base that does
+not depend on the Gaussian coordinates is that base. -/
+theorem cascadeT_const {k : ℕ} (n : ℕ) (s : RSBScheme k) (β scale c : ℝ) (j : ℕ)
+    (y : Fin n → ℝ) :
+    cascadeT n s β scale (fun _ => c) j y = c := by
+  induction j generalizing y with
+  | zero => rfl
+  | succ j ih =>
+      show parisiStepPi n (s.m (k + 1 - j))
+        (scale * (β ^ 2 * (s.q (k + 2 - j) - s.q (k + 1 - j))))
+        (cascadeT n s β scale (fun _ => c) j) y = c
+      have hfun : cascadeT n s β scale (fun _ : Fin n → ℝ => c) j
+          = fun _ : Fin n → ℝ => c := by
+        funext w; exact ih w
+      rw [hfun, parisiStepPi_const]
+
 end Targets
 end SpinGlass
