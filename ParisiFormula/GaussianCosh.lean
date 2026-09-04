@@ -387,4 +387,88 @@ theorem abs_integral_shift_sub_le {A : ℝ → ℝ} {L : ℝ} (hL : 0 ≤ L)
     _ = L * Real.sqrt w * ∫ z, |z| ∂(gaussianReal 0 1) := integral_const_mul _ _
 
 
+/-! ## 9. The second-order invariant of the Parisi recursion
+
+Target 2b asks for a **Lipschitz** bound in `q` (Talagrand's actual statement, not a weaker
+Hölder one).  That needs the first-order term of the variance perturbation to vanish:
+
+  `∫ A (x + √w z) dγ - A x = (w/2) A''(x) + O(w²)`,
+
+which requires control of `A''`.  A *uniform* bound `|A''| ≤ M` is the obvious candidate and
+**it does not work**: differentiating the smoothing step gives
+
+  `(T_{m,v} A)'' = ⟨A''⟩ + m · Var_tilt(A')`,
+
+so `M` increases by `|m| L²` at every level and grows linearly in `k`, destroying the
+uniformity in `k` that Target 2b requires.
+
+The invariant that *is* preserved is the coupled one
+
+  `0 ≤ A'' ≤ 1 - (A')²`,
+
+because with `⟨·⟩` the tilted average,
+
+  `(T A)'' = ⟨A''⟩ + m Var(A') ≤ (1 - ⟨(A')²⟩) + m (⟨(A')²⟩ - ⟨A'⟩²)`
+           `= 1 - (T A)'² - (1 - m)·Var(A') ≤ 1 - (T A)'²`,
+
+using `Var ≥ 0` and — crucially — `m ≤ 1`, which every RSB scheme satisfies
+(`RSBScheme.m_le_one`).  In particular it gives `|A''| ≤ 1` uniformly in the level and in `k`.
+
+`log cosh` satisfies it with *equality*: `(log cosh)'' = 1/cosh² = 1 - tanh²`.
+-/
+
+/-- `A` is twice differentiable with derivatives `A'`, `A''` satisfying the coupled
+second-order bound `0 ≤ A'' ≤ 1 - (A')²` that the Parisi recursion preserves. -/
+def HasParisiC2 (A A' A'' : ℝ → ℝ) : Prop :=
+  (∀ x, HasDerivAt A (A' x) x) ∧ (∀ x, HasDerivAt A' (A'' x) x)
+    ∧ (∀ x, 0 ≤ A'' x) ∧ (∀ x, A'' x ≤ 1 - (A' x) ^ 2)
+
+/-- `log cosh` has derivative `tanh = sinh / cosh`. -/
+theorem hasDerivAt_log_cosh (x : ℝ) :
+    HasDerivAt (fun y : ℝ => Real.log (Real.cosh y)) (Real.sinh x / Real.cosh x) x :=
+  (Real.hasDerivAt_cosh x).log (ne_of_gt (Real.cosh_pos x))
+
+/-- `tanh` has derivative `1 - tanh²`. -/
+theorem hasDerivAt_sinh_div_cosh (x : ℝ) :
+    HasDerivAt (fun y : ℝ => Real.sinh y / Real.cosh y)
+      (1 - (Real.sinh x / Real.cosh x) ^ 2) x := by
+  have hc : Real.cosh x ≠ 0 := ne_of_gt (Real.cosh_pos x)
+  have h := (Real.hasDerivAt_sinh x).div (Real.hasDerivAt_cosh x) hc
+  have hid : (Real.cosh x * Real.cosh x - Real.sinh x * Real.sinh x) / Real.cosh x ^ 2
+      = 1 - (Real.sinh x / Real.cosh x) ^ 2 := by
+    have hpyth : Real.cosh x ^ 2 - Real.sinh x ^ 2 = 1 := Real.cosh_sq_sub_sinh_sq x
+    field_simp
+    nlinarith [hpyth]
+  rwa [hid] at h
+
+/-- **The base of the Parisi recursion satisfies the second-order invariant**, with
+equality: `(log cosh)'' = 1 - (log cosh)'²`. -/
+theorem hasParisiC2_log_cosh :
+    HasParisiC2 (fun y : ℝ => Real.log (Real.cosh y))
+      (fun y : ℝ => Real.sinh y / Real.cosh y)
+      (fun y : ℝ => 1 - (Real.sinh y / Real.cosh y) ^ 2) := by
+  refine ⟨hasDerivAt_log_cosh, hasDerivAt_sinh_div_cosh, fun x => ?_, fun x => le_rfl⟩
+  have hpyth : Real.cosh x ^ 2 - Real.sinh x ^ 2 = 1 := Real.cosh_sq_sub_sinh_sq x
+  have hc : (0 : ℝ) < Real.cosh x := Real.cosh_pos x
+  have hsq : (Real.sinh x / Real.cosh x) ^ 2 = Real.sinh x ^ 2 / Real.cosh x ^ 2 := by
+    rw [div_pow]
+  rw [hsq, sub_nonneg, div_le_one (by positivity)]
+  linarith
+
+/-- The invariant bounds the second derivative by `1`, uniformly. -/
+theorem HasParisiC2.abs_second_le_one {A A' A'' : ℝ → ℝ} (h : HasParisiC2 A A' A'') (x : ℝ) :
+    |A'' x| ≤ 1 := by
+  obtain ⟨_, _, hnn, hle⟩ := h
+  rw [abs_of_nonneg (hnn x)]
+  nlinarith [hle x, sq_nonneg (A' x)]
+
+/-- The invariant also bounds the first derivative by `1` — so every level is 1-Lipschitz,
+consistently with `Targets.parisiF_lipschitz`. -/
+theorem HasParisiC2.abs_first_le_one {A A' A'' : ℝ → ℝ} (h : HasParisiC2 A A' A'') (x : ℝ) :
+    |A' x| ≤ 1 := by
+  obtain ⟨_, _, hnn, hle⟩ := h
+  have h1 : (A' x) ^ 2 ≤ 1 := by nlinarith [hnn x, hle x]
+  nlinarith [abs_nonneg (A' x), sq_abs (A' x), h1]
+
+
 end SpinGlass
