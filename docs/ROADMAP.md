@@ -375,7 +375,55 @@ the two coordinate families are independent of each other (`Replicas.lean` 107�
 expectation with a dominating bound; apply the IBP lemma and `trace_formula`; conclude from
 `covDiff_hessian_sum_nonneg` plus continuity on `Icc 0 1`.  Estimated 600–800 lines total.
 
-## Phase 3 — Milestone 3: Guerra's RSB bound  (L–XL)
+## Phase 3 — Milestone 3: Guerra's RSB bound
+
+### `k = 0` is DONE (2026-09-04)
+
+`Targets.guerra_rs_bound`, `sorry`-free:
+
+    interpolatedPressure N β h q sk sim 1 ≤ parisiFunctional (rsScheme q) β h
+
+the finite-volume SK pressure is at most the replica-symmetric Parisi functional, for every
+`N`, every `(β,h)` and every `q ∈ [0,1]`, with no `O(1/N)` error.
+
+It did **not** need the interpolation engine to be built: RSAT already has it for the
+single-Gaussian comparison field — `pressure_derivative` (differentiation of the pressure
+along the smart path), `pressure_derivative_ibp_trace` (Gaussian IBP), `endpoint_pressure`,
+assembled as `replica_symmetric_sum_rule`.  Combining that with our Target 2a
+(`parisiFunctional_rsScheme`) and `overlapVariance_nonneg` gives the bound in a few lines.
+The two closed forms match exactly (`rsPressure_eq_parisiFunctional`).
+
+*This supersedes the previous "the engine is missing" note for the `k = 0` case.*  The engine
+is still missing for the cascade, and for the Guerra–Toninelli path of Target 1b.
+
+### What remains: general `k` (the cascade)
+
+RSAT's comparison field is a *single* Gaussian (`SimpleDisorder`, covariance `Nβ²q·R`) — the
+`k = 0` cascade.  For `k ≥ 1` the comparison field is the `(k+2)`-level cascade and the free
+energy is computed through the iterated `(1/m_p) log 𝔼_p exp(m_p ·)`, i.e. through
+`parisiStep`.  A search confirms RSAT has **no** cascade/Ruelle machinery, so this must be
+built.  Two halves:
+
+1. **Endpoint (`t = 0`) — moderate.**  The comparison Hamiltonian is
+   `∑_i σ_i (∑_p z_p^i) + h ∑_i σ_i`, a sum over sites of independent terms, so the whole
+   `k+2`-fold recursion **factorises over sites**:
+
+       X_{k+1} = N log 2 + ∑_i log cosh (Y_i + h),   X_0 = N (log 2 + F_0(h)),
+
+   because `(1/m) log 𝔼 exp (m ∑_i f_i)` splits as `∑_i (1/m) log 𝔼 exp (m f_i)` for
+   independent `f_i`.  The one-dimensional recursion that survives *is* `parisiF`.  So this
+   half reduces to: the log-exp operator is additive on independent summands, plus an
+   induction over the `k+2` levels.  Estimated 300–500 lines; nothing here is deep.
+
+2. **Derivative (`φ'(t) ≤ 0`) — the large piece.**  Gaussian integration by parts applied
+   *through* the nested exponential averages, producing
+   `-(β²/4) ∑_p (m_{p+1} - m_p) 𝔼⟨(R_{1,2} - q_p)²⟩_t ≤ 0`.  This is where the tree Gibbs
+   measure appears and is the genuine infrastructure cost.  Estimated 1500–3000 lines.
+
+**Recommended next milestone:** half 1 (the endpoint factorisation).  It is bounded, uses
+`parisiStep`/`parisiF` as they already stand, and is required whatever route half 2 takes.
+
+
 
 **Blocker found (CI run 33823189093).**  The four `port/` Guerra files cannot be compiled
 against this project: they were cut from **or4nge19/SpinGlass** `d1342fd`, whereas
