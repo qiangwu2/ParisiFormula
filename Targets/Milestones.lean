@@ -3,6 +3,7 @@ import ParisiFormula.AnnealedBound
 import ParisiFormula.GaussianCosh
 import ParisiFormula.ParisiOperator
 import ParisiFormula.GaussianConcentration1D
+import ParisiFormula.GaussianExpCompare
 import Mathlib.Probability.Distributions.Gaussian.Real
 
 /-!
@@ -1269,6 +1270,145 @@ noncomputable def trivialScheme (k : ℕ) : RSBScheme k where
 
 theorem admissible_nonempty (k : ℕ) : (admissible k).Nonempty :=
   ⟨(trivialScheme k).toPair, (trivialScheme k).toPair_mem⟩
+
+/-! ### Uniform bounds over the admissible set
+
+The continuity argument integrates `exp (m_p · F_j(p)(x + √v_p z))` and lets `p` vary, so it
+needs a dominating function valid for **every** admissible `p` at once.  Since `k` is fixed
+this bound may depend on `k` — 2b-i, unlike 2b-ii, requires no uniformity in `k`.
+
+Every level is `1`-Lipschitz (`parisiF_props`, inherited by `parisiFRaw` through
+`schemeOfPair`), so `|F_j(y)| ≤ F_j(0) + |y|` and only `F_j(0)` needs a uniform bound.  One
+smoothing step moves the value at `0` by at most `√v · ∫|z| + m v / 2`: the first term is
+`1`-Lipschitzness, the second is the `m = 0` sandwich.  With `m ≤ 1` and `v ≤ β²` that is
+`|β| ∫|z| + β²/2` per level, so `F_j(0) ≤ j (|β| ∫|z| + β²/2)`.
+-/
+
+/-- One smoothing step moves the value at `x` up by at most `√v ∫|z| + m v / 2`. -/
+theorem parisiStep_zero_apply_le {A : ℝ → ℝ} {v : ℝ} (hv : 0 ≤ v)
+    (hLip : ∀ y y', |A y - A y'| ≤ |y - y'|) (hA : HasLinearGrowth A) (hmeas : Measurable A)
+    (x : ℝ) :
+    parisiStep 0 v A x ≤ A x + Real.sqrt v * gAbsMoment := by
+  rw [parisiStep, if_pos rfl]
+  have hint : Integrable (fun z => A (x + Real.sqrt v * z)) (gaussianReal 0 1) :=
+    integrable_of_hasLinearGrowth hA hmeas x v
+  have hbd : Integrable (fun z : ℝ => A x + Real.sqrt v * |z|) (gaussianReal 0 1) :=
+    (integrable_const (A x)).add (integrable_abs_stdGaussian.const_mul _)
+  have hmono : ∀ z : ℝ, A (x + Real.sqrt v * z) ≤ A x + Real.sqrt v * |z| := by
+    intro z
+    have h := hLip (x + Real.sqrt v * z) x
+    rw [show (x + Real.sqrt v * z) - x = Real.sqrt v * z by ring, abs_mul,
+      abs_of_nonneg (Real.sqrt_nonneg v)] at h
+    have h2 := (abs_le.1 h).2
+    linarith
+  calc (∫ z, A (x + Real.sqrt v * z) ∂(gaussianReal 0 1))
+      ≤ ∫ z, (A x + Real.sqrt v * |z|) ∂(gaussianReal 0 1) := integral_mono hint hbd hmono
+    _ = A x + Real.sqrt v * gAbsMoment := by
+        rw [integral_add (integrable_const _) (integrable_abs_stdGaussian.const_mul _),
+          integral_const, probReal_univ, one_smul, integral_const_mul, gAbsMoment]
+
+theorem parisiStep_apply_le {A : ℝ → ℝ} {m v : ℝ} (hm : 0 ≤ m) (hv : 0 ≤ v)
+    (hLip : ∀ y y', |A y - A y'| ≤ |y - y'|) (hA : HasLinearGrowth A) (hmeas : Measurable A)
+    (x : ℝ) :
+    parisiStep m v A x ≤ A x + Real.sqrt v * gAbsMoment + m * v / 2 := by
+  have h0 := parisiStep_zero_apply_le hv hLip hA hmeas x
+  rcases eq_or_lt_of_le hm with hm0 | hmpos
+  · have hmz : m = 0 := hm0.symm
+    subst hmz
+    nlinarith
+  · have hs := (parisiStep_zero_sandwich hmpos hv hLip hA hmeas x).2
+    linarith
+
+/-- The three structural properties of every level, transported to `parisiFRaw` for an
+admissible parameter pair. -/
+theorem parisiFRaw_props_of_admissible {k : ℕ} (β : ℝ) {p : (ℕ → ℝ) × (ℕ → ℝ)}
+    (hp : p ∈ admissible k) (j : ℕ) :
+    Measurable (parisiFRaw k p.1 p.2 β j)
+      ∧ HasLinearGrowth (parisiFRaw k p.1 p.2 β j)
+      ∧ ∀ x x', |parisiFRaw k p.1 p.2 β j x - parisiFRaw k p.1 p.2 β j x'| ≤ |x - x'| := by
+  have h := parisiF_props (schemeOfPair p hp) β j
+  rwa [parisiF_eq_raw] at h
+
+/-- The `m`-parameter read at level `j` lies in `[0,1]`. -/
+theorem admissible_m_mem {k : ℕ} {p : (ℕ → ℝ) × (ℕ → ℝ)} (hp : p ∈ admissible k) (i : ℕ) :
+    0 ≤ p.1 i ∧ p.1 i ≤ 1 := ⟨hp.1 i, hp.2.1 i⟩
+
+/-- The variance read at level `j` lies in `[0, β²]`. -/
+theorem admissible_var_mem {k : ℕ} {β : ℝ} {p : (ℕ → ℝ) × (ℕ → ℝ)} (hp : p ∈ admissible k)
+    {j : ℕ} (hj : j ≤ k + 1) :
+    0 ≤ β ^ 2 * (p.2 (k + 2 - j) - p.2 (k + 1 - j))
+      ∧ β ^ 2 * (p.2 (k + 2 - j) - p.2 (k + 1 - j)) ≤ β ^ 2 := by
+  have hidx : k + 2 - j = (k + 1 - j) + 1 := by omega
+  have hmono : p.2 (k + 1 - j) ≤ p.2 ((k + 1 - j) + 1) :=
+    hp.2.2.2.2.2.2.2.2.2 ⟨k + 1 - j, by omega⟩
+  rw [hidx]
+  have hle : p.2 ((k + 1 - j) + 1) ≤ 1 := hp.2.2.2.1 _
+  have hge : 0 ≤ p.2 (k + 1 - j) := hp.2.2.1 _
+  have hsq : (0 : ℝ) ≤ β ^ 2 := sq_nonneg β
+  constructor
+  · exact mul_nonneg hsq (by linarith)
+  · nlinarith
+
+/-- **Uniform bound on the value at `0`, over the whole admissible set.** -/
+theorem parisiFRaw_zero_le {k : ℕ} {β : ℝ} {p : (ℕ → ℝ) × (ℕ → ℝ)} (hp : p ∈ admissible k) :
+    ∀ j, j ≤ k + 2 → parisiFRaw k p.1 p.2 β j 0 ≤ j * (|β| * gAbsMoment + β ^ 2 / 2) := by
+  intro j
+  induction j with
+  | zero =>
+      intro _
+      show Real.log (Real.cosh 0) ≤ _
+      rw [Real.cosh_zero, Real.log_one]
+      norm_num
+  | succ j ih =>
+      intro hj
+      have hj' : j ≤ k + 1 := by omega
+      have hj'' : j ≤ k + 2 := by omega
+      obtain ⟨hmeas, hgrow, hlip⟩ := parisiFRaw_props_of_admissible β hp j
+      obtain ⟨hm0, hm1⟩ := admissible_m_mem hp (k + 1 - j)
+      obtain ⟨hv0, hv1⟩ := admissible_var_mem (β := β) hp hj'
+      have hstep := parisiStep_apply_le (A := parisiFRaw k p.1 p.2 β j)
+        (m := p.1 (k + 1 - j)) (v := β ^ 2 * (p.2 (k + 2 - j) - p.2 (k + 1 - j)))
+        hm0 hv0 hlip hgrow hmeas 0
+      have hsqrt : Real.sqrt (β ^ 2 * (p.2 (k + 2 - j) - p.2 (k + 1 - j))) ≤ |β| := by
+        rw [← Real.sqrt_sq_eq_abs]
+        exact Real.sqrt_le_sqrt hv1
+      have hgm : 0 ≤ gAbsMoment := gAbsMoment_nonneg
+      have hih := ih hj''
+      have hmv : p.1 (k + 1 - j) * (β ^ 2 * (p.2 (k + 2 - j) - p.2 (k + 1 - j))) / 2
+          ≤ β ^ 2 / 2 := by nlinarith
+      show parisiStep (p.1 (k + 1 - j)) (β ^ 2 * (p.2 (k + 2 - j) - p.2 (k + 1 - j)))
+          (parisiFRaw k p.1 p.2 β j) 0 ≤ _
+      have hcast : ((j : ℝ) + 1) * (|β| * gAbsMoment + β ^ 2 / 2)
+          = (j : ℝ) * (|β| * gAbsMoment + β ^ 2 / 2) + (|β| * gAbsMoment + β ^ 2 / 2) := by
+        ring
+      push_cast
+      rw [hcast]
+      nlinarith [mul_le_mul_of_nonneg_right hsqrt hgm]
+
+/-- **Uniform linear growth over the admissible set.** -/
+theorem parisiFRaw_abs_le {k : ℕ} {β : ℝ} {p : (ℕ → ℝ) × (ℕ → ℝ)} (hp : p ∈ admissible k)
+    {j : ℕ} (hj : j ≤ k + 2) (y : ℝ) :
+    |parisiFRaw k p.1 p.2 β j y| ≤ (k + 2) * (|β| * gAbsMoment + β ^ 2 / 2) + |y| := by
+  obtain ⟨-, -, hlip⟩ := parisiFRaw_props_of_admissible β hp j
+  have hnn : 0 ≤ parisiFRaw k p.1 p.2 β j 0 := by
+    have h := parisiF_nonneg (schemeOfPair p hp) β j 0
+    rwa [parisiF_eq_raw] at h
+  have hle := parisiFRaw_zero_le (β := β) hp j hj
+  have hstep := hlip y 0
+  rw [sub_zero] at hstep
+  have hmono : (j : ℝ) * (|β| * gAbsMoment + β ^ 2 / 2)
+      ≤ (k + 2) * (|β| * gAbsMoment + β ^ 2 / 2) := by
+    have hc : (0 : ℝ) ≤ |β| * gAbsMoment + β ^ 2 / 2 := by
+      have := gAbsMoment_nonneg
+      positivity
+    have hjr : (j : ℝ) ≤ (k : ℝ) + 2 := by exact_mod_cast hj
+    nlinarith
+  have habs : |parisiFRaw k p.1 p.2 β j y|
+      ≤ |parisiFRaw k p.1 p.2 β j 0| + |y| := by
+    have := abs_sub_abs_le_abs_sub (parisiFRaw k p.1 p.2 β j y) (parisiFRaw k p.1 p.2 β j 0)
+    linarith [hstep]
+  rw [abs_of_nonneg hnn] at habs
+  linarith
 
 /--
 **Continuity of the Parisi functional in its parameters, at fixed `k`.**
