@@ -320,6 +320,61 @@ exponential moments (`GTFrame.ExpMoments`).
 scheme parameters, and instantiate RSAT's `GoodFam` / `step0_good` / `stepM_good` rather than
 carrying our own hand-rolled invariant.  (M, and mostly bookkeeping.)
 
+### Where the project stands, and the one engine that unblocks the rest (2026-09-04)
+
+With Milestone 2 complete and Target 3' derived from Target 3, five `sorry`s remain:
+
+| target | statement | on critical path? |
+|---|---|---|
+| 1b | `Φ_monotoneOn` | no — but see below |
+| 1c | `free_entropy_tendsto` | no |
+| 2b-ii | `parisiFunctional_lipschitz` | no (Guerra's route) |
+| **3** | **`guerra_rsb_bound`** | **yes** |
+| 4 | `parisi_formula` | yes |
+
+**The structural point: 1b and 3 share one missing engine.**  Everything around them is
+already proved —
+
+* `guerra_toninelli_superadditive` takes monotonicity as a *hypothesis*, so all of
+  Milestone 1 downstream of `Φ_monotoneOn` is done;
+* the endpoints (`Z_interpol_zero`, `Z_interpol_one`) are done;
+* the *sign* of the covariance–Hessian trace is done (`covDiff_diag`, `covDiff_nonpos`,
+  `covDiff_hessian_sum_nonneg` in `InterpolationDeriv.lean`);
+* for Target 3, RSAT proves the general Guerra derivative identity for an arbitrary `xi`
+  (`guerra_derivative_bound_algebra`), together with `trace_formula` and `trace_sk`.
+
+What neither has is the **Gaussian interpolation derivative formula**
+
+  `d/dt 𝔼[log Z(H_t)] = ½ ∑_{σ,τ} (C₁ - C₀)(σ,τ) · 𝔼[Hess log Z(H_t)](e_σ, e_τ)`,
+
+i.e. differentiating under the expectation and identifying the derivative by Gaussian
+integration by parts.  Mathlib has no Gaussian comparison theorem (no Slepian, no
+Sudakov–Fernique, no interpolation formula), so this cannot be short-circuited.
+
+**Recommended order.**  Prove the engine in the *simpler* of its two settings first —
+Target 1b, where the interpolation is between two fields on the same space and no cascade is
+involved — then reuse it for Target 3, where the comparison field is the RSB cascade.  1b
+also closes Milestone 1: 1c is explicitly "assembles 1a and 1b with the already-formalised
+Fekete argument `free_entropy_tendsto_of_bddAbove`".
+
+**Stage 1 of 1b is now de-risked.**  The blocker recorded in `InterpolationDeriv.lean` was
+packaging the disorder triple as one `IsGaussianHilbert` vector.  Two library facts, found
+today, make this much shorter than RSAT's hand-rolled ~250 lines:
+
+* `OrthonormalBasis.prod` (`Mathlib/Analysis/InnerProductSpace/ProdL2.lean`) supplies the
+  product basis on `WithLp 2 (H₁ × H₂)` indexed by `ι₁ ⊕ ι₂`, with an explicit `prod_apply`;
+* `ProbabilityTheory.iIndepFun_uncurry` is the combinator turning "the two families are
+  independent of each other" plus "each is internally independent" into independence of the
+  combined family — the single lemma RSAT's long setup builds towards.
+
+See the expanded note at the end of `ParisiFormula/InterpolationDeriv.lean` for the target
+shape of `isGaussianHilbert_prod`.  The genuinely new work is porting RSAT's derivation that
+the two coordinate families are independent of each other (`Replicas.lean` 107–213).
+
+**Remaining stages of 1b after that:** nest the pair to a triple; differentiate `Φ` under the
+expectation with a dominating bound; apply the IBP lemma and `trace_formula`; conclude from
+`covDiff_hessian_sum_nonneg` plus continuity on `Icc 0 1`.  Estimated 600–800 lines total.
+
 ## Phase 3 — Milestone 3: Guerra's RSB bound  (L–XL)
 
 **Blocker found (CI run 33823189093).**  The four `port/` Guerra files cannot be compiled

@@ -297,6 +297,40 @@ Only step 2, in two halves:
   mathematics.  That is a much smaller task than the eigenbasis construction, and it is the
   recommended route.
 
+  **Concrete recipe (2026-09-04).**  Two library facts, found after that note was written,
+  shorten this well below RSAT's ~250 lines (`Replicas.lean` 85–336), because both halves of
+  the construction are already in Mathlib rather than hand-rolled:
+
+  * the **basis** — `OrthonormalBasis.prod` (`Mathlib/Analysis/InnerProductSpace/ProdL2.lean`)
+    builds an `OrthonormalBasis (ι₁ ⊕ ι₂) ℝ (WithLp 2 (H₁ × H₂))` from bases of `H₁` and
+    `H₂`, with `OrthonormalBasis.prod_apply` giving the explicit
+    `Sum.elim (toLp ∘ inl ∘ v) (toLp ∘ inr ∘ w)`.  RSAT instead hand-builds the basis over a
+    `Sigma` index `(b : Bool) × κ b`; nothing there needs repeating.
+  * the **independence** — `ProbabilityTheory.iIndepFun_uncurry` combines "the two families
+    are independent of each other" with "each family is internally independent" into
+    independence of the combined family.  This is the single lemma RSAT's long setup is
+    building towards (`Replicas.lean` 214–215), and it is what makes `c_indep` short.
+
+  So the target shape is
+
+      noncomputable def isGaussianHilbert_prod
+          {g₁ : Ω → H₁} {g₂ : Ω → H₂}
+          (h₁ : IsGaussianHilbert g₁) (h₂ : IsGaussianHilbert g₂)
+          (hindep : IndepFun g₁ g₂ ℙ) :
+          IsGaussianHilbert (fun ω => WithLp.toLp 2 (g₁ ω, g₂ ω)) where
+        ι  := h₁.ι ⊕ h₂.ι
+        w  := h₁.w.prod h₂.w
+        τ  := Sum.elim h₁.τ h₂.τ
+        c  := Sum.elim h₁.c h₂.c
+        …
+
+  with `c_indep` from `iIndepFun_uncurry` transported along `(b : Bool) × κ b ≃ ι₁ ⊕ ι₂`
+  (or proved directly on the sum index), and `repr` from `prod_apply` plus
+  `Fintype.sum_sum_type`.  The only genuinely new work is deriving "the two coordinate
+  families are independent of each other" from `hindep`, by composing with the (continuous,
+  hence measurable) coordinate maps `u ↦ (⟪u, wᵢ⟫)ᵢ` — which is RSAT's `h1`, lines 107–213,
+  and is the part worth porting.
+
   (For the record, the eigenbasis route — `HasGaussianLaw.map_fun` to push the law forward,
   then `HasGaussianLaw.iIndepFun_of_covariance_inner` on an eigenbasis of the covariance
   operator — would also work, but needs the finite-dimensional spectral theorem and is
