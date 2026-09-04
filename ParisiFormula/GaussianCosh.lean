@@ -899,4 +899,93 @@ theorem sq_integral_mul_le {A A' : ℝ → ℝ} {m v : ℝ}
     _ ≤ S * E := mul_le_mul_of_nonneg_right this hEpos.le
 
 
+/-! ## 12. Propagating the second-order invariant
+
+With `Q = ∫ A'' e`, `R = ∫ (A')² e`, `P = ∫ A' e`, `E = ∫ e` (`e = exp (m A(x+√v ·))`), the
+second derivative of the smoothing step is
+
+  `T'' = Q/E + m (R/E - (P/E)²)`,   `T' = P/E`.
+
+The invariant `A'' ≤ 1 - (A')²` gives `Q ≤ E - R`; the tilted variance is non-negative,
+`P² ≤ R E` (`sq_integral_mul_le`); and `m ≤ 1`.  Those three facts give `T'' ≤ 1 - (T')²`.
+-/
+
+/--
+The algebraic heart of the propagation, with no measure theory in it.
+
+`Q ≤ E - R` is the invariant, `P² ≤ R E` is `Var ≥ 0`, and `m ≤ 1` is
+`RSBScheme.m_le_one`.  Dropping any one of the three breaks the conclusion — in particular
+`m ≤ 1` is exactly what makes the `(1-m)·Var` term have the right sign.
+-/
+theorem tilted_bound_algebra {Q R P E m : ℝ} (hE : 0 < E)
+    (hQ : Q ≤ E - R) (hCS : P ^ 2 ≤ R * E) (hm0 : 0 ≤ m) (hm1 : m ≤ 1) :
+    Q / E + m * (R / E - (P / E) ^ 2) ≤ 1 - (P / E) ^ 2 := by
+  have hr : (P / E) ^ 2 ≤ R / E := by
+    rw [div_pow, div_le_div_iff (by positivity) hE]
+    nlinarith [hCS, hE.le]
+  have hQE : Q / E ≤ 1 - R / E := by
+    rw [div_le_iff₀ hE]
+    have hrw : (1 - R / E) * E = E - R := by field_simp
+    rw [hrw]
+    exact hQ
+  have hkey : 0 ≤ (R / E - (P / E) ^ 2) * (1 - m) :=
+    mul_nonneg (by linarith) (by linarith)
+  nlinarith [hQE, hkey]
+
+/--
+`∫ A'' e ≤ ∫ e - ∫ (A')² e`, i.e. `Q ≤ E - R`: the pointwise invariant `A'' ≤ 1 - (A')²`
+integrated against the tilting weight.
+-/
+theorem integral_second_le {A A' A'' : ℝ → ℝ} {m v : ℝ}
+    (hA'bd : ∀ y, |A' y| ≤ 1) (hA''bd : ∀ y, |A'' y| ≤ 1)
+    (hinv : ∀ y, A'' y ≤ 1 - A' y ^ 2)
+    (hA : HasLinearGrowth A) (hmeas : Measurable A) (hmeas' : Measurable A')
+    (hmeas'' : Measurable A'') (x : ℝ) :
+    (∫ z, A'' (x + Real.sqrt v * z)
+        * Real.exp (m * A (x + Real.sqrt v * z)) ∂(gaussianReal 0 1))
+      ≤ (∫ z, Real.exp (m * A (x + Real.sqrt v * z)) ∂(gaussianReal 0 1))
+        - ∫ z, A' (x + Real.sqrt v * z) ^ 2
+            * Real.exp (m * A (x + Real.sqrt v * z)) ∂(gaussianReal 0 1) := by
+  classical
+  set μ : Measure ℝ := gaussianReal 0 1 with hμ
+  set e : ℝ → ℝ := fun z => Real.exp (m * A (x + Real.sqrt v * z)) with hedef
+  have hepos : ∀ z, 0 < e z := fun z => Real.exp_pos _
+  have heint : Integrable e μ := integrable_exp_mul_of_hasLinearGrowth hA hmeas m x v
+  have hshift_meas : Measurable (fun z : ℝ => x + Real.sqrt v * z) :=
+    (measurable_id.const_mul (Real.sqrt v)).const_add x
+  have hemeas : Measurable e :=
+    (Real.continuous_exp.measurable).comp ((hmeas.comp hshift_meas).const_mul m)
+  have hg'meas : Measurable (fun z : ℝ => A' (x + Real.sqrt v * z)) :=
+    hmeas'.comp hshift_meas
+  have hg''meas : Measurable (fun z : ℝ => A'' (x + Real.sqrt v * z)) :=
+    hmeas''.comp hshift_meas
+  -- the two integrals exist, both dominated by `e`
+  have hRint : Integrable (fun z => A' (x + Real.sqrt v * z) ^ 2 * e z) μ := by
+    refine heint.mono' ((hg'meas.pow_const 2).mul hemeas).aestronglyMeasurable
+      (Filter.Eventually.of_forall (fun z => ?_))
+    rw [Real.norm_eq_abs, abs_mul, abs_of_nonneg (sq_nonneg _),
+      abs_of_nonneg (hepos z).le]
+    have h1 : A' (x + Real.sqrt v * z) ^ 2 ≤ 1 := by
+      have := hA'bd (x + Real.sqrt v * z)
+      nlinarith [abs_nonneg (A' (x + Real.sqrt v * z)),
+        sq_abs (A' (x + Real.sqrt v * z))]
+    nlinarith [(hepos z).le]
+  have hQint : Integrable (fun z => A'' (x + Real.sqrt v * z) * e z) μ := by
+    refine heint.mono' (hg''meas.mul hemeas).aestronglyMeasurable
+      (Filter.Eventually.of_forall (fun z => ?_))
+    rw [Real.norm_eq_abs, abs_mul, abs_of_nonneg (hepos z).le]
+    have h1 : |A'' (x + Real.sqrt v * z)| ≤ 1 := hA''bd _
+    nlinarith [(hepos z).le, abs_nonneg (A'' (x + Real.sqrt v * z))]
+  -- pointwise `A'' e ≤ e - (A')² e`
+  have hpt : ∀ z, A'' (x + Real.sqrt v * z) * e z
+      ≤ e z - A' (x + Real.sqrt v * z) ^ 2 * e z := by
+    intro z
+    have h := hinv (x + Real.sqrt v * z)
+    nlinarith [(hepos z).le]
+  have hsub : Integrable (fun z => e z - A' (x + Real.sqrt v * z) ^ 2 * e z) μ :=
+    heint.sub hRint
+  have hmono := integral_mono hQint hsub hpt
+  rwa [integral_sub heint hRint] at hmono
+
+
 end SpinGlass
