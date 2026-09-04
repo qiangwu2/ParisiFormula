@@ -1058,38 +1058,256 @@ So the target splits:
 
 * `exists_minimizer_parisiFunctional` (**2b-i**) — Talagrand's (2.17).  On the critical path
   to Target 4.  Needs only continuity of `𝒫_k` in `(m,q)` for *fixed* `k`: no modulus, no
-  uniformity in `k`.  The one delicate point is continuity where some `m_p = 0`, since
-  `parisiStep` branches there; `parisiStep_zero_sandwich` above supplies exactly that,
-  with a bound uniform in `x`.
+  uniformity in `k`.
 * `parisiFunctional_lipschitz` (**2b-ii**) — Guerra's uniform-in-`k` Lipschitz bound, needed
   to pass from discrete schemes to general Parisi measures.  Kept, but **off** the critical
   path for the Talagrand route.
+
+### The parameter space
+
+`RSBScheme k` bundles `m q : ℕ → ℝ` with the constraints, but the *set* of schemes is not
+compact: `m p` for `p ≥ k + 2` is entirely unconstrained.  The functional never reads those
+values, so we work instead with raw parameter pairs `(m, q) : (ℕ → ℝ) × (ℕ → ℝ)` and the set
+`admissible k` of pairs that satisfy the constraints **and** take values in `[0,1]`
+everywhere.  That set is a closed subset of a product of copies of `[0,1]`, hence compact by
+Tychonoff, and this is exactly the compactness Talagrand invokes: it is closed because
+(1.6)–(1.7) use `≤` rather than `<`.
 -/
 
+namespace RSBScheme
+
+variable {k : ℕ} (s : RSBScheme k)
+
+lemma m_nonneg {p : ℕ} (hp : p ≤ k + 1) : 0 ≤ s.m p := by
+  have h := s.m_mono' p hp 0 (Nat.zero_le p)
+  rwa [s.m_zero] at h
+
+lemma q_le_one {p : ℕ} (hp : p ≤ k + 2) : s.q p ≤ 1 := by
+  have h := s.q_mono' (k + 2) le_rfl p hp
+  rwa [s.q_top] at h
+
+end RSBScheme
+
+/-- `parisiF` with the scheme's two sequences supplied as bare functions.  Definitionally
+the same recursion; only the packaging differs, so that the parameters can be varied
+continuously without carrying the `RSBScheme` proof fields around. -/
+noncomputable def parisiFRaw (k : ℕ) (m q : ℕ → ℝ) (β : ℝ) : ℕ → (ℝ → ℝ)
+  | 0 => fun x => Real.log (Real.cosh x)
+  | j + 1 =>
+      parisiStep (m (k + 1 - j)) (β ^ 2 * (q (k + 2 - j) - q (k + 1 - j)))
+        (parisiFRaw k m q β j)
+
+/-- `parisiFunctional` on bare parameter sequences. -/
+noncomputable def parisiFunctionalRaw (k : ℕ) (m q : ℕ → ℝ) (β h : ℝ) : ℝ :=
+  Real.log 2 + parisiFRaw k m q β (k + 2) h
+    - (β ^ 2 / 4) * ∑ p ∈ Finset.range (k + 1), m (p + 1) * (q (p + 2) ^ 2 - q (p + 1) ^ 2)
+
+theorem parisiF_eq_raw {k : ℕ} (s : RSBScheme k) (β : ℝ) (j : ℕ) :
+    parisiF s β j = parisiFRaw k s.m s.q β j := by
+  induction j with
+  | zero => rfl
+  | succ j ih =>
+      show parisiStep (s.m (k + 1 - j)) (β ^ 2 * (s.q (k + 2 - j) - s.q (k + 1 - j)))
+            (parisiF s β j)
+          = parisiStep (s.m (k + 1 - j)) (β ^ 2 * (s.q (k + 2 - j) - s.q (k + 1 - j)))
+            (parisiFRaw k s.m s.q β j)
+      rw [ih]
+
+theorem parisiFunctional_eq_raw {k : ℕ} (s : RSBScheme k) (β h : ℝ) :
+    parisiFunctional s β h = parisiFunctionalRaw k s.m s.q β h := by
+  rw [parisiFunctional, parisiFunctionalRaw, parisiF_eq_raw]
+
+/-- The recursion reads `m` only at indices `≤ k + 1` and `q` only at indices `≤ k + 2`. -/
+theorem parisiFRaw_congr {k : ℕ} {m m' q q' : ℕ → ℝ} (β : ℝ)
+    (hm : ∀ p, p ≤ k + 1 → m p = m' p) (hq : ∀ p, p ≤ k + 2 → q p = q' p) (j : ℕ) :
+    parisiFRaw k m q β j = parisiFRaw k m' q' β j := by
+  induction j with
+  | zero => rfl
+  | succ j ih =>
+      show parisiStep (m (k + 1 - j)) (β ^ 2 * (q (k + 2 - j) - q (k + 1 - j)))
+            (parisiFRaw k m q β j)
+          = parisiStep (m' (k + 1 - j)) (β ^ 2 * (q' (k + 2 - j) - q' (k + 1 - j)))
+            (parisiFRaw k m' q' β j)
+      rw [ih, hm _ (by omega), hq _ (by omega), hq _ (by omega)]
+
+theorem parisiFunctionalRaw_congr {k : ℕ} {m m' q q' : ℕ → ℝ} (β h : ℝ)
+    (hm : ∀ p, p ≤ k + 1 → m p = m' p) (hq : ∀ p, p ≤ k + 2 → q p = q' p) :
+    parisiFunctionalRaw k m q β h = parisiFunctionalRaw k m' q' β h := by
+  have hsum : (∑ p ∈ Finset.range (k + 1), m (p + 1) * (q (p + 2) ^ 2 - q (p + 1) ^ 2))
+      = ∑ p ∈ Finset.range (k + 1), m' (p + 1) * (q' (p + 2) ^ 2 - q' (p + 1) ^ 2) := by
+    refine Finset.sum_congr rfl (fun p hp => ?_)
+    rw [Finset.mem_range] at hp
+    rw [hm (p + 1) (by omega), hq (p + 2) (by omega), hq (p + 1) (by omega)]
+  rw [parisiFunctionalRaw, parisiFunctionalRaw, parisiFRaw_congr β hm hq (k + 2), hsum]
+
 /--
-**Target 2b-i (Talagrand 2006, (2.17)).**  For each fixed number of levels `k`, the
-infimum of `𝒫_k(m,q)` over admissible schemes is **attained**.
+**The admissible parameter set.**  Talagrand's (1.6)–(1.7), together with the (automatic)
+containment of all values in `[0,1]`, which is what makes the set bounded.
+-/
+def admissible (k : ℕ) : Set ((ℕ → ℝ) × (ℕ → ℝ)) :=
+  {p | (∀ n : ℕ, 0 ≤ p.1 n) ∧ (∀ n : ℕ, p.1 n ≤ 1)
+     ∧ (∀ n : ℕ, 0 ≤ p.2 n) ∧ (∀ n : ℕ, p.2 n ≤ 1)
+     ∧ p.1 0 = 0 ∧ p.1 (k + 1) = 1
+     ∧ (∀ j : Fin (k + 1), p.1 (j : ℕ) ≤ p.1 ((j : ℕ) + 1))
+     ∧ p.2 0 = 0 ∧ p.2 (k + 2) = 1
+     ∧ (∀ j : Fin (k + 2), p.2 (j : ℕ) ≤ p.2 ((j : ℕ) + 1))}
+
+theorem isClosed_admissible (k : ℕ) : IsClosed (admissible k) := by
+  have hc1 : ∀ n : ℕ, Continuous fun p : (ℕ → ℝ) × (ℕ → ℝ) => p.1 n :=
+    fun n => (continuous_apply n).comp continuous_fst
+  have hc2 : ∀ n : ℕ, Continuous fun p : (ℕ → ℝ) × (ℕ → ℝ) => p.2 n :=
+    fun n => (continuous_apply n).comp continuous_snd
+  have key : admissible k =
+      ((((((((((⋂ n : ℕ, {p : (ℕ → ℝ) × (ℕ → ℝ) | 0 ≤ p.1 n}) ∩
+      (⋂ n : ℕ, {p : (ℕ → ℝ) × (ℕ → ℝ) | p.1 n ≤ 1})) ∩
+      (⋂ n : ℕ, {p : (ℕ → ℝ) × (ℕ → ℝ) | 0 ≤ p.2 n})) ∩
+      (⋂ n : ℕ, {p : (ℕ → ℝ) × (ℕ → ℝ) | p.2 n ≤ 1})) ∩
+      {p : (ℕ → ℝ) × (ℕ → ℝ) | p.1 0 = 0}) ∩
+      {p : (ℕ → ℝ) × (ℕ → ℝ) | p.1 (k + 1) = 1}) ∩
+      (⋂ j : Fin (k + 1), {p : (ℕ → ℝ) × (ℕ → ℝ) | p.1 (j : ℕ) ≤ p.1 ((j : ℕ) + 1)})) ∩
+      {p : (ℕ → ℝ) × (ℕ → ℝ) | p.2 0 = 0}) ∩
+      {p : (ℕ → ℝ) × (ℕ → ℝ) | p.2 (k + 2) = 1}) ∩
+      (⋂ j : Fin (k + 2), {p : (ℕ → ℝ) × (ℕ → ℝ) | p.2 (j : ℕ) ≤ p.2 ((j : ℕ) + 1)})) := by
+    ext p
+    simp only [admissible, Set.mem_setOf_eq, Set.mem_inter_iff, Set.mem_iInter]
+    tauto
+  rw [key]
+  repeat' apply IsClosed.inter
+  · exact isClosed_iInter fun n => isClosed_le continuous_const (hc1 n)
+  · exact isClosed_iInter fun n => isClosed_le (hc1 n) continuous_const
+  · exact isClosed_iInter fun n => isClosed_le continuous_const (hc2 n)
+  · exact isClosed_iInter fun n => isClosed_le (hc2 n) continuous_const
+  · exact isClosed_eq (hc1 0) continuous_const
+  · exact isClosed_eq (hc1 (k + 1)) continuous_const
+  · exact isClosed_iInter fun j => isClosed_le (hc1 _) (hc1 _)
+  · exact isClosed_eq (hc2 0) continuous_const
+  · exact isClosed_eq (hc2 (k + 2)) continuous_const
+  · exact isClosed_iInter fun j => isClosed_le (hc2 _) (hc2 _)
+
+/-- **Tychonoff.**  The admissible set is compact — this is the compactness Talagrand
+invokes for (2.17), and it works precisely because (1.6)–(1.7) allow equality, making the
+constraint set closed. -/
+theorem isCompact_admissible (k : ℕ) : IsCompact (admissible k) := by
+  have hbox : IsCompact
+      ((Set.pi Set.univ fun _ : ℕ => Set.Icc (0 : ℝ) 1)
+        ×ˢ (Set.pi Set.univ fun _ : ℕ => Set.Icc (0 : ℝ) 1)) :=
+    (isCompact_univ_pi fun _ => isCompact_Icc).prod (isCompact_univ_pi fun _ => isCompact_Icc)
+  refine hbox.of_isClosed_subset (isClosed_admissible k) ?_
+  rintro p ⟨h1, h2, h3, h4, -⟩
+  exact ⟨fun n _ => ⟨h1 n, h2 n⟩, fun n _ => ⟨h3 n, h4 n⟩⟩
+
+/-- Every scheme, with its parameters clamped past the range the functional reads. -/
+noncomputable def RSBScheme.toPair {k : ℕ} (s : RSBScheme k) : (ℕ → ℝ) × (ℕ → ℝ) :=
+  (fun n => s.m (min n (k + 1)), fun n => s.q (min n (k + 2)))
+
+theorem RSBScheme.toPair_mem {k : ℕ} (s : RSBScheme k) : s.toPair ∈ admissible k := by
+  refine ⟨fun n => s.m_nonneg (min_le_right _ _), fun n => s.m_le_one (min_le_right _ _),
+    fun n => s.q_nonneg (min_le_right _ _), fun n => s.q_le_one (min_le_right _ _),
+    ?_, ?_, ?_, ?_, ?_, ?_⟩
+  · show s.m (min 0 (k + 1)) = 0
+    rw [Nat.min_eq_left (Nat.zero_le _)]; exact s.m_zero
+  · show s.m (min (k + 1) (k + 1)) = 1
+    rw [min_self]; exact s.m_top
+  · intro j
+    show s.m (min (j : ℕ) (k + 1)) ≤ s.m (min ((j : ℕ) + 1) (k + 1))
+    rw [Nat.min_eq_left (by omega : (j : ℕ) ≤ k + 1),
+      Nat.min_eq_left (by omega : (j : ℕ) + 1 ≤ k + 1)]
+    exact s.m_mono _ (by omega)
+  · show s.q (min 0 (k + 2)) = 0
+    rw [Nat.min_eq_left (Nat.zero_le _)]; exact s.q_zero
+  · show s.q (min (k + 2) (k + 2)) = 1
+    rw [min_self]; exact s.q_top
+  · intro j
+    show s.q (min (j : ℕ) (k + 2)) ≤ s.q (min ((j : ℕ) + 1) (k + 2))
+    rw [Nat.min_eq_left (by omega : (j : ℕ) ≤ k + 2),
+      Nat.min_eq_left (by omega : (j : ℕ) + 1 ≤ k + 2)]
+    exact s.q_mono _ (by omega)
+
+theorem parisiFunctional_eq_raw_toPair {k : ℕ} (s : RSBScheme k) (β h : ℝ) :
+    parisiFunctional s β h = parisiFunctionalRaw k s.toPair.1 s.toPair.2 β h := by
+  rw [parisiFunctional_eq_raw]
+  refine parisiFunctionalRaw_congr β h (fun p hp => ?_) (fun p hp => ?_)
+  · show s.m p = s.m (min p (k + 1))
+    rw [Nat.min_eq_left hp]
+  · show s.q p = s.q (min p (k + 2))
+    rw [Nat.min_eq_left hp]
+
+/-- Conversely, an admissible pair *is* a scheme. -/
+noncomputable def schemeOfPair {k : ℕ} (p : (ℕ → ℝ) × (ℕ → ℝ)) (hp : p ∈ admissible k) :
+    RSBScheme k where
+  m := p.1
+  q := p.2
+  m_zero := hp.2.2.2.2.1
+  m_top := hp.2.2.2.2.2.1
+  m_mono := fun j hj => hp.2.2.2.2.2.2.1 ⟨j, by omega⟩
+  q_zero := hp.2.2.2.2.2.2.2.1
+  q_top := hp.2.2.2.2.2.2.2.2.1
+  q_mono := fun j hj => hp.2.2.2.2.2.2.2.2.2 ⟨j, by omega⟩
+
+@[simp] theorem schemeOfPair_m {k : ℕ} (p : (ℕ → ℝ) × (ℕ → ℝ)) (hp : p ∈ admissible k) :
+    (schemeOfPair p hp).m = p.1 := rfl
+
+@[simp] theorem schemeOfPair_q {k : ℕ} (p : (ℕ → ℝ) × (ℕ → ℝ)) (hp : p ∈ admissible k) :
+    (schemeOfPair p hp).q = p.2 := rfl
+
+/-- A scheme exists for every `k`, so the admissible set is non-empty. -/
+noncomputable def trivialScheme (k : ℕ) : RSBScheme k where
+  m := fun p => if p = 0 then 0 else 1
+  q := fun p => if p = 0 then 0 else 1
+  m_zero := by simp
+  m_top := by simp
+  m_mono := by
+    intro p _
+    simp only [Nat.succ_ne_zero, if_false]
+    split <;> norm_num
+  q_zero := by simp
+  q_top := by simp
+  q_mono := by
+    intro p _
+    simp only [Nat.succ_ne_zero, if_false]
+    split <;> norm_num
+
+theorem admissible_nonempty (k : ℕ) : (admissible k).Nonempty :=
+  ⟨(trivialScheme k).toPair, (trivialScheme k).toPair_mem⟩
+
+/--
+**Continuity of the Parisi functional in its parameters, at fixed `k`.**
+
+The single analytic input to Target 2b-i.  Proof plan: induct on the level, propagating
+
+* joint continuity of `(m, q, x) ↦ parisiFRaw k m q β j x` on `admissible k ×ˢ univ`,
+* together with measurability, 1-Lipschitzness in `x` and a linear-growth bound whose
+  constants are uniform over `admissible k` (the set is compact and `k` is fixed, so the
+  constants may depend on `k` — 2b-i, unlike 2b-ii, needs no uniformity in `k`).
+
+A single step is continuous in its parameters by dominated convergence, the dominating
+function coming from the uniform linear-growth bound.  At a parameter where `m_p = 0` the
+two branches of `parisiStep` meet, and continuity there is exactly
+`parisiStep_zero_sandwich`, whose gap `m·v/2` is uniform in `x`.
+-/
+theorem continuousOn_parisiFunctionalRaw (k : ℕ) (β h : ℝ) :
+    ContinuousOn (fun p : (ℕ → ℝ) × (ℕ → ℝ) => parisiFunctionalRaw k p.1 p.2 β h)
+      (admissible k) := by
+  sorry
+
+/--
+**Target 2b-i (Talagrand 2006, (2.17)).**  For each fixed number of levels `k`, the infimum
+of `𝒫_k(m,q)` over admissible schemes is **attained**.
 
 This is the form of parameter regularity that Talagrand's proof actually consumes: (2.16)
 and (2.17) are the standing hypotheses of Theorem 2.2, and §5 differentiates the functional
 at the minimising scheme.  He obtains it "by a compactness argument", noting that it is to
-permit that argument that equality is allowed in (1.6) and (1.7) — i.e. the admissible set
-
-  `0 = m_0 ≤ m_1 ≤ … ≤ m_k ≤ m_{k+1} = 1`,  `0 = q_0 ≤ … ≤ q_{k+2} = 1`
-
-is *closed*, hence compact, exactly because the inequalities are not strict.
-
-Proof plan: the admissible schemes form a compact subset of `ℝ^{k+2} × ℝ^{k+3}`
-(`isCompact_Icc`, `IsCompact.prod`, intersected with the closed monotonicity constraints);
-`𝒫_k` is continuous on it — level by level through `parisiF`, using `parisiStep_dist_le` to
-propagate a sup-norm perturbation and dominated convergence for the parameter dependence of
-a single step, with `parisiStep_zero_sandwich` covering the `m_p = 0` branch point — and
-`IsCompact.exists_isMinOn` finishes.
+permit that argument that equality is allowed in (1.6) and (1.7).
 -/
 theorem exists_minimizer_parisiFunctional (k : ℕ) (β h : ℝ) :
     ∃ s : RSBScheme k, ∀ s' : RSBScheme k,
       parisiFunctional s β h ≤ parisiFunctional s' β h := by
-  sorry
+  obtain ⟨p₀, hp₀, hmin⟩ := (isCompact_admissible k).exists_isMinOn
+    (admissible_nonempty k) (continuousOn_parisiFunctionalRaw k β h)
+  refine ⟨schemeOfPair p₀ hp₀, fun s' => ?_⟩
+  rw [parisiFunctional_eq_raw (schemeOfPair p₀ hp₀), parisiFunctional_eq_raw_toPair s',
+    schemeOfPair_m, schemeOfPair_q]
+  exact hmin s'.toPair_mem
 
 /-- **Target 2b (Lipschitz continuity in the scheme).**  Guerra's estimate:
 
