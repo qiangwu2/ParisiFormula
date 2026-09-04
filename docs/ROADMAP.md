@@ -85,7 +85,36 @@ derivative of `∫ free_energy_density (H_t ·)` to the trace expression.  See `
 
 ## Phase 4 — Milestone 4: Talagrand's lower bound  (XL, open-ended)
 
-Blueprint chapter to be written after Phase 3. Starting point: RSAT's
+**Route decision (fixed): Talagrand, *The Parisi formula*, Ann. of Math. 163 (2006).**
+Panchenko's route is explicitly **out of scope for now**.  This is a deliberate narrowing,
+and it prunes a large branch of prerequisites — we do **not** need any of:
+
+* the Ghirlanda–Guerra identities,
+* ultrametricity of the overlap (a major theorem in its own right),
+* Ruelle probability cascades / Poisson–Dirichlet,
+* the Aizenman–Sims–Starr scheme.
+
+What Talagrand's route *does* require, on top of Milestone 3:
+
+* the overlap-constrained two-replica partition function
+  `Z_N(u) = ∑_{R(σ¹,σ²)=u} exp(-H(σ¹)-H(σ²))`;
+* the Guerra–Talagrand interpolation for that coupled system, with a Lagrange multiplier
+  conjugate to the constraint;
+* induction on the number of RSB levels `k`, using **convexity/regularity of the `k`-step
+  functional in the coupling parameter**;
+* Gaussian concentration of the free energy — **already available**, as
+  `gaussian_lipschitz_concentration` in `Lemmas/SpinGlass/gaussian_concentration.lean`.
+
+**Consequence for sequencing:** Target 2b (Lipschitz continuity of `parisiFunctional` in the
+scheme) is *load-bearing* for this route, not a nice-to-have, because the induction needs
+regularity in the parameters.  Its statement in `Targets/Milestones.lean` is currently
+marked provisional and should be pinned down before Phase 4 starts.
+
+Note: the starting point named below is **not in this repository** — `grep` finds no
+`SpinGlass.AT.twoReplica_GT_bound`; it exists in RSAT upstream and would have to be vendored
+(and reconciled with the fork mismatch described in `port/README.md`).
+
+Blueprint chapter still to be written after Phase 3.  Prior starting point: RSAT's
 `SpinGlass.AT.twoReplica_GT_bound` (the RS-level coupled-replica bound).
 
 ## Correctness of the goal statement — **fixed**

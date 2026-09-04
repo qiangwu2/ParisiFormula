@@ -285,6 +285,14 @@ $\limsup_N s_N\le\mathcal P(\beta,h):=\inf_k\inf_{(m,q)}\mathcal P_k(m,q)$.
 
 \section{Milestone 4: the lower bound (outline only)}
 
+\paragraph{Route decision (fixed).}  We formalise \textbf{Talagrand's} proof
+\cite{Tal06}.  Panchenko's route \cite{Pan13} is out of scope for now.  Consequently the
+following are \emph{not} prerequisites: the Ghirlanda--Guerra identities, ultrametricity of
+the overlap, Ruelle probability cascades, and the Aizenman--Sims--Starr scheme.  The cost of
+this choice is that the argument below rests on convexity/regularity of the $k$-step
+functional in the coupling parameter, so Milestone~2b becomes load-bearing rather than
+optional.
+
 \begin{theorem}[Parisi formula \cite{Tal06}]
 \lean{SpinGlass.Targets.parisi\_formula}
 $\lim_N s_N(\beta,h)=\mathcal P(\beta,h)$.

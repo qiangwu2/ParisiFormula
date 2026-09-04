@@ -105,7 +105,21 @@ theorem hasDerivAt_K_interpol (t : ℝ) (ht : t ∈ Set.Ioo (0 : ℝ) 1) (ω : �
         (((1 / (2 * Real.sqrt (1 - t))) * (-1 : ℝ)) •
           K_block (N := N) (M := M) (β := β) (h := h) (skN := skN) (skM := skM) ω) t :=
     hsqrt_sub.smul_const _
-  simpa [K_interpol, dK_interpol] using hU.add hV
+  -- Do *not* use `simpa` here: `simp` rewrites the `PiLp`/`WithLp` instances on
+  -- `EnergySpace (N+M)` into a defeq but syntactically different form, and
+  -- `HasDerivAt.add` yields a `Pi.add` rather than a lambda.  Ascribing the type
+  -- makes both mismatches go away definitionally.
+  have hadd :
+      HasDerivAt
+        (fun s : ℝ =>
+          (Real.sqrt s) • skL.U ω
+            + (Real.sqrt (1 - s)) •
+                K_block (N := N) (M := M) (β := β) (h := h) (skN := skN) (skM := skM) ω)
+        ((1 / (2 * Real.sqrt t)) • skL.U ω
+          + ((1 / (2 * Real.sqrt (1 - t))) * (-1 : ℝ)) •
+              K_block (N := N) (M := M) (β := β) (h := h) (skN := skN) (skM := skM) ω) t :=
+    hU.add hV
+  exact hadd
 
 end FieldDeriv
 
