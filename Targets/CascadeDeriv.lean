@@ -257,5 +257,179 @@ theorem hasDerivAt_parisiStep_param (x u₀ : ℝ) (hD : 0 ≤ D) (hD' : 0 ≤ D
 
 end ChainRule
 
+
+/-! ## 4. The tilted weight is a bounded perturbation of the Gaussian
+
+To chain the rule of §3 over the `k+2` levels one needs the *derivative* to keep linear
+growth from level to level.  The derivative at a level is a tilted average
+`∫ A'(x + √v z) W(z) dγ`, so with `|A'(y)| ≤ C' + D'|y|` one gets
+
+  `|∫ A' W| ≤ C' + D'|x| + D'√v · ∫ |z| W(z) dγ`,
+
+and linear growth propagates **iff the tilted first moment `∫ |z| W dγ` is bounded
+independently of `x`**.  That is false for a general tilt — the tilt can drag mass out to
+where `A` is large — but true when `A` is Lipschitz, because then the tilt is a bounded
+perturbation of the Gaussian:
+
+  `W(z) ≤ exp (c·∫|w|dγ) · exp (c|z|)`,   `c = |m|·L·√v`,
+
+with the numerator bounded by Lipschitzness and the denominator bounded below by Jensen.
+Every level of the Parisi cascade is `1`-Lipschitz (`parisiF_props`), so this applies.
+-/
+
+/-- Jensen's inequality in the form `exp (∫ g) ≤ ∫ exp g`. -/
+theorem exp_integral_le_integral_exp {g : ℝ → ℝ}
+    (hg : Integrable g (gaussianReal 0 1))
+    (hexp : Integrable (fun z => Real.exp (g z)) (gaussianReal 0 1)) :
+    Real.exp (∫ z, g z ∂(gaussianReal 0 1)) ≤ ∫ z, Real.exp (g z) ∂(gaussianReal 0 1) := by
+  have hpos : 0 < ∫ z, Real.exp (g z) ∂(gaussianReal 0 1) := integral_exp_pos hexp
+  have hlogint : Integrable (fun z => Real.log (Real.exp (g z))) (gaussianReal 0 1) := by
+    refine hg.congr ?_
+    filter_upwards with z
+    show g z = Real.log (Real.exp (g z))
+    rw [Real.log_exp]
+  have hJ := integral_log_le_log_integral (μ := gaussianReal 0 1)
+    (W := fun z => Real.exp (g z)) (fun z => Real.exp_pos _) hexp hlogint
+  have hLHS : (∫ z, Real.log (Real.exp (g z)) ∂(gaussianReal 0 1))
+      = ∫ z, g z ∂(gaussianReal 0 1) := by
+    have hfun : (fun z => Real.log (Real.exp (g z))) = g := by
+      funext z; rw [Real.log_exp]
+    rw [hfun]
+  rw [hLHS] at hJ
+  calc Real.exp (∫ z, g z ∂(gaussianReal 0 1))
+      ≤ Real.exp (Real.log (∫ z, Real.exp (g z) ∂(gaussianReal 0 1))) := Real.exp_le_exp.2 hJ
+    _ = _ := Real.exp_log hpos
+
+section Tilt
+
+variable {m v L : ℝ} {A : ℝ → ℝ}
+
+/-- For an `L`-Lipschitz `A`, the tilted weight is dominated by `e^{c·𝔼|w|}·e^{c|z|}` with
+`c = |m|L√v` — a bound **independent of `x`**. -/
+theorem tiltWeight_le (hL : 0 ≤ L) (hLip : ∀ y y', |A y - A y'| ≤ L * |y - y'|)
+    (hA : HasLinearGrowth A) (hmeas : Measurable A) (x z : ℝ) :
+    tiltWeight m v A x z
+      ≤ Real.exp ((|m| * L * Real.sqrt v) * gAbsMoment)
+        * Real.exp ((|m| * L * Real.sqrt v) * |z|) := by
+  classical
+  set c : ℝ := |m| * L * Real.sqrt v with hc
+  have hcnn : 0 ≤ c := by
+    rw [hc]; positivity
+  have hgm : 0 ≤ gAbsMoment := gAbsMoment_nonneg
+  by_cases hm : m = 0
+  · rw [tiltWeight, if_pos hm]
+    have h1 : (1 : ℝ) ≤ Real.exp (c * gAbsMoment) :=
+      Real.one_le_exp (by positivity)
+    have h2 : (1 : ℝ) ≤ Real.exp (c * |z|) :=
+      Real.one_le_exp (by positivity)
+    nlinarith
+  · rw [tiltWeight, if_neg hm]
+    -- the Lipschitz deviation of the shifted function
+    have hdev : ∀ w : ℝ, |A (x + Real.sqrt v * w) - A x| ≤ L * (Real.sqrt v * |w|) := by
+      intro w
+      have := hLip (x + Real.sqrt v * w) x
+      rwa [show (x + Real.sqrt v * w) - x = Real.sqrt v * w by ring, abs_mul,
+        abs_of_nonneg (Real.sqrt_nonneg v)] at this
+    have hnum : Real.exp (m * A (x + Real.sqrt v * z))
+        ≤ Real.exp (m * A x) * Real.exp (c * |z|) := by
+      rw [← Real.exp_add]
+      refine Real.exp_le_exp.2 ?_
+      have h2 : m * A (x + Real.sqrt v * z) - m * A x
+          ≤ |m| * |A (x + Real.sqrt v * z) - A x| := by
+        rw [← mul_sub, ← abs_mul]
+        exact le_abs_self _
+      have h3 : |m| * |A (x + Real.sqrt v * z) - A x|
+          ≤ |m| * (L * (Real.sqrt v * |z|)) :=
+        mul_le_mul_of_nonneg_left (hdev z) (abs_nonneg m)
+      have h4 : |m| * (L * (Real.sqrt v * |z|)) = c * |z| := by rw [hc]; ring
+      linarith
+    -- Jensen lower bound on the normalisation
+    have hAint : Integrable (fun w => m * A (x + Real.sqrt v * w)) (gaussianReal 0 1) :=
+      (integrable_of_hasLinearGrowth hA hmeas x v).const_mul m
+    have hexpint : Integrable (fun w => Real.exp (m * A (x + Real.sqrt v * w)))
+        (gaussianReal 0 1) := integrable_exp_mul_of_hasLinearGrowth hA hmeas m x v
+    have hmean : Real.exp (m * A x) * Real.exp (-(c * gAbsMoment))
+        ≤ ∫ w, Real.exp (m * A (x + Real.sqrt v * w)) ∂(gaussianReal 0 1) := by
+      refine le_trans ?_ (exp_integral_le_integral_exp hAint hexpint)
+      rw [← Real.exp_add]
+      refine Real.exp_le_exp.2 ?_
+      -- `m A x - c 𝔼|w| ≤ ∫ m A (x + √v w)`
+      have hlow : (∫ w, (m * A x - c * |w|) ∂(gaussianReal 0 1))
+          ≤ ∫ w, m * A (x + Real.sqrt v * w) ∂(gaussianReal 0 1) := by
+        refine integral_mono
+          ((integrable_const _).sub (integrable_abs_stdGaussian.const_mul c)) hAint ?_
+        intro w
+        have h := (abs_le.1 (hdev w)).1
+        have h2 : |m * A (x + Real.sqrt v * w) - m * A x|
+            ≤ |m| * (L * (Real.sqrt v * |w|)) := by
+          rw [← mul_sub, abs_mul]
+          exact mul_le_mul_of_nonneg_left (hdev w) (abs_nonneg m)
+        have h3 := (abs_le.1 h2).1
+        show m * A x - c * |w| ≤ m * A (x + Real.sqrt v * w)
+        rw [hc]; nlinarith
+      have hcalc : (∫ w, (m * A x - c * |w|) ∂(gaussianReal 0 1))
+          = m * A x - c * gAbsMoment := by
+        rw [integral_sub (integrable_const _) (integrable_abs_stdGaussian.const_mul c),
+          integral_const, probReal_univ, one_smul, integral_const_mul, gAbsMoment]
+      rw [hcalc] at hlow
+      linarith
+    -- combine
+    have hIpos : 0 < ∫ w, Real.exp (m * A (x + Real.sqrt v * w)) ∂(gaussianReal 0 1) :=
+      smoothing_integral_pos hA hmeas x
+    rw [div_le_iff₀ hIpos]
+    calc Real.exp (m * A (x + Real.sqrt v * z))
+        ≤ Real.exp (m * A x) * Real.exp (c * |z|) := hnum
+      _ = (Real.exp (c * gAbsMoment) * Real.exp (c * |z|))
+            * (Real.exp (m * A x) * Real.exp (-(c * gAbsMoment))) := by
+          rw [← Real.exp_add, ← Real.exp_add, ← Real.exp_add, ← Real.exp_add]
+          ring_nf
+      _ ≤ (Real.exp (c * gAbsMoment) * Real.exp (c * |z|))
+            * (∫ w, Real.exp (m * A (x + Real.sqrt v * w)) ∂(gaussianReal 0 1)) := by
+          exact mul_le_mul_of_nonneg_left hmean (by positivity)
+
+/-- Hence the **tilted first absolute moment is bounded independently of `x`** — the fact
+that makes linear growth propagate through the cascade. -/
+theorem integral_abs_mul_tiltWeight_le (hL : 0 ≤ L)
+    (hLip : ∀ y y', |A y - A y'| ≤ L * |y - y'|)
+    (hA : HasLinearGrowth A) (hmeas : Measurable A) (x : ℝ) :
+    (∫ z, |z| * tiltWeight m v A x z ∂(gaussianReal 0 1))
+      ≤ Real.exp ((|m| * L * Real.sqrt v) * gAbsMoment)
+        * gAbsExpMoment (|m| * L * Real.sqrt v) := by
+  classical
+  set c : ℝ := |m| * L * Real.sqrt v with hc
+  have hmeasW : Measurable (fun z => |z| * tiltWeight m v A x z) := by
+    unfold tiltWeight
+    split
+    · exact measurable_id.abs.mul measurable_const
+    · exact measurable_id.abs.mul
+        ((Real.continuous_exp.measurable.comp
+          ((hmeas.comp ((measurable_id.const_mul (Real.sqrt v)).const_add x)).const_mul m)).div
+          measurable_const)
+  have hbd : ∀ z : ℝ, |z| * tiltWeight m v A x z
+      ≤ Real.exp (c * gAbsMoment) * (|z| * Real.exp (c * |z|)) := by
+    intro z
+    have h := tiltWeight_le (m := m) (v := v) hL hLip hA hmeas x z
+    have hz : (0 : ℝ) ≤ |z| := abs_nonneg z
+    nlinarith [Real.exp_pos (c * gAbsMoment), Real.exp_pos (c * |z|)]
+  have hdom : Integrable
+      (fun z : ℝ => Real.exp (c * gAbsMoment) * (|z| * Real.exp (c * |z|)))
+      (gaussianReal 0 1) :=
+    (integrable_abs_mul_exp_abs_stdGaussian c).const_mul _
+  have hint : Integrable (fun z => |z| * tiltWeight m v A x z) (gaussianReal 0 1) := by
+    refine Integrable.mono hdom hmeasW.aestronglyMeasurable ?_
+    filter_upwards with z
+    rw [Real.norm_eq_abs, Real.norm_eq_abs,
+      abs_of_nonneg (mul_nonneg (abs_nonneg z)
+        (tiltWeight_nonneg hA hmeas x z)),
+      abs_of_nonneg (by positivity : (0:ℝ) ≤ Real.exp (c * gAbsMoment) * (|z| * Real.exp (c * |z|)))]
+    exact hbd z
+  calc (∫ z, |z| * tiltWeight m v A x z ∂(gaussianReal 0 1))
+      ≤ ∫ z, Real.exp (c * gAbsMoment) * (|z| * Real.exp (c * |z|)) ∂(gaussianReal 0 1) :=
+        integral_mono hint hdom hbd
+    _ = Real.exp (c * gAbsMoment) * gAbsExpMoment c := by
+        rw [integral_const_mul, gAbsExpMoment]
+
+end Tilt
+
 end Targets
 end SpinGlass
