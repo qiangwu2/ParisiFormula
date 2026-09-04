@@ -248,7 +248,7 @@ theorem parisiFunctional_rsScheme (β h q : ℝ) (hq0 : 0 ≤ q) (hq1 : q ≤ 1)
   have hrefl :
       (∫ z, Real.log (Real.cosh (h + |β| * Real.sqrt q * z)) ∂(gaussianReal 0 1))
         = ∫ z, Real.log (Real.cosh (β * Real.sqrt q * z + h)) ∂(gaussianReal 0 1) := by
-    rcases le_or_lt 0 β with hβ | hβ
+    rcases le_or_gt 0 β with hβ | hβ
     · rw [abs_of_nonneg hβ]
       exact integral_congr_ae (Filter.Eventually.of_forall (fun z => by rw [add_comm]))
     · rw [abs_of_neg hβ]
