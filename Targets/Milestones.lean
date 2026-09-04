@@ -459,9 +459,33 @@ theorem parisiStep_lipschitz {m v L : ℝ} {A : ℝ → ℝ}
     (integrable_exp_mul_of_hasLinearGrowth hgrow' hmeas' m x v)
 
 /--
+Pure arithmetic behind the variance-perturbation estimate: if `X` is squeezed between
+`mm * c` and `mm * c + B mm² / 2`, then `1/mm * X` is within `|mm| B / 2` of `c`.
+
+Isolated from the measure theory so that the two can fail independently.
+-/
+theorem abs_inv_mul_sub_le_of_bounds {X c mm B : ℝ} (hmm : mm ≠ 0) (hB : 0 ≤ B)
+    (h1 : mm * c ≤ X) (h2 : X ≤ mm * c + B * mm ^ 2 / 2) :
+    |1 / mm * X - c| ≤ |mm| * B / 2 := by
+  have hmpos : 0 < |mm| := abs_pos.2 hmm
+  have hid : mm * (1 / mm * X - c) = X - mm * c := by field_simp
+  have habs : |mm| * |1 / mm * X - c| = |X - mm * c| := by
+    rw [← abs_mul, hid]
+  have hb : |X - mm * c| ≤ B * mm ^ 2 / 2 := by
+    rw [abs_le]
+    constructor <;> nlinarith
+  have hsq : |mm| * |mm| = mm ^ 2 := by
+    rw [abs_mul_abs_self]; ring
+  rw [← mul_le_mul_left hmpos]
+  calc |mm| * |1 / mm * X - c| = |X - mm * c| := habs
+    _ ≤ B * mm ^ 2 / 2 := hb
+    _ = |mm| * (|mm| * B / 2) := by
+        rw [show |mm| * (|mm| * B / 2) = |mm| * |mm| * B / 2 by ring, hsq]
+
+/--
 **The variance-perturbation estimate.**
 
-For `A` `L`-Lipschitz and `w > 0`,
+For `A` `L`-Lipschitz, `w > 0` and `m ≠ 0`,
 
   `|T_{m,w} A (x) - A x| ≤ L √w 𝔼|Z| + |m| L² w / 2`.
 
@@ -471,13 +495,12 @@ variance `w`, and this bounds its effect.
 
 Both bounds on `(1/m) log 𝔼[exp (m g)]`, `g z = A (x + √w z) - A x`, are used:
 
-* **above** by the Herbst sub-Gaussian bound (`gaussianReal_mgf_le_of_lipschitz`), giving
-  `𝔼 g + L² w m / 2`;
-* **below** by Jensen (`integral_log_le_log_integral`, proved for Target 1a), giving `𝔼 g`.
+* **above** by the Herbst sub-Gaussian bound (`gaussianReal_mgf_le_of_lipschitz`);
+* **below** by Jensen (`integral_log_le_log_integral`, proved for Target 1a and generalised
+  to an arbitrary probability measure for exactly this use).
 
-Note the estimate stays bounded as `m → 0`, which the naive
-`𝔼[exp (a|Z|)] ≤ 2 exp (a²/2)` would not — see `ParisiFormula/GaussianConcentration1D.lean`.
-That is what keeps Target 2b's constant uniform in `k`.
+The estimate stays bounded as `m → 0`, which the naive `𝔼[exp (a|Z|)] ≤ 2 exp (a²/2)` would
+not; that is what keeps Target 2b's constant uniform in `k`.
 -/
 theorem abs_parisiStep_sub_self_le {A : ℝ → ℝ} {L m w : ℝ}
     (hL : 0 < L) (hw : 0 < w) (hm : m ≠ 0)
@@ -486,95 +509,80 @@ theorem abs_parisiStep_sub_self_le {A : ℝ → ℝ} {L m w : ℝ}
     |parisiStep m w A x - A x|
       ≤ L * Real.sqrt w * (∫ z, |z| ∂(gaussianReal 0 1)) + |m| * (L ^ 2 * w) / 2 := by
   classical
-  set f : ℝ → ℝ := fun z => A (x + Real.sqrt w * z) with hfdef
-  set c : ℝ := ∫ z, f z ∂(gaussianReal 0 1) with hcdef
   have hsw : 0 < Real.sqrt w := Real.sqrt_pos.2 hw
   have hLw : 0 < L * Real.sqrt w := mul_pos hL hsw
-  have hfmeas : Measurable f := hmeas.comp (by fun_prop)
-  have hfint : Integrable f (gaussianReal 0 1) :=
+  have hfmeas : Measurable (fun z : ℝ => A (x + Real.sqrt w * z)) :=
+    hmeas.comp (by fun_prop)
+  have hfint : Integrable (fun z : ℝ => A (x + Real.sqrt w * z)) (gaussianReal 0 1) :=
     integrable_of_hasLinearGrowth hA hmeas x w
-  have hexpint : Integrable (fun z => Real.exp (m * f z)) (gaussianReal 0 1) :=
+  have hexpint : Integrable
+      (fun z : ℝ => Real.exp (m * A (x + Real.sqrt w * z))) (gaussianReal 0 1) :=
     integrable_exp_mul_of_hasLinearGrowth hA hmeas m x w
-  have hIpos : 0 < ∫ z, Real.exp (m * f z) ∂(gaussianReal 0 1) := integral_exp_pos hexpint
-  -- `f` is `L √w`-Lipschitz
-  have hfLip : LipschitzWith (L * Real.sqrt w).toNNReal f := by
+  have hIpos : 0 < ∫ z, Real.exp (m * A (x + Real.sqrt w * z)) ∂(gaussianReal 0 1) :=
+    integral_exp_pos hexpint
+  -- `z ↦ A (x + √w z)` is `L √w`-Lipschitz
+  have hfLip : LipschitzWith (L * Real.sqrt w).toNNReal
+      (fun z : ℝ => A (x + Real.sqrt w * z)) := by
     refine LipschitzWith.of_dist_le_mul (fun z z' => ?_)
-    rw [Real.dist_eq, Real.dist_eq]
+    rw [Real.dist_eq, Real.dist_eq, Real.coe_toNNReal _ hLw.le]
     have h := hLip (x + Real.sqrt w * z) (x + Real.sqrt w * z')
     have hrw : |x + Real.sqrt w * z - (x + Real.sqrt w * z')| = Real.sqrt w * |z - z'| := by
       rw [show x + Real.sqrt w * z - (x + Real.sqrt w * z') = Real.sqrt w * (z - z') by ring,
         abs_mul, abs_of_nonneg (Real.sqrt_nonneg w)]
     rw [hrw] at h
-    have hcoe : ((L * Real.sqrt w).toNNReal : ℝ) = L * Real.sqrt w :=
-      Real.coe_toNNReal _ hLw.le
-    rw [hcoe]
-    calc |f z - f z'| ≤ L * (Real.sqrt w * |z - z'|) := h
+    calc |A (x + Real.sqrt w * z) - A (x + Real.sqrt w * z')|
+        ≤ L * (Real.sqrt w * |z - z'|) := h
       _ = L * Real.sqrt w * |z - z'| := by ring
-  -- upper bound from the Herbst estimate
-  have hherbst := gaussianReal_mgf_le_of_lipschitz f (L * Real.sqrt w) hLw hfLip hfmeas m
-  have hmgf_eq : mgf (fun z => f z - c) (gaussianReal 0 1) m
-      = Real.exp (-(m * c)) * ∫ z, Real.exp (m * f z) ∂(gaussianReal 0 1) := by
+  -- Herbst, rewritten as a bound on the plain exponential integral
+  have hherbst := gaussianReal_mgf_le_of_lipschitz
+    (fun z : ℝ => A (x + Real.sqrt w * z)) (L * Real.sqrt w) hLw hfLip hfmeas m
+  have hmgf_eq : mgf (fun z : ℝ => A (x + Real.sqrt w * z)
+        - ∫ y, A (x + Real.sqrt w * y) ∂(gaussianReal 0 1)) (gaussianReal 0 1) m
+      = Real.exp (-(m * ∫ y, A (x + Real.sqrt w * y) ∂(gaussianReal 0 1)))
+        * ∫ z, Real.exp (m * A (x + Real.sqrt w * z)) ∂(gaussianReal 0 1) := by
     simp only [mgf]
     rw [← integral_const_mul]
     refine integral_congr_ae (Filter.Eventually.of_forall (fun z => ?_))
+    show Real.exp (m * (A (x + Real.sqrt w * z)
+        - ∫ y, A (x + Real.sqrt w * y) ∂(gaussianReal 0 1)))
+      = Real.exp (-(m * ∫ y, A (x + Real.sqrt w * y) ∂(gaussianReal 0 1)))
+        * Real.exp (m * A (x + Real.sqrt w * z))
     rw [← Real.exp_add]
     congr 1
     ring
-  have hupper : Real.log (∫ z, Real.exp (m * f z) ∂(gaussianReal 0 1))
-      ≤ m * c + (L * Real.sqrt w) ^ 2 * m ^ 2 / 2 := by
+  have hupper : Real.log (∫ z, Real.exp (m * A (x + Real.sqrt w * z)) ∂(gaussianReal 0 1))
+      ≤ m * (∫ y, A (x + Real.sqrt w * y) ∂(gaussianReal 0 1))
+        + (L ^ 2 * w) * m ^ 2 / 2 := by
     rw [hmgf_eq] at hherbst
     have h := Real.log_le_log (by positivity) hherbst
     rw [Real.log_mul (Real.exp_ne_zero _) (ne_of_gt hIpos), Real.log_exp, Real.log_exp] at h
+    have hsq : (L * Real.sqrt w) ^ 2 = L ^ 2 * w := by
+      rw [mul_pow, Real.sq_sqrt hw.le]
+    rw [hsq] at h
     linarith
-  -- lower bound from Jensen
-  have hlower : m * c ≤ Real.log (∫ z, Real.exp (m * f z) ∂(gaussianReal 0 1)) := by
-    have hlog : Integrable (fun z => Real.log (Real.exp (m * f z))) (gaussianReal 0 1) := by
+  -- Jensen
+  have hlower : m * (∫ y, A (x + Real.sqrt w * y) ∂(gaussianReal 0 1))
+      ≤ Real.log (∫ z, Real.exp (m * A (x + Real.sqrt w * z)) ∂(gaussianReal 0 1)) := by
+    have hlogint : Integrable
+        (fun z : ℝ => Real.log (Real.exp (m * A (x + Real.sqrt w * z))))
+        (gaussianReal 0 1) := by
       simpa [Real.log_exp] using hfint.const_mul m
-    have h := integral_log_le_log_integral
-      (W := fun z => Real.exp (m * f z))
-      (fun z => Real.exp_pos _) hexpint hlog
-    have hmc : (∫ z, Real.log (Real.exp (m * f z)) ∂(gaussianReal 0 1)) = m * c := by
-      simp only [Real.log_exp]
-      rw [integral_const_mul, hcdef]
-    rwa [hmc] at h
-  -- combine: `|T - c| ≤ |m| L² w / 2`
-  have hsq : (L * Real.sqrt w) ^ 2 = L ^ 2 * w := by
-    rw [mul_pow, Real.sq_sqrt hw.le]
-  have hTc : |parisiStep m w A x - c| ≤ |m| * (L ^ 2 * w) / 2 := by
-    simp only [parisiStep, if_neg hm]
-    rcases lt_or_gt_of_ne hm with hneg | hpos
-    · rw [abs_le]
-      constructor
-      · have : 1 / m * Real.log (∫ z, Real.exp (m * f z) ∂(gaussianReal 0 1))
-            ≥ c + (L ^ 2 * w) * m / 2 := by
-          rw [ge_iff_le, le_div_iff_of_neg hneg]
-          nlinarith [hupper, hsq]
-        rw [abs_of_neg hneg]
-        nlinarith [this]
-      · have : 1 / m * Real.log (∫ z, Real.exp (m * f z) ∂(gaussianReal 0 1)) ≤ c := by
-          rw [div_mul_eq_mul_div, div_le_iff_of_neg hneg]
-          nlinarith [hlower]
-        rw [abs_of_neg hneg]
-        nlinarith [this]
-    · rw [abs_le]
-      constructor
-      · have : c ≤ 1 / m * Real.log (∫ z, Real.exp (m * f z) ∂(gaussianReal 0 1)) := by
-          rw [div_mul_eq_mul_div, le_div_iff₀ hpos]
-          nlinarith [hlower]
-        rw [abs_of_pos hpos]
-        nlinarith [this]
-      · have : 1 / m * Real.log (∫ z, Real.exp (m * f z) ∂(gaussianReal 0 1))
-            ≤ c + (L ^ 2 * w) * m / 2 := by
-          rw [div_mul_eq_mul_div, div_le_iff₀ hpos]
-          nlinarith [hupper, hsq]
-        rw [abs_of_pos hpos]
-        nlinarith [this]
-  -- and `|c - A x| ≤ L √w 𝔼|Z|` from the shift lemma
-  have hcA : |c - A x| ≤ L * Real.sqrt w * ∫ z, |z| ∂(gaussianReal 0 1) :=
+    have h := integral_log_le_log_integral (μ := gaussianReal 0 1)
+      (W := fun z : ℝ => Real.exp (m * A (x + Real.sqrt w * z)))
+      (fun z => Real.exp_pos _) hexpint hlogint
+    simpa [Real.log_exp, integral_const_mul] using h
+  -- combine the two bounds, then add the mean term
+  have hTc : |parisiStep m w A x
+      - ∫ y, A (x + Real.sqrt w * y) ∂(gaussianReal 0 1)| ≤ |m| * (L ^ 2 * w) / 2 := by
+    rw [parisiStep, if_neg hm]
+    exact abs_inv_mul_sub_le_of_bounds hm (by positivity) hlower hupper
+  have hcA : |(∫ y, A (x + Real.sqrt w * y) ∂(gaussianReal 0 1)) - A x|
+      ≤ L * Real.sqrt w * ∫ z, |z| ∂(gaussianReal 0 1) :=
     abs_integral_shift_sub_le hL.le hLip hA hmeas x w
   calc |parisiStep m w A x - A x|
-      ≤ |parisiStep m w A x - c| + |c - A x| := by
-        simpa using abs_sub_le (parisiStep m w A x) c (A x)
+      ≤ |parisiStep m w A x - ∫ y, A (x + Real.sqrt w * y) ∂(gaussianReal 0 1)|
+          + |(∫ y, A (x + Real.sqrt w * y) ∂(gaussianReal 0 1)) - A x| :=
+        abs_sub_le _ _ _
     _ ≤ |m| * (L ^ 2 * w) / 2 + L * Real.sqrt w * ∫ z, |z| ∂(gaussianReal 0 1) := by
         linarith [hTc, hcA]
     _ = L * Real.sqrt w * (∫ z, |z| ∂(gaussianReal 0 1)) + |m| * (L ^ 2 * w) / 2 := by ring

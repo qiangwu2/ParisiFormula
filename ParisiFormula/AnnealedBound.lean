@@ -59,36 +59,39 @@ variable {Ω : Type u} [MeasureSpace Ω] [IsProbabilityMeasure (ℙ : Measure Ω
 /-! ## 1. Jensen's inequality for `log`, via `log x ≤ x - 1` -/
 
 /--
-**Jensen's inequality for `log`** on a probability space, in the form needed for the
-annealed bound: `𝔼[log W] ≤ log 𝔼[W]` for a strictly positive integrable `W` with
-integrable logarithm.
+**Jensen's inequality for `log`** on *any* probability space: `𝔼[log W] ≤ log 𝔼[W]` for a
+strictly positive integrable `W` with integrable logarithm.
+
+Stated for a general `μ` rather than the ambient `ℙ`: Target 1a uses it on `ℙ`, but Target
+2b needs the same inequality on `gaussianReal 0 1` (for the Jensen half of
+`Targets.abs_parisiStep_sub_self_le`).
 
 The proof is the elementary one: `log t ≤ t - 1` applied to `t = W ω / 𝔼[W]`.
 -/
-theorem integral_log_le_log_integral {W : Ω → ℝ}
-    (hpos : ∀ ω, 0 < W ω)
-    (hW : Integrable W (ℙ : Measure Ω))
-    (hlog : Integrable (fun ω => Real.log (W ω)) (ℙ : Measure Ω)) :
-    (∫ ω, Real.log (W ω) ∂(ℙ : Measure Ω))
-      ≤ Real.log (∫ ω, W ω ∂(ℙ : Measure Ω)) := by
+theorem integral_log_le_log_integral {α : Type*} [MeasurableSpace α]
+    {μ : Measure α} [IsProbabilityMeasure μ] {W : α → ℝ}
+    (hpos : ∀ a, 0 < W a)
+    (hW : Integrable W μ)
+    (hlog : Integrable (fun a => Real.log (W a)) μ) :
+    (∫ a, Real.log (W a) ∂μ) ≤ Real.log (∫ a, W a ∂μ) := by
   classical
-  set m : ℝ := ∫ ω, W ω ∂(ℙ : Measure Ω) with hm
+  set m : ℝ := ∫ a, W a ∂μ with hm
   have hmpos : 0 < m := by
-    have hsupp : (Function.support fun ω => W ω) = Set.univ := by
-      ext ω
-      simp [Function.mem_support, ne_of_gt (hpos ω)]
-    rw [hm, integral_pos_iff_support_of_nonneg (fun ω => (hpos ω).le) hW, hsupp]
+    have hsupp : (Function.support fun a => W a) = Set.univ := by
+      ext a
+      simp [Function.mem_support, ne_of_gt (hpos a)]
+    rw [hm, integral_pos_iff_support_of_nonneg (fun a => (hpos a).le) hW, hsupp]
     simp
   have hmne : m ≠ 0 := ne_of_gt hmpos
-  -- Pointwise: `log (W ω) - log m = log (W ω / m) ≤ W ω / m - 1`.
-  have key : ∀ ω, Real.log (W ω) - Real.log m ≤ W ω / m - 1 := by
-    intro ω
-    have h1 : Real.log (W ω / m) ≤ W ω / m - 1 :=
-      Real.log_le_sub_one_of_pos (div_pos (hpos ω) hmpos)
-    rwa [Real.log_div (ne_of_gt (hpos ω)) hmne] at h1
-  have hintL : Integrable (fun ω => Real.log (W ω) - Real.log m) (ℙ : Measure Ω) :=
+  -- Pointwise: `log (W a) - log m = log (W a / m) ≤ W a / m - 1`.
+  have key : ∀ a, Real.log (W a) - Real.log m ≤ W a / m - 1 := by
+    intro a
+    have h1 : Real.log (W a / m) ≤ W a / m - 1 :=
+      Real.log_le_sub_one_of_pos (div_pos (hpos a) hmpos)
+    rwa [Real.log_div (ne_of_gt (hpos a)) hmne] at h1
+  have hintL : Integrable (fun a => Real.log (W a) - Real.log m) μ :=
     hlog.sub (integrable_const _)
-  have hintR : Integrable (fun ω => W ω / m - 1) (ℙ : Measure Ω) :=
+  have hintR : Integrable (fun a => W a / m - 1) μ :=
     (hW.div_const m).sub (integrable_const _)
   have hmono := integral_mono hintL hintR key
   rw [integral_sub hlog (integrable_const _),
