@@ -2,6 +2,7 @@ import ParisiFormula.GuerraToninelli
 import ParisiFormula.AnnealedBound
 import ParisiFormula.GaussianCosh
 import ParisiFormula.ParisiOperator
+import ParisiFormula.GaussianConcentration1D
 import Mathlib.Probability.Distributions.Gaussian.Real
 
 /-!
@@ -456,6 +457,127 @@ theorem parisiStep_lipschitz {m v L : ℝ} {A : ℝ → ℝ}
     (integrable_of_hasLinearGrowth hgrow' hmeas' x v)
     (integrable_exp_mul_of_hasLinearGrowth hA hmeas m x v)
     (integrable_exp_mul_of_hasLinearGrowth hgrow' hmeas' m x v)
+
+/--
+**The variance-perturbation estimate.**
+
+For `A` `L`-Lipschitz and `w > 0`,
+
+  `|T_{m,w} A (x) - A x| ≤ L √w 𝔼|Z| + |m| L² w / 2`.
+
+This is the analytic core of the `q`-perturbation half of Target 2b: via the semigroup law
+`Parisi.T_add`, changing a scheme parameter `q_p` factors as an extra smoothing step of small
+variance `w`, and this bounds its effect.
+
+Both bounds on `(1/m) log 𝔼[exp (m g)]`, `g z = A (x + √w z) - A x`, are used:
+
+* **above** by the Herbst sub-Gaussian bound (`gaussianReal_mgf_le_of_lipschitz`), giving
+  `𝔼 g + L² w m / 2`;
+* **below** by Jensen (`integral_log_le_log_integral`, proved for Target 1a), giving `𝔼 g`.
+
+Note the estimate stays bounded as `m → 0`, which the naive
+`𝔼[exp (a|Z|)] ≤ 2 exp (a²/2)` would not — see `ParisiFormula/GaussianConcentration1D.lean`.
+That is what keeps Target 2b's constant uniform in `k`.
+-/
+theorem abs_parisiStep_sub_self_le {A : ℝ → ℝ} {L m w : ℝ}
+    (hL : 0 < L) (hw : 0 < w) (hm : m ≠ 0)
+    (hLip : ∀ y y', |A y - A y'| ≤ L * |y - y'|)
+    (hA : HasLinearGrowth A) (hmeas : Measurable A) (x : ℝ) :
+    |parisiStep m w A x - A x|
+      ≤ L * Real.sqrt w * (∫ z, |z| ∂(gaussianReal 0 1)) + |m| * (L ^ 2 * w) / 2 := by
+  classical
+  set f : ℝ → ℝ := fun z => A (x + Real.sqrt w * z) with hfdef
+  set c : ℝ := ∫ z, f z ∂(gaussianReal 0 1) with hcdef
+  have hsw : 0 < Real.sqrt w := Real.sqrt_pos.2 hw
+  have hLw : 0 < L * Real.sqrt w := mul_pos hL hsw
+  have hfmeas : Measurable f := hmeas.comp (by fun_prop)
+  have hfint : Integrable f (gaussianReal 0 1) :=
+    integrable_of_hasLinearGrowth hA hmeas x w
+  have hexpint : Integrable (fun z => Real.exp (m * f z)) (gaussianReal 0 1) :=
+    integrable_exp_mul_of_hasLinearGrowth hA hmeas m x w
+  have hIpos : 0 < ∫ z, Real.exp (m * f z) ∂(gaussianReal 0 1) := integral_exp_pos hexpint
+  -- `f` is `L √w`-Lipschitz
+  have hfLip : LipschitzWith (L * Real.sqrt w).toNNReal f := by
+    refine LipschitzWith.of_dist_le_mul (fun z z' => ?_)
+    rw [Real.dist_eq, Real.dist_eq]
+    have h := hLip (x + Real.sqrt w * z) (x + Real.sqrt w * z')
+    have hrw : |x + Real.sqrt w * z - (x + Real.sqrt w * z')| = Real.sqrt w * |z - z'| := by
+      rw [show x + Real.sqrt w * z - (x + Real.sqrt w * z') = Real.sqrt w * (z - z') by ring,
+        abs_mul, abs_of_nonneg (Real.sqrt_nonneg w)]
+    rw [hrw] at h
+    have hcoe : ((L * Real.sqrt w).toNNReal : ℝ) = L * Real.sqrt w :=
+      Real.coe_toNNReal _ hLw.le
+    rw [hcoe]
+    calc |f z - f z'| ≤ L * (Real.sqrt w * |z - z'|) := h
+      _ = L * Real.sqrt w * |z - z'| := by ring
+  -- upper bound from the Herbst estimate
+  have hherbst := gaussianReal_mgf_le_of_lipschitz f (L * Real.sqrt w) hLw hfLip hfmeas m
+  have hmgf_eq : mgf (fun z => f z - c) (gaussianReal 0 1) m
+      = Real.exp (-(m * c)) * ∫ z, Real.exp (m * f z) ∂(gaussianReal 0 1) := by
+    simp only [mgf]
+    rw [← integral_const_mul]
+    refine integral_congr_ae (Filter.Eventually.of_forall (fun z => ?_))
+    rw [← Real.exp_add]
+    congr 1
+    ring
+  have hupper : Real.log (∫ z, Real.exp (m * f z) ∂(gaussianReal 0 1))
+      ≤ m * c + (L * Real.sqrt w) ^ 2 * m ^ 2 / 2 := by
+    rw [hmgf_eq] at hherbst
+    have h := Real.log_le_log (by positivity) hherbst
+    rw [Real.log_mul (Real.exp_ne_zero _) (ne_of_gt hIpos), Real.log_exp, Real.log_exp] at h
+    linarith
+  -- lower bound from Jensen
+  have hlower : m * c ≤ Real.log (∫ z, Real.exp (m * f z) ∂(gaussianReal 0 1)) := by
+    have hlog : Integrable (fun z => Real.log (Real.exp (m * f z))) (gaussianReal 0 1) := by
+      simpa [Real.log_exp] using hfint.const_mul m
+    have h := integral_log_le_log_integral
+      (W := fun z => Real.exp (m * f z))
+      (fun z => Real.exp_pos _) hexpint hlog
+    have hmc : (∫ z, Real.log (Real.exp (m * f z)) ∂(gaussianReal 0 1)) = m * c := by
+      simp only [Real.log_exp]
+      rw [integral_const_mul, hcdef]
+    rwa [hmc] at h
+  -- combine: `|T - c| ≤ |m| L² w / 2`
+  have hsq : (L * Real.sqrt w) ^ 2 = L ^ 2 * w := by
+    rw [mul_pow, Real.sq_sqrt hw.le]
+  have hTc : |parisiStep m w A x - c| ≤ |m| * (L ^ 2 * w) / 2 := by
+    simp only [parisiStep, if_neg hm]
+    rcases lt_or_gt_of_ne hm with hneg | hpos
+    · rw [abs_le]
+      constructor
+      · have : 1 / m * Real.log (∫ z, Real.exp (m * f z) ∂(gaussianReal 0 1))
+            ≥ c + (L ^ 2 * w) * m / 2 := by
+          rw [ge_iff_le, le_div_iff_of_neg hneg]
+          nlinarith [hupper, hsq]
+        rw [abs_of_neg hneg]
+        nlinarith [this]
+      · have : 1 / m * Real.log (∫ z, Real.exp (m * f z) ∂(gaussianReal 0 1)) ≤ c := by
+          rw [div_mul_eq_mul_div, div_le_iff_of_neg hneg]
+          nlinarith [hlower]
+        rw [abs_of_neg hneg]
+        nlinarith [this]
+    · rw [abs_le]
+      constructor
+      · have : c ≤ 1 / m * Real.log (∫ z, Real.exp (m * f z) ∂(gaussianReal 0 1)) := by
+          rw [div_mul_eq_mul_div, le_div_iff₀ hpos]
+          nlinarith [hlower]
+        rw [abs_of_pos hpos]
+        nlinarith [this]
+      · have : 1 / m * Real.log (∫ z, Real.exp (m * f z) ∂(gaussianReal 0 1))
+            ≤ c + (L ^ 2 * w) * m / 2 := by
+          rw [div_mul_eq_mul_div, div_le_iff₀ hpos]
+          nlinarith [hupper, hsq]
+        rw [abs_of_pos hpos]
+        nlinarith [this]
+  -- and `|c - A x| ≤ L √w 𝔼|Z|` from the shift lemma
+  have hcA : |c - A x| ≤ L * Real.sqrt w * ∫ z, |z| ∂(gaussianReal 0 1) :=
+    abs_integral_shift_sub_le hL.le hLip hA hmeas x w
+  calc |parisiStep m w A x - A x|
+      ≤ |parisiStep m w A x - c| + |c - A x| := by
+        simpa using abs_sub_le (parisiStep m w A x) c (A x)
+    _ ≤ |m| * (L ^ 2 * w) / 2 + L * Real.sqrt w * ∫ z, |z| ∂(gaussianReal 0 1) := by
+        linarith [hTc, hcA]
+    _ = L * Real.sqrt w * (∫ z, |z| ∂(gaussianReal 0 1)) + |m| * (L ^ 2 * w) / 2 := by ring
 
 /-- Backward Parisi recursion for the SK model (`ξ(x) = x²/2`, so `ξ'(x) = x`).
 
