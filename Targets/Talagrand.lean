@@ -591,19 +591,22 @@ theorem levelVar_nonneg {k : ℕ} (s : RSBScheme k) (β : ℝ) (j : ℕ) :
 /--
 **Talagrand's (3.2), level by level.**  On `talNbhd t₀`, level `j` of the cascade is
 measurable, of `ℓ¹` growth, `ℓ¹`-Lipschitz, differentiable in `t` with derivative
-`guerraD j`, and `guerraD j` is measurable and of `ℓ¹` growth — all with constants uniform
-on the neighbourhood.
+`guerraD j`, and `guerraD j` is measurable and of `ℓ¹` growth.  The constants are uniform on
+the neighbourhood **and affine in the size `uAbs n U` of the disorder, uniformly in `U`** —
+which is what differentiating under the expectation over the disorder needs.
 -/
-theorem guerra_cascade_hasDerivAt {k : ℕ} (n : ℕ) (s : RSBScheme k) (β : ℝ)
-    (U : EnergySpace n) (h : ℝ) {t₀ : ℝ} (ht₀ : t₀ ∈ Set.Ioo (0 : ℝ) 1) (j : ℕ) :
+theorem guerra_cascade_hasDerivAt {k : ℕ} (n : ℕ) (s : RSBScheme k) (β : ℝ) (h : ℝ)
+    {t₀ : ℝ} (ht₀ : t₀ ∈ Set.Ioo (0 : ℝ) 1) (j : ℕ) :
+    ∃ a b D L a' b' D' : ℝ, 0 ≤ b ∧ 0 ≤ D ∧ 0 ≤ L ∧ 0 ≤ b' ∧ 0 ≤ D' ∧
+    ∀ U : EnergySpace n,
     (∀ t ∈ talNbhd t₀, Measurable (cascadeT n s β 1 (guerraBase n U h t) j)) ∧
     (∀ t ∈ talNbhd t₀, Measurable (guerraD n s β U h j t)) ∧
-    (∃ C D : ℝ, 0 ≤ D ∧ ∀ t ∈ talNbhd t₀, ∀ y,
-        |cascadeT n s β 1 (guerraBase n U h t) j y| ≤ C + D * l1 y) ∧
-    (∃ L : ℝ, 0 ≤ L ∧ ∀ t ∈ talNbhd t₀, ∀ y y',
+    (∀ t ∈ talNbhd t₀, ∀ y,
+        |cascadeT n s β 1 (guerraBase n U h t) j y| ≤ (a + b * uAbs n U) + D * l1 y) ∧
+    (∀ t ∈ talNbhd t₀, ∀ y y',
         |cascadeT n s β 1 (guerraBase n U h t) j y - cascadeT n s β 1 (guerraBase n U h t) j y'|
           ≤ L * l1 (y - y')) ∧
-    (∃ C' D' : ℝ, 0 ≤ D' ∧ ∀ t ∈ talNbhd t₀, ∀ y, |guerraD n s β U h j t y| ≤ C' + D' * l1 y) ∧
+    (∀ t ∈ talNbhd t₀, ∀ y, |guerraD n s β U h j t y| ≤ (a' + b' * uAbs n U) + D' * l1 y) ∧
     (∀ t ∈ talNbhd t₀, ∀ x, HasDerivAt (fun t => cascadeT n s β 1 (guerraBase n U h t) j x)
         (guerraD n s β U h j t x) t) := by
   classical
@@ -612,15 +615,15 @@ theorem guerra_cascade_hasDerivAt {k : ℕ} (n : ℕ) (s : RSBScheme k) (β : �
   | zero =>
       have ht₀2 : 0 < t₀ / 2 := by linarith [ht₀.1]
       have h1t₀2 : 0 < (1 - t₀) / 2 := by linarith [ht₀.2]
+      refine ⟨Real.log (Fintype.card (Config n)) + Fintype.card (Config n) * (n * |h|), 1,
+        Fintype.card (Config n), 1, 0, 1 / (2 * Real.sqrt (t₀ / 2)),
+        Fintype.card (Config n) / (2 * Real.sqrt ((1 - t₀) / 2)),
+        zero_le_one, by positivity, zero_le_one, by positivity, by positivity, fun U => ?_⟩
       refine ⟨fun t _ => measurable_guerraBase n U h t, fun t _ => measurable_guerraBaseDeriv n U h t,
-        ⟨Real.log (Fintype.card (Config n)) + uAbs n U + Fintype.card (Config n) * (n * |h|),
-          Fintype.card (Config n), by positivity, fun t ht y => ?_⟩,
-        ⟨1, zero_le_one, fun t ht y y' => ?_⟩,
-        ⟨uAbs n U / (2 * Real.sqrt (t₀ / 2)),
-          Fintype.card (Config n) / (2 * Real.sqrt ((1 - t₀) / 2)), by positivity,
-          fun t ht y => ?_⟩,
-        fun t ht x => ?_⟩
-      · exact abs_guerraBase_le n U h (hsub ht).1.le (hsub ht).2.le y
+        fun t ht y => ?_, fun t ht y y' => ?_, fun t ht y => ?_, fun t ht x => ?_⟩
+      · have := abs_guerraBase_le n U h (hsub ht).1.le (hsub ht).2.le y
+        show |guerraBase n U h t y| ≤ _
+        linarith
       · exact guerraBase_lipschitz n U h (hsub ht).1.le (hsub ht).2.le y y'
       · -- the derivative bound, with `1/(2√t)` monotone on the neighbourhood
         have hb := abs_guerraBaseDeriv_le n U h t y
@@ -636,15 +639,23 @@ theorem guerra_cascade_hasDerivAt {k : ℕ} (n : ℕ) (s : RSBScheme k) (β : �
             ≤ Fintype.card (Config n) / (2 * Real.sqrt ((1 - t₀) / 2)) :=
           div_le_div_of_nonneg_left (by positivity) hp2 hs2
         have hB' := mul_le_mul_of_nonneg_right hB (l1_nonneg y)
+        have hA' : uAbs n U / (2 * Real.sqrt (t₀ / 2))
+            = (1 / (2 * Real.sqrt (t₀ / 2))) * uAbs n U := by ring
         show |guerraBaseDeriv n U h t y| ≤ _
         linarith
       · exact hasDerivAt_guerraBase n U h x (hsub ht)
   | succ j ih =>
-      obtain ⟨hFm, hDm, ⟨C, D, hD, hF⟩, ⟨L, hL, hLip⟩, ⟨C', D', hD', hD'b⟩, hderiv⟩ := ih
+      obtain ⟨a, b, D, L, a', b', D', hb, hD, hL, hb', hD', ihU⟩ := ih
       set m : ℝ := s.m (k + 1 - j) with hm_def
       set v : ℝ := 1 * (β ^ 2 * (s.q (k + 2 - j) - s.q (k + 1 - j))) with hv_def
       have hm : 0 ≤ m := s.m_nonneg (by omega)
       have hv : 0 ≤ v := levelVar_nonneg s β j
+      refine ⟨a + stepK n m v D, b, D, L,
+        a' + (D' * Real.sqrt v)
+          * (Real.exp ((|m| * L * Real.sqrt v) * l1Moment n)
+              * ∫ z, l1 z * Real.exp ((|m| * L * Real.sqrt v) * l1 z) ∂(piGauss n)),
+        b', D', hb, hD, hL, hb', hD', fun U => ?_⟩
+      obtain ⟨hFm, hDm, hF, hLip, hD'b, hderiv⟩ := ihU U
       -- level `j+1` is one `N`-site step applied to level `j`
       have hstep : ∀ t, cascadeT n s β 1 (guerraBase n U h t) (j + 1)
           = fun x => parisiStepPi n m v (cascadeT n s β 1 (guerraBase n U h t) j) x := by
@@ -653,18 +664,13 @@ theorem guerra_cascade_hasDerivAt {k : ℕ} (n : ℕ) (s : RSBScheme k) (β : �
           = fun x => ∫ z, guerraD n s β U h j t (fun i => x i + Real.sqrt v * z i)
               * tiltWeightPi n m v (cascadeT n s β 1 (guerraBase n U h t) j) x z ∂(piGauss n) := by
         intro t; rfl
-      refine ⟨fun t ht => ?_, fun t ht => ?_,
-        ⟨C + stepK n m v D, D, hD, fun t ht y => ?_⟩,
-        ⟨L, hL, fun t ht y y' => ?_⟩,
-        ⟨C' + (D' * Real.sqrt v)
-            * (Real.exp ((|m| * L * Real.sqrt v) * l1Moment n)
-                * ∫ z, l1 z * Real.exp ((|m| * L * Real.sqrt v) * l1 z) ∂(piGauss n)),
-          D', hD', fun t ht y => ?_⟩,
-        fun t ht x => ?_⟩
+      refine ⟨fun t ht => ?_, fun t ht => ?_, fun t ht y => ?_, fun t ht y y' => ?_,
+        fun t ht y => ?_, fun t ht x => ?_⟩
       · rw [hstep]; exact measurable_parisiStepPi (hFm t ht) m v
       · rw [hDstep]; exact measurable_tiltAvg (hFm t ht) (hDm t ht) m v
       · rw [hstep]
-        exact parisiStepPi_abs_le hm hv hD (hF t ht) (hFm t ht) y
+        have := parisiStepPi_abs_le hm hv hD (hF t ht) (hFm t ht) y
+        linarith
       · rw [hstep]
         exact parisiStepPi_lipschitz hD hL (hF t ht) (hFm t ht) (hLip t ht) y y'
       · rw [hDstep]
@@ -677,15 +683,42 @@ theorem guerra_cascade_hasDerivAt {k : ℕ} (n : ℕ) (s : RSBScheme k) (β : �
             * tiltWeightPi n m v (cascadeT n s β 1 (guerraBase n U h t) j) x z ∂(piGauss n)) t
         exact hasDerivAt_parisiStepPi_param (A := fun t => cascadeT n s β 1 (guerraBase n U h t) j)
           (A' := fun t => guerraD n s β U h j t) (m := m) (v := v)
-          (C := C) (D := D) (C' := C') (D' := D') x hN hD hD'
+          (C := a + b * uAbs n U) (D := D) (C' := a' + b' * uAbs n U) (D' := D') x hN hD hD'
           (fun u hu y => hderiv u hu y) hFm hDm hF hD'b
 
 /-- **(3.2) at the top of the cascade**: `d/dt F_{1,t}(0) = guerraD (k+2) t 0`. -/
 theorem hasDerivAt_cascade_top {k : ℕ} (n : ℕ) (s : RSBScheme k) (β : ℝ) (U : EnergySpace n)
     (h : ℝ) {t : ℝ} (ht : t ∈ Set.Ioo (0 : ℝ) 1) :
     HasDerivAt (fun t => cascadeT n s β 1 (guerraBase n U h t) (k + 2) 0)
-      (guerraD n s β U h (k + 2) t 0) t :=
-  (guerra_cascade_hasDerivAt n s β U h ht (k + 2)).2.2.2.2.2 t (self_mem_talNbhd ht) 0
+      (guerraD n s β U h (k + 2) t 0) t := by
+  obtain ⟨_, _, _, _, _, _, _, _, _, _, _, _, hU⟩ := guerra_cascade_hasDerivAt n s β h ht (k + 2)
+  exact (hU U).2.2.2.2.2 t (self_mem_talNbhd ht) 0
+
+/-- The size `uAbs` is controlled by the Hilbert norm: `|U σ| ≤ ‖U‖` coordinatewise. -/
+theorem uAbs_le_card_mul_norm (n : ℕ) (U : EnergySpace n) :
+    uAbs n U ≤ Fintype.card (Config n) * ‖U‖ := by
+  unfold uAbs
+  calc (∑ σ : Config n, |U σ|) ≤ ∑ _σ : Config n, ‖U‖ :=
+        Finset.sum_le_sum fun σ _ => by
+          have := PiLp.norm_apply_le U σ
+          simpa [Real.norm_eq_abs] using this
+    _ = Fintype.card (Config n) * ‖U‖ := by
+        rw [Finset.sum_const, Finset.card_univ, nsmul_eq_mul]
+
+/-- **The domination needed to differentiate under the expectation over the disorder**: on
+`talNbhd t₀`, `|∂_t F_{1,t}(0)|` is bounded by an affine function of `‖U‖`, uniformly in `t`. -/
+theorem abs_guerraD_top_le {k : ℕ} (n : ℕ) (s : RSBScheme k) (β : ℝ) (h : ℝ)
+    {t₀ : ℝ} (ht₀ : t₀ ∈ Set.Ioo (0 : ℝ) 1) :
+    ∃ a b : ℝ, 0 ≤ b ∧ ∀ U : EnergySpace n, ∀ t ∈ talNbhd t₀,
+      |guerraD n s β U h (k + 2) t 0| ≤ a + b * ‖U‖ := by
+  obtain ⟨_, _, _, _, a', b', _, _, _, _, hb', _, hU⟩ :=
+    guerra_cascade_hasDerivAt n s β h ht₀ (k + 2)
+  refine ⟨a', b' * Fintype.card (Config n), by positivity, fun U t ht => ?_⟩
+  have h1 := (hU U).2.2.2.2.1 t ht 0
+  have h2 : l1 (0 : Fin n → ℝ) = 0 := by simp [l1]
+  rw [h2, mul_zero, add_zero] at h1
+  have h3 := mul_le_mul_of_nonneg_left (uAbs_le_card_mul_norm n U) hb'
+  nlinarith
 
 /-! ## 3. The two analytic cores of the paper -/
 
