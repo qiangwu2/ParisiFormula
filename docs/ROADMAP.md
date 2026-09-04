@@ -10,7 +10,8 @@ Target 4 is `Tendsto (fun N => s_N) atTop (𝓝 (parisiValue β h))`, which foll
   `parisiValue_le`; and
 * **liminf ≥** — Talagrand's coupled-replica lower bound (Milestone 4), whose induction on
   the number of RSB levels needs **Target 2b-i** (continuity of `𝒫_k` in the parameters for
-  fixed `k`, hence existence of a minimiser — Talagrand's (2.17)).
+  fixed `k`, hence existence of a minimiser — Talagrand's (2.17)).  **2b-i is now proved**,
+  so the critical path to Target 4 is reduced to Milestone 3 (`3 → 3'`).
 
 So the critical path is: **3 → 3'** and **2b → 4**, with `parisiValue` well-definedness
 (done: `bddBelow_parisiSet`) underneath both.
@@ -132,11 +133,14 @@ right statements: `parisiFunctional` typechecked both before and after an off-by
       `integrable_exp_mul_of_hasLinearGrowth`, and the Fubini step needs product-measure
       integrability, which follows from `exp (a|p₁ + p₂|) ≤ exp(a|p₁|) exp(a|p₂|)` and
       `integrable_exp_abs_mul_stdGaussian` on each factor.  (M)
-- [ ] **2b** Regularity in `(m, q)`. (L) — **split into 2b-i / 2b-ii; see the correction
-      from Talagrand's text below.  2b-i (continuity + compactness ⇒ minimiser) is what the
-      Annals proof actually consumes; 2b-ii (uniform Lipschitz) is Guerra's route and is off
-      the critical path.**  The `m = 0` boundary, previously the blocker, is now proved
-      (`Targets.parisiStep_zero_sandwich`).
+- [x] **2b-i** Continuity in `(m,q)` at fixed `k`, compactness, and existence of a
+      minimiser — Talagrand's (2.17).  **DONE**, `sorry`-free
+      (`Targets.exists_minimizer_parisiFunctional`).  This is the regularity the Annals proof
+      actually consumes; see the correction from Talagrand's text below.
+- [ ] **2b-ii** The uniform-in-`k` Lipschitz bound (`parisiFunctional_lipschitz`). (L) —
+      Guerra's route, needed only to extend `𝒫` to general measures on `[0,1]`, which
+      Talagrand explicitly avoids.  **Off the critical path.**  No longer blocked either: the
+      note below records a derivative-free argument giving `0 ≤ ψ'(m) ≤ 2v` for all `β`.
       It previously read `∀ k, ∃ C, ∀ s s'`, allowing the constant to depend on `k`, which
       cannot control `parisiValue = inf_k inf_{(m,q)} 𝒫_k`: nothing survives the infimum over
       all `k` unless `C` is uniform in `k`.  `∃ C` is now hoisted outside `∀ k`.  Under the
@@ -256,11 +260,22 @@ the induction consumes (2.17), i.e. minimiser existence.
 
 **Restatement of Milestone 2b to match the source:**
 
-* **2b-i (what Talagrand needs).**  For fixed `k`, `(m,q) ↦ 𝒫_k(m,q)` is continuous on the
-  compact set of admissible schemes, hence attains its minimum.  Continuity at `m_p = 0` is
-  supplied by `parisiStep_zero_sandwich`; continuity elsewhere is dominated convergence.
-  This is the version that should be proved, and it is the one on the critical path to
-  Target 4.
+* **2b-i (what Talagrand needs) — PROVED (2026-09-04).**  For fixed `k`, `(m,q) ↦ 𝒫_k(m,q)`
+  is continuous on the compact set of admissible schemes, hence attains its minimum:
+  `Targets.exists_minimizer_parisiFunctional`, verified `sorry`-free by `#print axioms`
+  (only `propext`, `Classical.choice`, `Quot.sound`).  The chain is
+
+  - `admissible k` — the constraints plus `[0,1]`-valued, a *closed* subset of a product of
+    copies of `[0,1]`, hence compact by Tychonoff (`isCompact_admissible`).  Closed exactly
+    because (1.6)–(1.7) use `≤`, which is Talagrand's own remark.
+  - `continuousWithinAt_parisiFRaw` — every level is continuous in the parameters, by
+    induction.  The step evaluates level `j` at the *moving* point `y + √(v p) z`;
+    equi-Lipschitzness turns fixed-point continuity into moving-point continuity, and
+    dominated convergence along `𝓝[admissible k] p₀` moves the limit through the integral.
+  - the `m = 0` branch point is split off: for `m p₀ > 0` both sides take the `else` branch,
+    and for `m p₀ = 0` the two branches are compared at the *same* parameter by
+    `parisiStep_zero_sandwich`, whose gap `m p · v p / 2` vanishes as `m p → 0`.
+  - `IsCompact.exists_isMinOn` finishes.
 * **2b-ii (Guerra's extension, optional).**  The uniform-in-`k` Lipschitz bound currently
   stated as `parisiFunctional_lipschitz`.  Needed only to extend `𝒫` from discrete schemes
   to general probability measures `µ` on `[0,1]` — which Talagrand explicitly avoids.  Keep

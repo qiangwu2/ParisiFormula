@@ -1410,6 +1410,316 @@ theorem parisiFRaw_abs_le {k : ℕ} {β : ℝ} {p : (ℕ → ℝ) × (ℕ → �
   rw [abs_of_nonneg hnn] at habs
   linarith
 
+/-! ### Continuity of each level in the parameters
+
+The induction propagates, over `j`, the statement
+
+  `∀ y, ContinuousWithinAt (fun p => parisiFRaw k p.1 p.2 β j y) (admissible k) p₀`
+
+— continuity at each *fixed* evaluation point `y`.  The step has to evaluate level `j` at the
+*moving* point `y + √(v p) z`, and equi-Lipschitzness bridges the two:
+
+  `|F_j(p)(y + √(v p) z) - F_j(p₀)(y + √(v p₀) z)|`
+      `≤ |√(v p) - √(v p₀)|·|z| + |F_j(p)(w₀) - F_j(p₀)(w₀)|`,  `w₀ = y + √(v p₀) z`,
+
+whose first term vanishes because `p ↦ √(v p)` is continuous and whose second vanishes by the
+induction hypothesis at the fixed point `w₀`.  Dominated convergence along the filter
+`𝓝[admissible k] p₀` (countably generated, the ambient space being second countable) then
+moves the limit through the integral, dominated by `parisiFRaw_abs_le`.
+
+The `m = 0` branch point of `parisiStep` is handled by splitting on `m p₀`:
+
+* `m p₀ > 0` — nearby parameters also have `m p > 0`, both sides take the `else` branch, and
+  the result is dominated convergence followed by continuity of `log` and of `t ↦ 1/t` away
+  from `0`;
+* `m p₀ = 0` — nearby `m p` may be either, so we compare against the `0`-branch at the *same*
+  `p` using `parisiStep_zero_sandwich`, whose gap `m p · v p / 2` vanishes since `m p → 0`.
+-/
+
+/-- **Each level of the recursion is continuous in the parameters.** -/
+theorem continuousWithinAt_parisiFRaw {k : ℕ} (β : ℝ) {p₀ : (ℕ → ℝ) × (ℕ → ℝ)}
+    (hp₀ : p₀ ∈ admissible k) :
+    ∀ j, j ≤ k + 2 → ∀ y : ℝ,
+      ContinuousWithinAt (fun p => parisiFRaw k p.1 p.2 β j y) (admissible k) p₀ := by
+  classical
+  set Bk : ℝ := (k + 2 : ℝ) * (|β| * gAbsMoment + β ^ 2 / 2) with hBk
+  have hcoord1 : ∀ i : ℕ,
+      ContinuousWithinAt (fun p : (ℕ → ℝ) × (ℕ → ℝ) => p.1 i) (admissible k) p₀ :=
+    fun i => (((continuous_apply i).comp continuous_fst).continuousAt).continuousWithinAt
+  have hcoord2 : ∀ i : ℕ,
+      ContinuousWithinAt (fun p : (ℕ → ℝ) × (ℕ → ℝ) => p.2 i) (admissible k) p₀ :=
+    fun i => (((continuous_apply i).comp continuous_snd).continuousAt).continuousWithinAt
+  intro j
+  induction j with
+  | zero => intro _ y; exact continuousWithinAt_const
+  | succ j ih =>
+      intro hj y
+      have hj' : j ≤ k + 1 := by omega
+      have hj'' : j ≤ k + 2 := by omega
+      have ihj := ih hj''
+      -- the two parameters read at this level
+      have hm : ContinuousWithinAt (fun p : (ℕ → ℝ) × (ℕ → ℝ) => p.1 (k + 1 - j))
+          (admissible k) p₀ := hcoord1 _
+      have hv : ContinuousWithinAt
+          (fun p : (ℕ → ℝ) × (ℕ → ℝ) => β ^ 2 * (p.2 (k + 2 - j) - p.2 (k + 1 - j)))
+          (admissible k) p₀ :=
+        continuousWithinAt_const.mul ((hcoord2 _).sub (hcoord2 _))
+      have hsq : ContinuousWithinAt
+          (fun p : (ℕ → ℝ) × (ℕ → ℝ) =>
+            Real.sqrt (β ^ 2 * (p.2 (k + 2 - j) - p.2 (k + 1 - j)))) (admissible k) p₀ :=
+        (Real.continuous_sqrt.continuousAt).comp_continuousWithinAt hv
+      -- `√v ≤ |β|` on the admissible set
+      have hsqle : ∀ p ∈ admissible k,
+          Real.sqrt (β ^ 2 * (p.2 (k + 2 - j) - p.2 (k + 1 - j))) ≤ |β| := by
+        intro p hp
+        rw [← Real.sqrt_sq_eq_abs]
+        exact Real.sqrt_le_sqrt (admissible_var_mem (β := β) hp hj').2
+      -- **the moving-point pointwise limit**
+      have hptw : ∀ z : ℝ, Filter.Tendsto
+          (fun p : (ℕ → ℝ) × (ℕ → ℝ) => parisiFRaw k p.1 p.2 β j
+            (y + Real.sqrt (β ^ 2 * (p.2 (k + 2 - j) - p.2 (k + 1 - j))) * z))
+          (𝓝[admissible k] p₀)
+          (𝓝 (parisiFRaw k p₀.1 p₀.2 β j
+            (y + Real.sqrt (β ^ 2 * (p₀.2 (k + 2 - j) - p₀.2 (k + 1 - j))) * z))) := by
+        intro z
+        set w₀ : ℝ := y + Real.sqrt (β ^ 2 * (p₀.2 (k + 2 - j) - p₀.2 (k + 1 - j))) * z with hw₀
+        rw [tendsto_iff_dist_tendsto_zero]
+        refine squeeze_zero' (g := fun p : (ℕ → ℝ) × (ℕ → ℝ) =>
+            |Real.sqrt (β ^ 2 * (p.2 (k + 2 - j) - p.2 (k + 1 - j)))
+              - Real.sqrt (β ^ 2 * (p₀.2 (k + 2 - j) - p₀.2 (k + 1 - j)))| * |z|
+            + |parisiFRaw k p.1 p.2 β j w₀ - parisiFRaw k p₀.1 p₀.2 β j w₀|)
+          (Filter.Eventually.of_forall fun p => dist_nonneg) ?_ ?_
+        · filter_upwards [self_mem_nhdsWithin] with p hp
+          obtain ⟨-, -, hlip⟩ := parisiFRaw_props_of_admissible β hp j
+          have hstep := hlip
+            (y + Real.sqrt (β ^ 2 * (p.2 (k + 2 - j) - p.2 (k + 1 - j))) * z) w₀
+          have harg : (y + Real.sqrt (β ^ 2 * (p.2 (k + 2 - j) - p.2 (k + 1 - j))) * z) - w₀
+              = (Real.sqrt (β ^ 2 * (p.2 (k + 2 - j) - p.2 (k + 1 - j)))
+                  - Real.sqrt (β ^ 2 * (p₀.2 (k + 2 - j) - p₀.2 (k + 1 - j)))) * z := by
+            rw [hw₀]; ring
+          rw [harg, abs_mul] at hstep
+          rw [Real.dist_eq]
+          calc |parisiFRaw k p.1 p.2 β j
+                  (y + Real.sqrt (β ^ 2 * (p.2 (k + 2 - j) - p.2 (k + 1 - j))) * z)
+                - parisiFRaw k p₀.1 p₀.2 β j w₀|
+              ≤ |parisiFRaw k p.1 p.2 β j
+                    (y + Real.sqrt (β ^ 2 * (p.2 (k + 2 - j) - p.2 (k + 1 - j))) * z)
+                  - parisiFRaw k p.1 p.2 β j w₀|
+                + |parisiFRaw k p.1 p.2 β j w₀ - parisiFRaw k p₀.1 p₀.2 β j w₀| := by
+                have := abs_sub_abs_le_abs_sub
+                  (parisiFRaw k p.1 p.2 β j
+                    (y + Real.sqrt (β ^ 2 * (p.2 (k + 2 - j) - p.2 (k + 1 - j))) * z)
+                    - parisiFRaw k p.1 p.2 β j w₀)
+                  (parisiFRaw k p₀.1 p₀.2 β j w₀ - parisiFRaw k p.1 p.2 β j w₀)
+                have h2 := abs_sub (parisiFRaw k p.1 p.2 β j
+                    (y + Real.sqrt (β ^ 2 * (p.2 (k + 2 - j) - p.2 (k + 1 - j))) * z)
+                    - parisiFRaw k p.1 p.2 β j w₀)
+                  (parisiFRaw k p.1 p.2 β j w₀ - parisiFRaw k p₀.1 p₀.2 β j w₀)
+                calc |parisiFRaw k p.1 p.2 β j
+                        (y + Real.sqrt (β ^ 2 * (p.2 (k + 2 - j) - p.2 (k + 1 - j))) * z)
+                      - parisiFRaw k p₀.1 p₀.2 β j w₀|
+                    = |(parisiFRaw k p.1 p.2 β j
+                        (y + Real.sqrt (β ^ 2 * (p.2 (k + 2 - j) - p.2 (k + 1 - j))) * z)
+                        - parisiFRaw k p.1 p.2 β j w₀)
+                      + (parisiFRaw k p.1 p.2 β j w₀
+                        - parisiFRaw k p₀.1 p₀.2 β j w₀)| := by ring_nf
+                  _ ≤ _ := abs_add_le _ _
+            _ ≤ |Real.sqrt (β ^ 2 * (p.2 (k + 2 - j) - p.2 (k + 1 - j)))
+                  - Real.sqrt (β ^ 2 * (p₀.2 (k + 2 - j) - p₀.2 (k + 1 - j)))| * |z|
+                + |parisiFRaw k p.1 p.2 β j w₀ - parisiFRaw k p₀.1 p₀.2 β j w₀| := by
+                linarith [hstep]
+        · have h1 : Filter.Tendsto
+              (fun p : (ℕ → ℝ) × (ℕ → ℝ) =>
+                |Real.sqrt (β ^ 2 * (p.2 (k + 2 - j) - p.2 (k + 1 - j)))
+                  - Real.sqrt (β ^ 2 * (p₀.2 (k + 2 - j) - p₀.2 (k + 1 - j)))| * |z|)
+              (𝓝[admissible k] p₀) (𝓝 0) := by
+            have hs : Filter.Tendsto
+                (fun p : (ℕ → ℝ) × (ℕ → ℝ) =>
+                  |Real.sqrt (β ^ 2 * (p.2 (k + 2 - j) - p.2 (k + 1 - j)))
+                    - Real.sqrt (β ^ 2 * (p₀.2 (k + 2 - j) - p₀.2 (k + 1 - j)))|)
+                (𝓝[admissible k] p₀)
+                (𝓝 |Real.sqrt (β ^ 2 * (p₀.2 (k + 2 - j) - p₀.2 (k + 1 - j)))
+                    - Real.sqrt (β ^ 2 * (p₀.2 (k + 2 - j) - p₀.2 (k + 1 - j)))|) :=
+              ((hsq.sub continuousWithinAt_const).abs).tendsto
+            rw [sub_self, abs_zero] at hs
+            simpa using hs.mul_const |z|
+          have h2 : Filter.Tendsto
+              (fun p : (ℕ → ℝ) × (ℕ → ℝ) =>
+                |parisiFRaw k p.1 p.2 β j w₀ - parisiFRaw k p₀.1 p₀.2 β j w₀|)
+              (𝓝[admissible k] p₀) (𝓝 0) := by
+            have hs : Filter.Tendsto
+                (fun p : (ℕ → ℝ) × (ℕ → ℝ) =>
+                  |parisiFRaw k p.1 p.2 β j w₀ - parisiFRaw k p₀.1 p₀.2 β j w₀|)
+                (𝓝[admissible k] p₀)
+                (𝓝 |parisiFRaw k p₀.1 p₀.2 β j w₀ - parisiFRaw k p₀.1 p₀.2 β j w₀|) :=
+              (((ihj w₀).sub continuousWithinAt_const).abs).tendsto
+            rwa [sub_self, abs_zero] at hs
+          simpa using h1.add h2
+      -- **the dominating bound**
+      have hbnd : ∀ p ∈ admissible k, ∀ z : ℝ,
+          |parisiFRaw k p.1 p.2 β j
+            (y + Real.sqrt (β ^ 2 * (p.2 (k + 2 - j) - p.2 (k + 1 - j))) * z)|
+            ≤ (Bk + |y|) + |β| * |z| := by
+        intro p hp z
+        have habs := parisiFRaw_abs_le (β := β) hp hj''
+          (y + Real.sqrt (β ^ 2 * (p.2 (k + 2 - j) - p.2 (k + 1 - j))) * z)
+        have hsplit : |y + Real.sqrt (β ^ 2 * (p.2 (k + 2 - j) - p.2 (k + 1 - j))) * z|
+            ≤ |y| + |β| * |z| := by
+          refine (abs_add_le _ _).trans ?_
+          rw [abs_mul, abs_of_nonneg (Real.sqrt_nonneg _)]
+          have := hsqle p hp
+          nlinarith [abs_nonneg z]
+        calc |parisiFRaw k p.1 p.2 β j
+              (y + Real.sqrt (β ^ 2 * (p.2 (k + 2 - j) - p.2 (k + 1 - j))) * z)|
+            ≤ Bk + |y + Real.sqrt (β ^ 2 * (p.2 (k + 2 - j) - p.2 (k + 1 - j))) * z| := habs
+          _ ≤ (Bk + |y|) + |β| * |z| := by linarith
+      have hbound_lin : Integrable (fun z : ℝ => (Bk + |y|) + |β| * |z|) (gaussianReal 0 1) :=
+        (integrable_const _).add (integrable_abs_stdGaussian.const_mul _)
+      have hbound_exp :
+          Integrable (fun z : ℝ => Real.exp ((Bk + |y|) + |β| * |z|)) (gaussianReal 0 1) := by
+        refine ((integrable_exp_abs_mul_stdGaussian |β|).const_mul
+          (Real.exp (Bk + |y|))).congr ?_
+        filter_upwards with z
+        show Real.exp (Bk + |y|) * Real.exp (|β| * |z|) = Real.exp ((Bk + |y|) + |β| * |z|)
+        rw [← Real.exp_add]
+      -- **the `m = 0` branch integral converges**
+      have h0branch : Filter.Tendsto
+          (fun p : (ℕ → ℝ) × (ℕ → ℝ) => ∫ z, parisiFRaw k p.1 p.2 β j
+            (y + Real.sqrt (β ^ 2 * (p.2 (k + 2 - j) - p.2 (k + 1 - j))) * z)
+            ∂(gaussianReal 0 1))
+          (𝓝[admissible k] p₀)
+          (𝓝 (∫ z, parisiFRaw k p₀.1 p₀.2 β j
+            (y + Real.sqrt (β ^ 2 * (p₀.2 (k + 2 - j) - p₀.2 (k + 1 - j))) * z)
+            ∂(gaussianReal 0 1))) := by
+        refine tendsto_integral_filter_of_dominated_convergence
+          (fun z => (Bk + |y|) + |β| * |z|) ?_ ?_ hbound_lin
+          (Filter.Eventually.of_forall hptw)
+        · filter_upwards [self_mem_nhdsWithin] with p hp
+          obtain ⟨hmeas, -, -⟩ := parisiFRaw_props_of_admissible β hp j
+          exact (hmeas.comp ((measurable_id.const_mul _).const_add y)).aestronglyMeasurable
+        · filter_upwards [self_mem_nhdsWithin] with p hp
+          filter_upwards with z
+          rw [Real.norm_eq_abs]
+          exact hbnd p hp z
+      show ContinuousWithinAt
+        (fun p => parisiStep (p.1 (k + 1 - j))
+          (β ^ 2 * (p.2 (k + 2 - j) - p.2 (k + 1 - j)))
+          (parisiFRaw k p.1 p.2 β j) y) (admissible k) p₀
+      by_cases hm0 : p₀.1 (k + 1 - j) = 0
+      · -- **Case B: the base parameter sits on the branch point**
+        have hzero : parisiStep (p₀.1 (k + 1 - j))
+            (β ^ 2 * (p₀.2 (k + 2 - j) - p₀.2 (k + 1 - j)))
+            (parisiFRaw k p₀.1 p₀.2 β j) y
+            = ∫ z, parisiFRaw k p₀.1 p₀.2 β j
+              (y + Real.sqrt (β ^ 2 * (p₀.2 (k + 2 - j) - p₀.2 (k + 1 - j))) * z)
+              ∂(gaussianReal 0 1) := by
+          rw [parisiStep, if_pos hm0]
+        -- the gap between the two branches at the same parameter
+        have hgap : ∀ᶠ p in 𝓝[admissible k] p₀,
+            |parisiStep (p.1 (k + 1 - j)) (β ^ 2 * (p.2 (k + 2 - j) - p.2 (k + 1 - j)))
+                (parisiFRaw k p.1 p.2 β j) y
+              - ∫ z, parisiFRaw k p.1 p.2 β j
+                  (y + Real.sqrt (β ^ 2 * (p.2 (k + 2 - j) - p.2 (k + 1 - j))) * z)
+                  ∂(gaussianReal 0 1)|
+              ≤ p.1 (k + 1 - j) * (β ^ 2 * (p.2 (k + 2 - j) - p.2 (k + 1 - j))) / 2 := by
+          filter_upwards [self_mem_nhdsWithin] with p hp
+          obtain ⟨hmeas, hgrow, hlip⟩ := parisiFRaw_props_of_admissible β hp j
+          obtain ⟨hmA, hmB⟩ := admissible_m_mem hp (k + 1 - j)
+          obtain ⟨hvA, -⟩ := admissible_var_mem (β := β) hp hj'
+          have hrw : (∫ z, parisiFRaw k p.1 p.2 β j
+              (y + Real.sqrt (β ^ 2 * (p.2 (k + 2 - j) - p.2 (k + 1 - j))) * z)
+              ∂(gaussianReal 0 1))
+              = parisiStep 0 (β ^ 2 * (p.2 (k + 2 - j) - p.2 (k + 1 - j)))
+                (parisiFRaw k p.1 p.2 β j) y := by
+            rw [parisiStep, if_pos rfl]
+          rw [hrw]
+          rcases eq_or_lt_of_le hmA with hz | hpos
+          · rw [← hz]
+            simp
+          · have hs := parisiStep_zero_sandwich hpos hvA hlip hgrow hmeas y
+            rw [abs_le]
+            constructor
+            · nlinarith [hs.1, mul_nonneg hmA hvA]
+            · linarith [hs.2]
+        have hgapzero : Filter.Tendsto
+            (fun p : (ℕ → ℝ) × (ℕ → ℝ) =>
+              p.1 (k + 1 - j) * (β ^ 2 * (p.2 (k + 2 - j) - p.2 (k + 1 - j))) / 2)
+            (𝓝[admissible k] p₀) (𝓝 0) := by
+          have h2 : Filter.Tendsto
+              (fun p : (ℕ → ℝ) × (ℕ → ℝ) =>
+                p.1 (k + 1 - j) * (β ^ 2 * (p.2 (k + 2 - j) - p.2 (k + 1 - j))) / 2)
+              (𝓝[admissible k] p₀)
+              (𝓝 (p₀.1 (k + 1 - j) * (β ^ 2 * (p₀.2 (k + 2 - j) - p₀.2 (k + 1 - j))) / 2)) :=
+            (hm.tendsto.mul hv.tendsto).div_const 2
+          rwa [hm0, zero_mul, zero_div] at h2
+        have hdiff : Filter.Tendsto
+            (fun p : (ℕ → ℝ) × (ℕ → ℝ) =>
+              parisiStep (p.1 (k + 1 - j)) (β ^ 2 * (p.2 (k + 2 - j) - p.2 (k + 1 - j)))
+                (parisiFRaw k p.1 p.2 β j) y
+              - ∫ z, parisiFRaw k p.1 p.2 β j
+                  (y + Real.sqrt (β ^ 2 * (p.2 (k + 2 - j) - p.2 (k + 1 - j))) * z)
+                  ∂(gaussianReal 0 1))
+            (𝓝[admissible k] p₀) (𝓝 0) := by
+          rw [tendsto_zero_iff_abs_tendsto_zero]
+          exact squeeze_zero' (Filter.Eventually.of_forall fun p => abs_nonneg _) hgap hgapzero
+        have := hdiff.add h0branch
+        rw [zero_add] at this
+        rw [ContinuousWithinAt, hzero]
+        simpa using this
+      · -- **Case A: the base parameter is off the branch point**
+        have hmpos : 0 < p₀.1 (k + 1 - j) := lt_of_le_of_ne (hp₀.1 _) (Ne.symm hm0)
+        have hposev : ∀ᶠ p in 𝓝[admissible k] p₀, 0 < p.1 (k + 1 - j) :=
+          Filter.Tendsto.eventually_const_lt hmpos hm
+        -- both sides take the `else` branch
+        have hexpint : Filter.Tendsto
+            (fun p : (ℕ → ℝ) × (ℕ → ℝ) => ∫ z, Real.exp (p.1 (k + 1 - j) *
+              parisiFRaw k p.1 p.2 β j
+                (y + Real.sqrt (β ^ 2 * (p.2 (k + 2 - j) - p.2 (k + 1 - j))) * z))
+              ∂(gaussianReal 0 1))
+            (𝓝[admissible k] p₀)
+            (𝓝 (∫ z, Real.exp (p₀.1 (k + 1 - j) *
+              parisiFRaw k p₀.1 p₀.2 β j
+                (y + Real.sqrt (β ^ 2 * (p₀.2 (k + 2 - j) - p₀.2 (k + 1 - j))) * z))
+              ∂(gaussianReal 0 1))) := by
+          refine tendsto_integral_filter_of_dominated_convergence
+            (fun z => Real.exp ((Bk + |y|) + |β| * |z|)) ?_ ?_ hbound_exp ?_
+          · filter_upwards [self_mem_nhdsWithin] with p hp
+            obtain ⟨hmeas, -, -⟩ := parisiFRaw_props_of_admissible β hp j
+            exact (Real.continuous_exp.measurable.comp
+              (((hmeas.comp ((measurable_id.const_mul _).const_add y))).const_mul
+                (p.1 (k + 1 - j)))).aestronglyMeasurable
+          · filter_upwards [self_mem_nhdsWithin] with p hp
+            filter_upwards with z
+            obtain ⟨hmA, hmB⟩ := admissible_m_mem hp (k + 1 - j)
+            rw [Real.norm_eq_abs, abs_of_nonneg (Real.exp_pos _).le]
+            refine Real.exp_le_exp.2 ?_
+            have hb := hbnd p hp z
+            have habs := (abs_le.1 hb).2
+            nlinarith [abs_nonneg (parisiFRaw k p.1 p.2 β j
+              (y + Real.sqrt (β ^ 2 * (p.2 (k + 2 - j) - p.2 (k + 1 - j))) * z)),
+              le_abs_self (parisiFRaw k p.1 p.2 β j
+                (y + Real.sqrt (β ^ 2 * (p.2 (k + 2 - j) - p.2 (k + 1 - j))) * z))]
+          · filter_upwards with z
+            exact (Real.continuous_exp.tendsto _).comp (hm.tendsto.mul (hptw z))
+        have hIpos : 0 < ∫ z, Real.exp (p₀.1 (k + 1 - j) *
+            parisiFRaw k p₀.1 p₀.2 β j
+              (y + Real.sqrt (β ^ 2 * (p₀.2 (k + 2 - j) - p₀.2 (k + 1 - j))) * z))
+            ∂(gaussianReal 0 1) := by
+          obtain ⟨hmeas, hgrow, -⟩ := parisiFRaw_props_of_admissible β hp₀ j
+          exact integral_exp_pos
+            (integrable_exp_mul_of_hasLinearGrowth hgrow hmeas _ y _)
+        have hlog := (Real.continuousAt_log hIpos.ne').tendsto.comp hexpint
+        have hinv : Filter.Tendsto (fun p : (ℕ → ℝ) × (ℕ → ℝ) => 1 / p.1 (k + 1 - j))
+            (𝓝[admissible k] p₀) (𝓝 (1 / p₀.1 (k + 1 - j))) :=
+          tendsto_const_nhds.div hm.tendsto hmpos.ne'
+        have hfinal := hinv.mul hlog
+        rw [ContinuousWithinAt]
+        rw [parisiStep, if_neg hm0]
+        refine hfinal.congr' ?_
+        filter_upwards [hposev] with p hp
+        rw [parisiStep, if_neg hp.ne']
+        rfl
+
 /--
 **Continuity of the Parisi functional in its parameters, at fixed `k`.**
 
@@ -1428,7 +1738,20 @@ two branches of `parisiStep` meet, and continuity there is exactly
 theorem continuousOn_parisiFunctionalRaw (k : ℕ) (β h : ℝ) :
     ContinuousOn (fun p : (ℕ → ℝ) × (ℕ → ℝ) => parisiFunctionalRaw k p.1 p.2 β h)
       (admissible k) := by
-  sorry
+  intro p₀ hp₀
+  have hF := continuousWithinAt_parisiFRaw β hp₀ (k + 2) le_rfl h
+  have hsumc : Continuous (fun p : (ℕ → ℝ) × (ℕ → ℝ) =>
+      ∑ i ∈ Finset.range (k + 1), p.1 (i + 1) * (p.2 (i + 2) ^ 2 - p.2 (i + 1) ^ 2)) := by
+    refine continuous_finsetSum _ (fun i _ => ?_)
+    exact ((continuous_apply (i + 1)).comp continuous_fst).mul
+      ((((continuous_apply (i + 2)).comp continuous_snd).pow 2).sub
+        (((continuous_apply (i + 1)).comp continuous_snd).pow 2))
+  show ContinuousWithinAt (fun p : (ℕ → ℝ) × (ℕ → ℝ) =>
+      Real.log 2 + parisiFRaw k p.1 p.2 β (k + 2) h
+        - β ^ 2 / 4 * ∑ i ∈ Finset.range (k + 1),
+            p.1 (i + 1) * (p.2 (i + 2) ^ 2 - p.2 (i + 1) ^ 2)) (admissible k) p₀
+  exact (continuousWithinAt_const.add hF).sub
+    (continuousWithinAt_const.mul hsumc.continuousWithinAt)
 
 /--
 **Target 2b-i (Talagrand 2006, (2.17)).**  For each fixed number of levels `k`, the infimum
