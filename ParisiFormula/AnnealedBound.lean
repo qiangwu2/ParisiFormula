@@ -94,7 +94,7 @@ theorem integral_log_le_log_integral {W : Ω → ℝ}
   rw [integral_sub hlog (integrable_const _),
       integral_sub (hW.div_const m) (integrable_const _),
       integral_div] at hmono
-  simp only [integral_const, measure_univ, ENNReal.toReal_one, smul_eq_mul, one_mul] at hmono
+  simp only [integral_const, smul_eq_mul, probReal_univ, one_mul] at hmono
   rw [← hm, div_self hmne] at hmono
   linarith
 
@@ -109,25 +109,29 @@ variable {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℝ H] [CompleteS
 The coordinate `ω ↦ ⟪g ω, v⟫` of an `IsGaussianHilbert` vector is the finite sum
 `∑ i, ⟪w i, v⟫ * c i ω` of independent centred real Gaussians.
 -/
-theorem inner_eq_sum_coord (hg : IsGaussianHilbert (Ω := Ω) (H := H) g) (v : H) :
-    (fun ω => ⟪g ω, v⟫_ℝ)
-      = ∑ i : hg.ι, (fun ω => ⟪hg.w i, v⟫_ℝ * hg.c i ω) := by
+theorem inner_apply_eq_sum_coord (hg : IsGaussianHilbert (Ω := Ω) (H := H) g) (v : H)
+    (ω : Ω) :
+    ⟪g ω, v⟫_ℝ = ∑ i : hg.ι, ⟪hg.w i, v⟫_ℝ * hg.c i ω := by
   classical
-  funext ω
-  simp only [Finset.sum_apply]
-  rw [hg.repr]
-  simp only
-  rw [sum_inner]
+  have hpt : g ω = ∑ i : hg.ι, hg.c i ω • hg.w i := congrFun hg.repr ω
+  rw [hpt, sum_inner]
   refine Finset.sum_congr rfl (fun i _ => ?_)
   rw [real_inner_smul_left]
   ring
 
+/-- The same identity, packaged as an equality of functions (for the mgf computation). -/
+theorem inner_eq_sum_coord (hg : IsGaussianHilbert (Ω := Ω) (H := H) g) (v : H) :
+    (fun ω => ⟪g ω, v⟫_ℝ)
+      = ∑ i : hg.ι, (fun ω => ⟪hg.w i, v⟫_ℝ * hg.c i ω) := by
+  funext ω
+  simp only [Finset.sum_apply]
+  exact inner_apply_eq_sum_coord hg v ω
+
 /-- The family `ω ↦ ⟪w i, v⟫ * c i ω` is independent. -/
 theorem iIndepFun_coord (hg : IsGaussianHilbert (Ω := Ω) (H := H) g) (v : H) :
-    iIndepFun (fun i : hg.ι => fun ω => ⟪hg.w i, v⟫_ℝ * hg.c i ω) (ℙ : Measure Ω) := by
-  have h := hg.c_indep.comp (fun i : hg.ι => fun x : ℝ => ⟪hg.w i, v⟫_ℝ * x)
-    (fun i => measurable_const_mul _)
-  simpa [Function.comp] using h
+    iIndepFun (fun i : hg.ι => fun ω => ⟪hg.w i, v⟫_ℝ * hg.c i ω) (ℙ : Measure Ω) :=
+  hg.c_indep.comp (fun i : hg.ι => fun x : ℝ => ⟪hg.w i, v⟫_ℝ * x)
+    (fun i => measurable_id.const_mul _)
 
 /-- Each scaled coordinate has an integrable exponential. -/
 theorem integrable_exp_coord (hg : IsGaussianHilbert (Ω := Ω) (H := H) g) (v : H)
@@ -140,10 +144,9 @@ theorem integrable_exp_coord (hg : IsGaussianHilbert (Ω := Ω) (H := H) g) (v :
       (Measure.map (hg.c i) (ℙ : Measure Ω)) := by
     rw [hlaw]
     exact integrable_exp_mul_gaussianReal _
-  have hmeas : AEStronglyMeasurable (fun x : ℝ => Real.exp (⟪hg.w i, v⟫_ℝ * x))
-      (Measure.map (hg.c i) (ℙ : Measure Ω)) := hgauss.aestronglyMeasurable
-  have := (integrable_map_measure hmeas (hg.c_meas i).aemeasurable).mp hgauss
-  simpa [Function.comp, one_mul] using this
+  have h2 : Integrable (fun ω => Real.exp (⟪hg.w i, v⟫_ℝ * hg.c i ω)) (ℙ : Measure Ω) :=
+    (integrable_map_measure hgauss.aestronglyMeasurable (hg.c_meas i).aemeasurable).mp hgauss
+  simpa [one_mul] using h2
 
 /--
 **Moment generating function of a Hilbert-space Gaussian coordinate.**
@@ -187,8 +190,9 @@ theorem integrable_exp_inner_isGaussianHilbert
     fun i => (hg.c_meas i).const_mul _
   have h := (iIndepFun_coord hg v).integrable_exp_mul_sum (t := 1) hmeas
     (s := Finset.univ) (fun i _ => integrable_exp_coord hg v i)
-  rw [inner_eq_sum_coord hg v]
-  simpa [Finset.sum_apply, one_mul] using h
+  simp only [Finset.sum_apply, one_mul] at h
+  simp only [inner_apply_eq_sum_coord hg v]
+  exact h
 
 end HilbertGaussian
 
@@ -199,10 +203,15 @@ section SK
 variable {N : ℕ} {β h : ℝ}
 
 /-- Writing a coordinate of the disorder as an inner product against `std_basis`. -/
+theorem skDisorder_coord_apply_eq_inner (sk : SKDisorder (Ω := Ω) N β h) (σ : Config N)
+    (ω : Ω) : sk.U ω σ = ⟪sk.U ω, std_basis N σ⟫_ℝ := by
+  rw [real_inner_comm]
+  exact (inner_std_basis_apply (N := N) σ (sk.U ω)).symm
+
+/-- The same identity, packaged as an equality of functions. -/
 theorem skDisorder_coord_eq_inner (sk : SKDisorder (Ω := Ω) N β h) (σ : Config N) :
-    (fun ω => sk.U ω σ) = fun ω => ⟪sk.U ω, std_basis N σ⟫_ℝ := by
-  funext ω
-  rw [real_inner_comm, inner_std_basis_apply]
+    (fun ω => sk.U ω σ) = fun ω => ⟪sk.U ω, std_basis N σ⟫_ℝ :=
+  funext (fun ω => skDisorder_coord_apply_eq_inner sk σ ω)
 
 /--
 The variance of a single coordinate of the SK disorder is `N β² / 2`
@@ -234,7 +243,7 @@ theorem integral_exp_skDisorder_coord (hN : 0 < N) (sk : SKDisorder (Ω := Ω) N
 /-- Integrability of `exp (U σ)`. -/
 theorem integrable_exp_skDisorder_coord (sk : SKDisorder (Ω := Ω) N β h) (σ : Config N) :
     Integrable (fun ω => Real.exp (sk.U ω σ)) (ℙ : Measure Ω) := by
-  rw [skDisorder_coord_eq_inner sk σ]
+  simp only [skDisorder_coord_apply_eq_inner sk σ]
   exact integrable_exp_inner_isGaussianHilbert sk.hU (std_basis N σ)
 
 /-- The partition function is integrable. -/
@@ -250,7 +259,7 @@ theorem integrable_skZ (sk : SKDisorder (Ω := Ω) N β h) :
     rw [← Real.exp_add]
     ring_nf
   rw [hrw]
-  refine integrable_finset_sum _ (fun σ _ => ?_)
+  refine integrable_finsetSum _ (fun σ _ => ?_)
   exact (integrable_exp_skDisorder_coord sk σ).const_mul _
 
 /--
@@ -268,7 +277,7 @@ theorem integral_skZ (hN : 0 < N) (sk : SKDisorder (Ω := Ω) N β h) :
     refine Finset.sum_congr rfl (fun σ _ => ?_)
     rw [← Real.exp_add]
     ring_nf
-  rw [hrw, integral_finset_sum _
+  rw [hrw, integral_finsetSum _
     (fun σ _ => (integrable_exp_skDisorder_coord sk σ).const_mul _)]
   refine Finset.sum_congr rfl (fun σ _ => ?_)
   rw [integral_const_mul, integral_exp_skDisorder_coord hN sk σ]
@@ -338,8 +347,8 @@ theorem free_entropy_le_annealed (hN : 0 < N) (β h : ℝ)
     rw [Real.log_mul (by positivity) (Real.exp_ne_zero _),
         Real.log_mul (by positivity) (Real.exp_ne_zero _),
         Real.log_pow, Real.log_exp, Real.log_exp]
-    push_cast
-    ring
+    try push_cast
+    try ring
   have hfinal : (∫ ω, Real.log (skZ (N := N) (β := β) (h := h) (sk.U ω)) ∂(ℙ : Measure Ω))
       ≤ (N : ℝ) * Real.log 2 + |h| * (N : ℝ) + (N : ℝ) * β ^ 2 / 4 := hjensen.trans hlogle
   rw [hfe, one_div, inv_mul_eq_div, div_le_iff₀ hNR]
