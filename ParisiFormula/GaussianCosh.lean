@@ -26,6 +26,7 @@ import ParisiFormula.AnnealedBound
 import Mathlib.Probability.Distributions.Gaussian.Real
 import Mathlib.Probability.Moments.Basic
 import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Analysis.Calculus.ParametricIntegral
 
 open scoped BigOperators NNReal
 
@@ -471,6 +472,124 @@ theorem HasParisiC2.abs_first_le_one {A A' A'' : ℝ → ℝ} (h : HasParisiC2 A
   obtain ⟨_, _, hnn, hle⟩ := h
   have h1 : (A' x) ^ 2 ≤ 1 := by nlinarith [hnn x, hle x]
   nlinarith [abs_nonneg (A' x), sq_abs (A' x), h1]
+
+
+/-! ## 10. Differentiating the smoothing integral
+
+The propagation step for the second-order invariant needs
+
+  `(T_{m,v} A)'' = ⟨A''⟩ + m · Var_tilt(A')`,
+
+which is obtained by differentiating `G(x) = ∫ exp (m A (x + √v z)) dγ(z)` twice under the
+integral sign.  This section does the first derivative; the domination is uniform over a ball
+because `A` has linear growth and `A'` is bounded.
+-/
+
+/-- Uniform domination of `exp (m A (t + √v z))` for `t` in a ball around `x`. -/
+theorem exp_mul_shift_ball_le {A : ℝ → ℝ} {C D : ℝ} (hD : 0 ≤ D)
+    (hb : ∀ y, |A y| ≤ C + D * |y|) (m x v : ℝ) {t : ℝ} (ht : |t - x| ≤ 1) (z : ℝ) :
+    Real.exp (m * A (t + Real.sqrt v * z))
+      ≤ Real.exp (|m| * (C + D * (|x| + 1)))
+        * Real.exp ((|m| * (D * |Real.sqrt v|)) * |z|) := by
+  rw [← Real.exp_add]
+  refine Real.exp_le_exp.2 ?_
+  have habs : |t + Real.sqrt v * z| ≤ (|x| + 1) + |Real.sqrt v| * |z| := by
+    have h1 : |t| ≤ |x| + 1 := by
+      have := abs_sub_abs_le_abs_sub t x
+      have h2 : |t - x| ≤ 1 := ht
+      linarith
+    calc |t + Real.sqrt v * z| ≤ |t| + |Real.sqrt v * z| := abs_add_le _ _
+      _ = |t| + |Real.sqrt v| * |z| := by rw [abs_mul]
+      _ ≤ (|x| + 1) + |Real.sqrt v| * |z| := by linarith
+  have h1 : m * A (t + Real.sqrt v * z) ≤ |m| * |A (t + Real.sqrt v * z)| := by
+    calc m * A (t + Real.sqrt v * z) ≤ |m * A (t + Real.sqrt v * z)| := le_abs_self _
+      _ = |m| * |A (t + Real.sqrt v * z)| := abs_mul _ _
+  have h2 : |A (t + Real.sqrt v * z)| ≤ C + D * ((|x| + 1) + |Real.sqrt v| * |z|) := by
+    refine (hb _).trans ?_
+    nlinarith [abs_nonneg z, abs_nonneg (Real.sqrt v)]
+  have h3 : |m| * |A (t + Real.sqrt v * z)|
+      ≤ |m| * (C + D * ((|x| + 1) + |Real.sqrt v| * |z|)) :=
+    mul_le_mul_of_nonneg_left h2 (abs_nonneg m)
+  have h4 : |m| * (C + D * ((|x| + 1) + |Real.sqrt v| * |z|))
+      = |m| * (C + D * (|x| + 1)) + (|m| * (D * |Real.sqrt v|)) * |z| := by ring
+  linarith
+
+/--
+**First derivative of the smoothing integral.**
+
+`d/dx ∫ exp (m A (x + √v z)) dγ(z) = ∫ m A' (x + √v z) exp (m A (x + √v z)) dγ(z)`.
+
+Hypotheses: `A` is differentiable with derivative `A'`, `A'` is bounded by `1` (which the
+second-order invariant supplies, via `HasParisiC2.abs_first_le_one`), and `A` has linear
+growth (which gives the integrable dominating function).
+-/
+theorem hasDerivAt_integral_exp_mul {A A' : ℝ → ℝ} {m v : ℝ}
+    (hderiv : ∀ y, HasDerivAt A (A' y) y) (hA'bd : ∀ y, |A' y| ≤ 1)
+    (hA : HasLinearGrowth A) (hmeas : Measurable A) (hmeas' : Measurable A') (x : ℝ) :
+    HasDerivAt
+      (fun t : ℝ => ∫ z, Real.exp (m * A (t + Real.sqrt v * z)) ∂(gaussianReal 0 1))
+      (∫ z, m * A' (x + Real.sqrt v * z)
+        * Real.exp (m * A (x + Real.sqrt v * z)) ∂(gaussianReal 0 1)) x := by
+  classical
+  obtain ⟨C, D, hC, hD, hb⟩ := hA
+  set b : ℝ := |m| * (C + D * (|x| + 1)) with hbdef
+  set a : ℝ := |m| * (D * |Real.sqrt v|) with hadef
+  -- the parametrised integrand and its derivative
+  set F : ℝ → ℝ → ℝ := fun t z => Real.exp (m * A (t + Real.sqrt v * z)) with hFdef
+  set F' : ℝ → ℝ → ℝ := fun t z =>
+    m * A' (t + Real.sqrt v * z) * Real.exp (m * A (t + Real.sqrt v * z)) with hF'def
+  have hFmeas : ∀ t : ℝ, Measurable (F t) := by
+    intro t
+    exact (Real.continuous_exp.measurable).comp
+      ((hmeas.comp (measurable_const_add t)).const_mul m)
+  have hF'meas : ∀ t : ℝ, Measurable (F' t) := by
+    intro t
+    have h1 : Measurable (fun z : ℝ => A' (t + Real.sqrt v * z)) :=
+      hmeas'.comp (measurable_const_add t)
+    exact ((h1.const_mul m).mul
+      ((Real.continuous_exp.measurable).comp
+        ((hmeas.comp (measurable_const_add t)).const_mul m)))
+  -- the dominating function
+  set bound : ℝ → ℝ := fun z => |m| * (Real.exp b * Real.exp (a * |z|)) with hbounddef
+  have hbound_int : Integrable bound (gaussianReal 0 1) :=
+    ((integrable_exp_abs_mul_stdGaussian a).const_mul _).const_mul _
+  have hdom : ∀ᵐ z ∂(gaussianReal 0 1), ∀ t ∈ Metric.ball x 1, ‖F' t z‖ ≤ bound z := by
+    refine Filter.Eventually.of_forall (fun z t ht => ?_)
+    have ht' : |t - x| ≤ 1 := by
+      have := Metric.mem_ball.mp ht
+      rw [Real.dist_eq] at this
+      linarith
+    have hexp : Real.exp (m * A (t + Real.sqrt v * z)) ≤ Real.exp b * Real.exp (a * |z|) := by
+      rw [hbdef, hadef]
+      exact exp_mul_shift_ball_le hD hb m x v ht' z
+    rw [Real.norm_eq_abs, hF'def]
+    have habs : |m * A' (t + Real.sqrt v * z) * Real.exp (m * A (t + Real.sqrt v * z))|
+        = |m| * |A' (t + Real.sqrt v * z)| * Real.exp (m * A (t + Real.sqrt v * z)) := by
+      rw [abs_mul, abs_mul, abs_of_nonneg (Real.exp_pos _).le]
+    rw [habs, hbounddef]
+    have h1 : |A' (t + Real.sqrt v * z)| ≤ 1 := hA'bd _
+    have h2 : (0 : ℝ) ≤ |m| := abs_nonneg m
+    nlinarith [Real.exp_pos (m * A (t + Real.sqrt v * z)),
+      Real.exp_pos b, Real.exp_pos (a * |z|)]
+  have hdiff : ∀ᵐ z ∂(gaussianReal 0 1), ∀ t ∈ Metric.ball x 1,
+      HasDerivAt (fun t : ℝ => F t z) (F' t z) t := by
+    refine Filter.Eventually.of_forall (fun z t _ => ?_)
+    have hshift : HasDerivAt (fun s : ℝ => s + Real.sqrt v * z) 1 t := by
+      simpa using (hasDerivAt_id t).add_const (Real.sqrt v * z)
+    have hcomp : HasDerivAt (fun s : ℝ => A (s + Real.sqrt v * z))
+        (A' (t + Real.sqrt v * z)) t := by
+      simpa using (hderiv (t + Real.sqrt v * z)).comp t hshift
+    have hmul : HasDerivAt (fun s : ℝ => m * A (s + Real.sqrt v * z))
+        (m * A' (t + Real.sqrt v * z)) t := hcomp.const_mul m
+    simpa [hFdef, hF'def, mul_comm, mul_assoc, mul_left_comm] using hmul.exp
+  have hFint : Integrable (F x) (gaussianReal 0 1) :=
+    integrable_exp_mul_of_hasLinearGrowth ⟨C, D, hC, hD, hb⟩ hmeas m x v
+  have hmain := hasDerivAt_integral_of_dominated_loc_of_deriv_le
+    (μ := gaussianReal 0 1) (F := F) (F' := F') (x₀ := x) (bound := bound)
+    (s := Metric.ball x 1) (Metric.ball_mem_nhds x one_pos)
+    (Filter.Eventually.of_forall (fun t => (hFmeas t).aestronglyMeasurable))
+    hFint (hF'meas x).aestronglyMeasurable hdom hbound_int hdiff
+  exact hmain.2
 
 
 end SpinGlass
