@@ -1426,4 +1426,61 @@ theorem abs_integral_shift_sub_le_second {A A' A'' : ℝ → ℝ} {w : ℝ} (hw 
     _ = w := by
         rw [integral_const_mul, hμ, integral_sq_stdGaussian, mul_one]
 
+/-! ## 15. Measurability of the derivative functions
+
+To iterate `hasParisiC2_parisiStep` up the recursion, the derivative functions produced at
+each level must themselves be measurable, since they are the `A'`, `A''` of the next level.
+They are parametrised Gaussian integrals, so `StronglyMeasurable.integral_prod_right'`
+applies.
+-/
+
+/-- A parametrised Gaussian integral is measurable in the parameter. -/
+theorem measurable_tilt_integral {f : ℝ → ℝ → ℝ}
+    (hf : Measurable (fun p : ℝ × ℝ => f p.1 p.2)) :
+    Measurable (fun x : ℝ => ∫ z, f x z ∂(gaussianReal 0 1)) :=
+  (hf.stronglyMeasurable.integral_prod_right').measurable
+
+/-- The shift `(x,z) ↦ x + √v z` is measurable. -/
+theorem measurable_shift_prod (v : ℝ) :
+    Measurable (fun p : ℝ × ℝ => p.1 + Real.sqrt v * p.2) := by fun_prop
+
+theorem measurable_tiltE {A : ℝ → ℝ} (hmeas : Measurable A) (m v : ℝ) :
+    Measurable (tiltE A m v) :=
+  measurable_tilt_integral
+    ((Real.continuous_exp.measurable).comp
+      ((hmeas.comp (measurable_shift_prod v)).const_mul m))
+
+theorem measurable_tiltP {A A' : ℝ → ℝ} (hmeas : Measurable A) (hmeas' : Measurable A')
+    (m v : ℝ) : Measurable (tiltP A A' m v) :=
+  measurable_tilt_integral
+    ((hmeas'.comp (measurable_shift_prod v)).mul
+      ((Real.continuous_exp.measurable).comp
+        ((hmeas.comp (measurable_shift_prod v)).const_mul m)))
+
+theorem measurable_tiltR {A A' : ℝ → ℝ} (hmeas : Measurable A) (hmeas' : Measurable A')
+    (m v : ℝ) : Measurable (tiltR A A' m v) :=
+  measurable_tilt_integral
+    (((hmeas'.comp (measurable_shift_prod v)).pow_const 2).mul
+      ((Real.continuous_exp.measurable).comp
+        ((hmeas.comp (measurable_shift_prod v)).const_mul m)))
+
+theorem measurable_tiltQ {A A'' : ℝ → ℝ} (hmeas : Measurable A) (hmeas'' : Measurable A'')
+    (m v : ℝ) : Measurable (tiltQ A A'' m v) :=
+  measurable_tilt_integral
+    ((hmeas''.comp (measurable_shift_prod v)).mul
+      ((Real.continuous_exp.measurable).comp
+        ((hmeas.comp (measurable_shift_prod v)).const_mul m)))
+
+theorem measurable_stepD1 {A A' : ℝ → ℝ} (hmeas : Measurable A) (hmeas' : Measurable A')
+    (m v : ℝ) : Measurable (stepD1 A A' m v) :=
+  (measurable_tiltP hmeas hmeas' m v).div (measurable_tiltE hmeas m v)
+
+theorem measurable_stepD2 {A A' A'' : ℝ → ℝ} (hmeas : Measurable A) (hmeas' : Measurable A')
+    (hmeas'' : Measurable A'') (m v : ℝ) : Measurable (stepD2 A A' A'' m v) := by
+  have hE := measurable_tiltE (A := A) hmeas m v
+  have hP := measurable_tiltP hmeas hmeas' m v
+  have hR := measurable_tiltR hmeas hmeas' m v
+  have hQ := measurable_tiltQ hmeas hmeas'' m v
+  exact (hQ.div hE).add (((hR.div hE).sub ((hP.div hE).pow_const 2)).const_mul m)
+
 end SpinGlass
