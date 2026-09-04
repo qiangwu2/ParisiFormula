@@ -288,6 +288,157 @@ theorem hasDerivAt_parisiStepPi_param (x : Fin n → ℝ) {u₀ : ℝ} {s : Set 
     rw [integral_div]
     field_simp
 
+/-! ## 3. `ℓ¹` bookkeeping -/
+
+theorem l1_add_le (x y : Fin n → ℝ) : l1 (x + y) ≤ l1 x + l1 y := by
+  simp only [l1, Pi.add_apply]
+  rw [← Finset.sum_add_distrib]
+  exact Finset.sum_le_sum (fun i _ => abs_add_le _ _)
+
+theorem l1_neg (x : Fin n → ℝ) : l1 (-x) = l1 x := by
+  simp only [l1, Pi.neg_apply, abs_neg]
+
+theorem l1_sub_le (x y : Fin n → ℝ) : l1 (x - y) ≤ l1 x + l1 y := by
+  rw [sub_eq_add_neg]
+  exact (l1_add_le x (-y)).trans (by rw [l1_neg])
+
+theorem l1_const_smul (c : ℝ) (x : Fin n → ℝ) :
+    l1 (fun i => c * x i) = |c| * l1 x := by
+  simp only [l1, abs_mul, Finset.mul_sum]
+
+/-- Jensen, `exp (∫ g) ≤ ∫ exp g`, against `piGauss n`. -/
+theorem exp_integral_le_integral_exp_pi {g : (Fin n → ℝ) → ℝ}
+    (hg : Integrable g (piGauss n))
+    (hexp : Integrable (fun z => Real.exp (g z)) (piGauss n)) :
+    Real.exp (∫ z, g z ∂(piGauss n)) ≤ ∫ z, Real.exp (g z) ∂(piGauss n) := by
+  have hpos : 0 < ∫ z, Real.exp (g z) ∂(piGauss n) := integral_exp_pos hexp
+  have hlogint : Integrable (fun z => Real.log (Real.exp (g z))) (piGauss n) := by
+    refine hg.congr ?_
+    filter_upwards with z
+    show g z = Real.log (Real.exp (g z))
+    rw [Real.log_exp]
+  have hJ := integral_log_le_log_integral (μ := piGauss n)
+    (W := fun z => Real.exp (g z)) (fun z => Real.exp_pos _) hexp hlogint
+  have hLHS : (∫ z, Real.log (Real.exp (g z)) ∂(piGauss n)) = ∫ z, g z ∂(piGauss n) := by
+    have hfun : (fun z => Real.log (Real.exp (g z))) = g := by
+      funext z; rw [Real.log_exp]
+    rw [hfun]
+  rw [hLHS] at hJ
+  calc Real.exp (∫ z, g z ∂(piGauss n))
+      ≤ Real.exp (Real.log (∫ z, Real.exp (g z) ∂(piGauss n))) := Real.exp_le_exp.2 hJ
+    _ = _ := Real.exp_log hpos
+
+/-- A function of `ℓ¹` growth, shifted, is integrable. -/
+theorem integrable_shift_pi {C D v : ℝ} (hD : 0 ≤ D) {B : (Fin n → ℝ) → ℝ}
+    (hb : ∀ y, |B y| ≤ C + D * l1 y) (hmeas : Measurable B) (x : Fin n → ℝ) :
+    Integrable (fun z : Fin n → ℝ => B (fun i => x i + Real.sqrt v * z i)) (piGauss n) := by
+  refine Integrable.mono ((integrable_const (C + D * l1 x)).add
+      (integrable_l1.const_mul (D * Real.sqrt v)))
+    (hmeas.comp (measurable_shift v x)).aestronglyMeasurable ?_
+  filter_upwards with z
+  rw [Real.norm_eq_abs, Real.norm_eq_abs]
+  refine (shift_bound_pi hD hb x v z).trans (le_abs_self _)
+
+/-! ## 4. Non-expansiveness and `ℓ¹`-Lipschitzness of an `N`-site level -/
+
+/-- One `N`-site level is non-expansive in the sup norm of the function being smoothed. -/
+theorem parisiStepPi_dist_le {m v ε : ℝ} {A A' : (Fin n → ℝ) → ℝ} {C D C₂ D₂ : ℝ}
+    (hD : 0 ≤ D) (hD₂ : 0 ≤ D₂)
+    (hA : ∀ y, |A y| ≤ C + D * l1 y) (hA' : ∀ y, |A' y| ≤ C₂ + D₂ * l1 y)
+    (hmA : Measurable A) (hmA' : Measurable A')
+    (hε : ∀ y, |A y - A' y| ≤ ε) (x : Fin n → ℝ) :
+    |parisiStepPi n m v A x - parisiStepPi n m v A' x| ≤ ε := by
+  classical
+  have hε0 : 0 ≤ ε := le_trans (abs_nonneg _) (hε 0)
+  by_cases hm : m = 0
+  · simp only [parisiStepPi, if_pos hm]
+    have h1 := integrable_shift_pi (v := v) hD hA hmA x
+    have h2 := integrable_shift_pi (v := v) hD₂ hA' hmA' x
+    rw [← integral_sub h1 h2]
+    calc |∫ z, (A (fun i => x i + Real.sqrt v * z i) - A' (fun i => x i + Real.sqrt v * z i))
+            ∂(piGauss n)|
+        ≤ ∫ z, |A (fun i => x i + Real.sqrt v * z i) - A' (fun i => x i + Real.sqrt v * z i)|
+            ∂(piGauss n) := abs_integral_le_integral_abs
+      _ ≤ ∫ _z, ε ∂(piGauss n) :=
+          integral_mono (h1.sub h2).abs (integrable_const _) (fun z => hε _)
+      _ = ε := by rw [integral_const, probReal_univ, one_smul]
+  · simp only [parisiStepPi, if_neg hm]
+    have hI := integrable_exp_shift_pi (m := m) (v := v) hD hA hmA x
+    have hI' := integrable_exp_shift_pi (m := m) (v := v) hD₂ hA' hmA' x
+    have hIpos := integral_exp_shift_pi_pos (m := m) (v := v) hD hA hmA x
+    have hI'pos := integral_exp_shift_pi_pos (m := m) (v := v) hD₂ hA' hmA' x
+    -- pointwise: `e^{mA} ≤ e^{|m|ε} e^{mA'}` and symmetrically
+    have hpt : ∀ z : Fin n → ℝ, Real.exp (m * A (fun i => x i + Real.sqrt v * z i))
+        ≤ Real.exp (|m| * ε) * Real.exp (m * A' (fun i => x i + Real.sqrt v * z i)) := by
+      intro z
+      rw [← Real.exp_add]
+      refine Real.exp_le_exp.2 ?_
+      have h := hε (fun i => x i + Real.sqrt v * z i)
+      have h2 : m * A (fun i => x i + Real.sqrt v * z i) - m * A' (fun i => x i + Real.sqrt v * z i)
+          ≤ |m| * ε := by
+        rw [← mul_sub]
+        calc m * (A _ - A' _) ≤ |m * (A _ - A' _)| := le_abs_self _
+          _ = |m| * |A _ - A' _| := abs_mul _ _
+          _ ≤ |m| * ε := mul_le_mul_of_nonneg_left h (abs_nonneg m)
+      linarith
+    have hpt' : ∀ z : Fin n → ℝ, Real.exp (m * A' (fun i => x i + Real.sqrt v * z i))
+        ≤ Real.exp (|m| * ε) * Real.exp (m * A (fun i => x i + Real.sqrt v * z i)) := by
+      intro z
+      rw [← Real.exp_add]
+      refine Real.exp_le_exp.2 ?_
+      have h := hε (fun i => x i + Real.sqrt v * z i)
+      rw [abs_sub_comm] at h
+      have h2 : m * A' (fun i => x i + Real.sqrt v * z i) - m * A (fun i => x i + Real.sqrt v * z i)
+          ≤ |m| * ε := by
+        rw [← mul_sub]
+        calc m * (A' _ - A _) ≤ |m * (A' _ - A _)| := le_abs_self _
+          _ = |m| * |A' _ - A _| := abs_mul _ _
+          _ ≤ |m| * ε := mul_le_mul_of_nonneg_left h (abs_nonneg m)
+      linarith
+    have hint1 : (∫ z, Real.exp (m * A (fun i => x i + Real.sqrt v * z i)) ∂(piGauss n))
+        ≤ Real.exp (|m| * ε) * ∫ z, Real.exp (m * A' (fun i => x i + Real.sqrt v * z i))
+            ∂(piGauss n) := by
+      rw [← integral_const_mul]
+      exact integral_mono hI (hI'.const_mul _) hpt
+    have hint2 : (∫ z, Real.exp (m * A' (fun i => x i + Real.sqrt v * z i)) ∂(piGauss n))
+        ≤ Real.exp (|m| * ε) * ∫ z, Real.exp (m * A (fun i => x i + Real.sqrt v * z i))
+            ∂(piGauss n) := by
+      rw [← integral_const_mul]
+      exact integral_mono hI' (hI.const_mul _) hpt'
+    have hlog1 := Real.log_le_log hIpos hint1
+    have hlog2 := Real.log_le_log hI'pos hint2
+    rw [Real.log_mul (Real.exp_pos _).ne' hI'pos.ne', Real.log_exp] at hlog1
+    rw [Real.log_mul (Real.exp_pos _).ne' hIpos.ne', Real.log_exp] at hlog2
+    have hmpos : 0 < |m| := abs_pos.2 hm
+    rw [← mul_sub, abs_mul, abs_div, abs_one, div_mul_eq_mul_div, one_mul, div_le_iff₀ hmpos]
+    rw [abs_le]
+    constructor <;> linarith
+
+/-- One `N`-site level preserves `ℓ¹`-Lipschitzness. -/
+theorem parisiStepPi_lipschitz {m v L : ℝ} {A : (Fin n → ℝ) → ℝ} {C D : ℝ}
+    (hD : 0 ≤ D) (hL : 0 ≤ L)
+    (hA : ∀ y, |A y| ≤ C + D * l1 y) (hmA : Measurable A)
+    (hLip : ∀ y y', |A y - A y'| ≤ L * l1 (y - y')) (x x' : Fin n → ℝ) :
+    |parisiStepPi n m v A x - parisiStepPi n m v A x'| ≤ L * l1 (x - x') := by
+  classical
+  set c : Fin n → ℝ := x' - x with hc
+  have hshift : parisiStepPi n m v A x' = parisiStepPi n m v (fun y => A (y + c)) x := by
+    rw [parisiStepPi_shift, hc, add_sub_cancel]
+  rw [hshift]
+  have hA' : ∀ y, |A (y + c)| ≤ (C + D * l1 c) + D * l1 y := by
+    intro y
+    refine (hA _).trans ?_
+    have := l1_add_le y c
+    nlinarith
+  have hmA' : Measurable (fun y => A (y + c)) := hmA.comp (measurable_id.add_const c)
+  have hε : ∀ y, |A y - A (y + c)| ≤ L * l1 c := by
+    intro y
+    refine (hLip y (y + c)).trans ?_
+    rw [show y - (y + c) = -c by abel, l1_neg]
+  have := parisiStepPi_dist_le (m := m) (v := v) hD hD hA hA' hmA hmA' hε x
+  rw [hc, ← l1_neg, neg_sub] at this
+  exact this
+
 end ChainRule
 
 end Targets

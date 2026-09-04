@@ -43,7 +43,7 @@ paper, and the deduction of the Parisi formula from those theorems is machine-ch
   `φ_N(1) ≥ φ_N(t₀) - L(1-t₀)`, Theorem 2.2 gives `φ_N(t₀) → ψ(t₀) ≥ 𝒫`, and `t₀ < 1` is
   arbitrary.  The upper half is Target 3'.
 -/
-import Targets.CascadeDeriv
+import Targets.CascadeDerivPi
 
 open MeasureTheory ProbabilityTheory Real Filter Topology
 
@@ -111,36 +111,6 @@ theorem parisiCorrection_le {k : ℕ} (s : RSBScheme k) (β : ℝ) :
   have := sum_correction_le_one s
   have hb : (0 : ℝ) ≤ β ^ 2 / 4 := by positivity
   nlinarith
-
-/-- Smoothing commutes with translation of the argument. -/
-theorem parisiStepPi_shift {n : ℕ} (m v : ℝ) (A : (Fin n → ℝ) → ℝ) (c x : Fin n → ℝ) :
-    parisiStepPi n m v (fun y => A (y + c)) x = parisiStepPi n m v A (x + c) := by
-  have hpt : ∀ z : Fin n → ℝ,
-      A ((fun i => x i + Real.sqrt v * z i) + c)
-        = A (fun i => (x + c) i + Real.sqrt v * z i) := by
-    intro z
-    congr 1
-    funext i
-    simp only [Pi.add_apply]
-    ring
-  simp only [parisiStepPi, hpt]
-
-/-- Hence so does the whole cascade. -/
-theorem cascadeT_shift {k : ℕ} (n : ℕ) (s : RSBScheme k) (β scale : ℝ)
-    (B : (Fin n → ℝ) → ℝ) (c : Fin n → ℝ) (j : ℕ) (x : Fin n → ℝ) :
-    cascadeT n s β scale (fun y => B (y + c)) j x = cascadeT n s β scale B j (x + c) := by
-  induction j generalizing x with
-  | zero => rfl
-  | succ j ih =>
-      show parisiStepPi n (s.m (k + 1 - j))
-          (scale * (β ^ 2 * (s.q (k + 2 - j) - s.q (k + 1 - j))))
-          (cascadeT n s β scale (fun y => B (y + c)) j) x
-        = parisiStepPi n (s.m (k + 1 - j))
-          (scale * (β ^ 2 * (s.q (k + 2 - j) - s.q (k + 1 - j))))
-          (cascadeT n s β scale B j) (x + c)
-      have hfun : cascadeT n s β scale (fun y => B (y + c)) j
-          = fun y => cascadeT n s β scale B j (y + c) := funext (fun y => ih y)
-      rw [hfun, parisiStepPi_shift]
 
 /-- At `t = 0` there is no interaction: the base is the spin sum of `CascadeEndpoint` §4,
 translated by the external field. -/
