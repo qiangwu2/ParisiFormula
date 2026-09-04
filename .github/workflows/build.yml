@@ -9,7 +9,8 @@ on:
 # Those are visible to anyone on the public run page, without downloading logs.
 
 jobs:
-  # Tiers 1 and 2 must always build and must contain no `sorry`.
+  # Tier 2 must always build and must contain no `sorry`.
+  # (Tier 1 is now the RSAT dependency, verified upstream.)
   verified:
     runs-on: ubuntu-latest
     steps:
@@ -23,9 +24,9 @@ jobs:
         shell: bash
         run: |
           set +e
-          lake build SpinGlassCore ParisiFormula 2>&1 | tee build.log
+          lake build ParisiFormula 2>&1 | tee build.log
           status=${PIPESTATUS[0]}
-          python3 - build.log "Tier 1-2 (SpinGlassCore + ParisiFormula)" <<'PYEOF'
+          python3 - build.log "Tier 2 (ParisiFormula)" <<'PYEOF'
           import re, sys, os
           log = open(sys.argv[1], errors="replace").read().splitlines()
           title = sys.argv[2]
@@ -52,12 +53,12 @@ jobs:
               print(f"::error file={f},line={l},col={c}::{msg}")
           PYEOF
           exit $status
-      - name: Reject sorry / admit / axiom in Tier 1-2
+      - name: Reject sorry / admit / axiom in Tier 2
         # `always()`: run the placeholder scan even when the build step failed, so a red
         # build never hides a `sorry` that slipped into a verified tier.
         if: always()
         run: |
-          if grep -rnE "\bsorry\b|\badmit\b|^axiom " --include='*.lean' Lemmas ParisiFormula; then
+          if grep -rnE "\bsorry\b|\badmit\b|^axiom " --include='*.lean' ParisiFormula; then
             echo "::error::placeholder or project-local axiom found in verified tiers"; exit 1
           fi
 
