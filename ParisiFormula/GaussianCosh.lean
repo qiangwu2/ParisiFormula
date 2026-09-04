@@ -115,9 +115,8 @@ theorem continuous_log_cosh_affine (a b : ℝ) :
 
 /-- `z ↦ z` is `γ`-integrable. -/
 theorem integrable_id_stdGaussian :
-    Integrable (fun z : ℝ => z) (gaussianReal 0 1) := by
-  have h := (memLp_id_gaussianReal (μ := 0) (v := 1) 1).integrable (le_refl 1)
-  simpa [id] using h
+    Integrable (fun z : ℝ => z) (gaussianReal 0 1) :=
+  (memLp_id_gaussianReal (μ := 0) (v := 1) 1).integrable (le_refl 1)
 
 /-- `z ↦ log cosh (b + a z)` is `γ`-integrable, by `0 ≤ log cosh y ≤ |y|`. -/
 theorem integrable_log_cosh_stdGaussian (a b : ℝ) :
@@ -154,6 +153,8 @@ theorem integral_reflect_stdGaussian {f : ℝ → ℝ} (hf : Continuous f) (a b 
           rw [integral_map measurable_neg.aemeasurable hcont.aestronglyMeasurable]
     _ = ∫ z, f (b + -a * z) ∂(gaussianReal 0 1) := by
           refine integral_congr_ae (Filter.Eventually.of_forall (fun z => ?_))
-          rw [show a * -z = -a * z by ring]
+          show f (b + a * -z) = f (b + -a * z)
+          congr 1
+          ring
 
 end SpinGlass

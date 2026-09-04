@@ -1,5 +1,6 @@
 import ParisiFormula.GuerraToninelli
 import ParisiFormula.AnnealedBound
+import ParisiFormula.GaussianCosh
 import Mathlib.Probability.Distributions.Gaussian.Real
 
 /-!
@@ -200,7 +201,63 @@ theorem parisiFunctional_rsScheme (β h q : ℝ) (hq0 : 0 ≤ q) (hq1 : q ≤ 1)
       = Real.log 2
         + (∫ z, Real.log (Real.cosh (β * Real.sqrt q * z + h)) ∂(gaussianReal 0 1))
         + (β ^ 2 / 4) * (1 - q) ^ 2 := by
-  sorry
+  classical
+  set s := rsScheme q hq0 hq1 with hs
+  have hm0 : s.m 0 = 0 := by simp [hs, rsScheme]
+  have hm1 : s.m 1 = 1 := by simp [hs, rsScheme]
+  have hqq0 : s.q 0 = 0 := by simp [hs, rsScheme]
+  have hqq1 : s.q 1 = q := by simp [hs, rsScheme]
+  have hqq2 : s.q 2 = 1 := by simp [hs, rsScheme]
+  have hv1 : (0:ℝ) ≤ β ^ 2 * (1 - q) := mul_nonneg (sq_nonneg β) (by linarith)
+  have hlogcosh_cont : Continuous (fun y : ℝ => Real.log (Real.cosh y)) :=
+    Real.continuous_cosh.log (fun y => ne_of_gt (Real.cosh_pos y))
+  -- `F₁ = T_{1, β²(1-q)} (log cosh) = log cosh + β²(1-q)/2`
+  have hF1 : parisiF s β 1
+      = fun x => Real.log (Real.cosh x) + β ^ 2 * (1 - q) / 2 := by
+    funext x
+    show parisiStep (s.m 1) (β ^ 2 * (s.q 2 - s.q 1)) (parisiF s β 0) x = _
+    rw [hm1, hqq2, hqq1, parisiStep, if_neg (one_ne_zero)]
+    have hpt : ∀ z : ℝ,
+        Real.exp (1 * parisiF s β 0 (x + Real.sqrt (β ^ 2 * (1 - q)) * z))
+          = Real.cosh (x + Real.sqrt (β ^ 2 * (1 - q)) * z) := by
+      intro z
+      show Real.exp (1 * Real.log (Real.cosh _)) = _
+      rw [one_mul, Real.exp_log (Real.cosh_pos _)]
+    rw [integral_congr_ae (Filter.Eventually.of_forall hpt),
+        integral_cosh_add_mul_stdGaussian x (Real.sqrt (β ^ 2 * (1 - q))),
+        Real.sq_sqrt hv1,
+        Real.log_mul (ne_of_gt (Real.cosh_pos x)) (Real.exp_ne_zero _),
+        Real.log_exp]
+    ring
+  -- `F₀(h) = ∫ log cosh (h + |β|√q z) dγ + β²(1-q)/2`
+  have hsq : Real.sqrt (β ^ 2 * q) = |β| * Real.sqrt q := by
+    rw [Real.sqrt_mul (sq_nonneg β), Real.sqrt_sq_eq_abs]
+  have hF0 : parisiF s β 2 h
+      = (∫ z, Real.log (Real.cosh (h + |β| * Real.sqrt q * z)) ∂(gaussianReal 0 1))
+          + β ^ 2 * (1 - q) / 2 := by
+    show parisiStep (s.m 0) (β ^ 2 * (s.q 1 - s.q 0)) (parisiF s β 1) h = _
+    rw [hm0, hqq1, hqq0, sub_zero, parisiStep, if_pos rfl, hF1, hsq]
+    rw [integral_add (integrable_log_cosh_stdGaussian (|β| * Real.sqrt q) h)
+        (integrable_const _)]
+    simp
+  -- the correction sum is `1 * (1 - q²)`
+  have hsum : (∑ p ∈ Finset.range (0 + 1),
+      s.m (p + 1) * (s.q (p + 2) ^ 2 - s.q (p + 1) ^ 2)) = 1 * (1 - q ^ 2) := by
+    simp [hm1, hqq1, hqq2]
+  -- `|β|√q` and `β√q` agree under the symmetric Gaussian
+  have hrefl :
+      (∫ z, Real.log (Real.cosh (h + |β| * Real.sqrt q * z)) ∂(gaussianReal 0 1))
+        = ∫ z, Real.log (Real.cosh (β * Real.sqrt q * z + h)) ∂(gaussianReal 0 1) := by
+    rcases le_or_lt 0 β with hβ | hβ
+    · rw [abs_of_nonneg hβ]
+      exact integral_congr_ae (Filter.Eventually.of_forall (fun z => by rw [add_comm]))
+    · rw [abs_of_neg hβ]
+      have hre := integral_reflect_stdGaussian
+        (f := fun y : ℝ => Real.log (Real.cosh y)) hlogcosh_cont (β * Real.sqrt q) h
+      rw [show -β * Real.sqrt q = -(β * Real.sqrt q) by ring, ← hre]
+      exact integral_congr_ae (Filter.Eventually.of_forall (fun z => by rw [add_comm]))
+  rw [parisiFunctional, hF0, hsum, hrefl]
+  ring
 
 /-- **Target 2b (Lipschitz continuity in the scheme).**  Guerra's estimate: for two schemes
 with the same `k`, `|𝒫_k(m,q) - 𝒫_k(m',q')| ≤ C(β) · ∑_p (|m_p - m'_p| + |q_p - q'_p|)`
