@@ -440,8 +440,10 @@ theorem parisiStep_lipschitz {m v L : ℝ} {A : ℝ → ℝ}
       exact integral_congr_ae (Filter.Eventually.of_forall hshift)
     · rw [if_neg hm, if_neg hm]
       congr 2
-      exact integral_congr_ae
-        (Filter.Eventually.of_forall (fun z => by rw [hshift z]))
+      refine integral_congr_ae (Filter.Eventually.of_forall (fun z => ?_))
+      show Real.exp (m * A' (x + Real.sqrt v * z))
+          = Real.exp (m * A (x' + Real.sqrt v * z))
+      rw [hshift z]
   have hunif : ∀ y, |A y - A' y| ≤ L * |x - x'| := by
     intro y
     have h := hL y (y + c)
