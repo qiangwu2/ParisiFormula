@@ -139,9 +139,33 @@ right statements: `parisiFunctional` typechecked both before and after an off-by
       regularity of `𝒫_k` in the parameters), not optional.
       The `ℓ¹` form of the right-hand side should still be checked against Talagrand when the
       Milestone 4 blueprint is written; the uniformity in `k` is not negotiable.
-      Likely proof route: `parisiStep` is non-expansive in the sup-norm of its argument
-      (`|T A - T A'| ≤ ‖A - A'‖`, uniformly in `m`), which propagates a parameter
-      perturbation through the backward recursion level by level.
+      Proof route (partly built): `parisiStep` is non-expansive in the sup-norm of its
+      argument (`Targets.parisiStep_dist_le`, uniformly in `m`), which propagates a parameter
+      perturbation through the backward recursion level by level; a change of `q_p` is
+      factored as an extra smoothing step by the semigroup law
+      (`Parisi.T_add_of_hasLinearGrowth`) and bounded by
+      `Targets.abs_parisiStep_sub_self_le`.
+
+      **Open question about the statement — the modulus in `q` may be wrong.**
+      `abs_parisiStep_sub_self_le` gives
+      `|T_{m,w} A - A| ≤ L √w 𝔼|Z| + |m| L² w / 2`, whose leading term is **`√w`**, not `w`.
+      Chained over levels that yields a **1/2-Hölder** modulus in `q`, not the Lipschitz
+      bound 2b currently asserts.  The `√` is *sharp* for a merely Lipschitz `A`: for
+      `A = |·|` at `x = 0`, `∫ |√w z| dγ = √w 𝔼|Z|` exactly.  So this is not an artefact of
+      the proof.
+
+      Lipschitz-in-`q` requires the first-order term to vanish and **second-derivative**
+      control: `∫ A (x + √w z) dγ - A x = (w/2) A''(x) + O(w²)` for `A ∈ C²` with bounded
+      `A''`.  The levels `F_p` *are* smooth (they are Gaussian smoothings), so this is
+      available in principle, but it needs a bound on `F_p''` propagated through the
+      recursion as an extra invariant alongside
+      `Targets.parisiF_props` — which has not been built.
+
+      So before proving 2b, decide: either (i) weaken the target to 1/2-Hölder in `q`
+      (reachable with the current toolkit), or (ii) add the second-derivative invariant and
+      keep the Lipschitz form.  This should be settled against Talagrand when the Milestone 4
+      blueprint is written, since what matters is only that the modulus be strong enough for
+      the induction there.
 
 ## Phase 3 — Milestone 3: Guerra's RSB bound  (L–XL)
 
