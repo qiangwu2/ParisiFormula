@@ -272,6 +272,132 @@ theorem parisiStep_dist_le {m v ε x : ℝ} {A A' : ℝ → ℝ}
         ≤ 1 / |m| * (|m| * ε) := mul_le_mul_of_nonneg_left habs (by positivity)
       _ = ε := by field_simp
 
+/--
+**The smoothing step preserves linear growth.**
+
+Together with `hasLinearGrowth_log_cosh` this closes the induction that discharges
+`parisiStep_dist_le`'s integrability hypotheses at every level of `parisiF`.
+
+For `m ≠ 0` the constant produced here degrades like `1/|m|`.  That is an artefact of the
+crude two-sided bound and is harmless: growth preservation is only ever used at a *fixed*
+`m`, purely to obtain integrability.  The estimate that must be uniform in `m` is
+`parisiStep_dist_le`, and that one is.
+-/
+theorem hasLinearGrowth_parisiStep {A : ℝ → ℝ}
+    (hA : HasLinearGrowth A) (hmeas : Measurable A) (m v : ℝ) :
+    HasLinearGrowth (parisiStep m v A) := by
+  classical
+  obtain ⟨C, D, hC, hD, hb⟩ := hA
+  have hshift : ∀ x z : ℝ,
+      |A (x + Real.sqrt v * z)| ≤ (C + D * |x|) + (D * |Real.sqrt v|) * |z| := by
+    intro x z
+    refine (hb _).trans ?_
+    have habs : |x + Real.sqrt v * z| ≤ |x| + |Real.sqrt v| * |z| := by
+      calc |x + Real.sqrt v * z| ≤ |x| + |Real.sqrt v * z| := abs_add_le _ _
+        _ = |x| + |Real.sqrt v| * |z| := by rw [abs_mul]
+    nlinarith [abs_nonneg z, abs_nonneg (Real.sqrt v)]
+  by_cases hm : m = 0
+  · -- `m = 0`: the step is the plain Gaussian average.
+    set M : ℝ := ∫ z, |z| ∂(gaussianReal 0 1) with hMdef
+    have hM0 : 0 ≤ M := integral_nonneg (fun z => abs_nonneg z)
+    refine ⟨C + (D * |Real.sqrt v|) * M, D, by positivity, hD, fun x => ?_⟩
+    simp only [parisiStep, if_pos hm]
+    have hint : Integrable (fun z => A (x + Real.sqrt v * z)) (gaussianReal 0 1) :=
+      integrable_of_hasLinearGrowth ⟨C, D, hC, hD, hb⟩ hmeas x v
+    have hdom : Integrable
+        (fun z : ℝ => (C + D * |x|) + (D * |Real.sqrt v|) * |z|) (gaussianReal 0 1) :=
+      (integrable_const _).add ((integrable_id_stdGaussian.abs).const_mul _)
+    calc |∫ z, A (x + Real.sqrt v * z) ∂(gaussianReal 0 1)|
+        ≤ ∫ z, |A (x + Real.sqrt v * z)| ∂(gaussianReal 0 1) := by
+          simpa [Real.norm_eq_abs] using
+            norm_integral_le_integral_norm (μ := (gaussianReal 0 1))
+              (f := fun z => A (x + Real.sqrt v * z))
+      _ ≤ ∫ z, ((C + D * |x|) + (D * |Real.sqrt v|) * |z|) ∂(gaussianReal 0 1) :=
+          integral_mono hint.abs hdom (fun z => hshift x z)
+      _ = (C + D * |x|) + (D * |Real.sqrt v|) * M := by
+          rw [integral_add (integrable_const _)
+                ((integrable_id_stdGaussian.abs).const_mul _),
+            integral_const_mul]
+          simp [hMdef, probReal_univ]
+      _ = (C + (D * |Real.sqrt v|) * M) + D * |x| := by ring
+  · -- `m ≠ 0`.
+    have hmabs : (0 : ℝ) < |m| := abs_pos.2 hm
+    set a : ℝ := |m| * (D * |Real.sqrt v|) with hadef
+    set K : ℝ := ∫ z, Real.exp (a * |z|) ∂(gaussianReal 0 1) with hKdef
+    set K' : ℝ := ∫ z, Real.exp (-a * |z|) ∂(gaussianReal 0 1) with hK'def
+    have hKpos : 0 < K := integral_exp_pos (integrable_exp_abs_mul_stdGaussian a)
+    have hK'pos : 0 < K' := integral_exp_pos (integrable_exp_abs_mul_stdGaussian (-a))
+    set E : ℝ := |Real.log K| + |Real.log K'| with hEdef
+    refine ⟨C + E / |m|, D, by positivity, hD, fun x => ?_⟩
+    simp only [parisiStep, if_neg hm]
+    set I : ℝ := ∫ z, Real.exp (m * A (x + Real.sqrt v * z)) ∂(gaussianReal 0 1) with hIdef
+    have hIint : Integrable
+        (fun z => Real.exp (m * A (x + Real.sqrt v * z))) (gaussianReal 0 1) :=
+      integrable_exp_mul_of_hasLinearGrowth ⟨C, D, hC, hD, hb⟩ hmeas m x v
+    have hIpos : 0 < I := integral_exp_pos hIint
+    set B : ℝ := |m| * (C + D * |x|) with hBdef
+    have hB0 : 0 ≤ B := by positivity
+    have hkey : ∀ z : ℝ, |m| * |A (x + Real.sqrt v * z)| ≤ B + a * |z| := by
+      intro z
+      have h := mul_le_mul_of_nonneg_left (hshift x z) (abs_nonneg m)
+      calc |m| * |A (x + Real.sqrt v * z)|
+          ≤ |m| * ((C + D * |x|) + (D * |Real.sqrt v|) * |z|) := h
+        _ = B + a * |z| := by rw [hBdef, hadef]; ring
+    have hup : I ≤ Real.exp B * K := by
+      have hpt : ∀ z : ℝ,
+          Real.exp (m * A (x + Real.sqrt v * z))
+            ≤ Real.exp B * Real.exp (a * |z|) := by
+        intro z
+        rw [← Real.exp_add]
+        refine Real.exp_le_exp.2 ?_
+        have h1 : m * A (x + Real.sqrt v * z) ≤ |m| * |A (x + Real.sqrt v * z)| := by
+          calc m * A (x + Real.sqrt v * z) ≤ |m * A (x + Real.sqrt v * z)| := le_abs_self _
+            _ = |m| * |A (x + Real.sqrt v * z)| := abs_mul _ _
+        linarith [hkey z]
+      calc I ≤ ∫ z, Real.exp B * Real.exp (a * |z|) ∂(gaussianReal 0 1) :=
+            integral_mono hIint ((integrable_exp_abs_mul_stdGaussian a).const_mul _) hpt
+        _ = Real.exp B * K := integral_const_mul _ _
+    have hlow : Real.exp (-B) * K' ≤ I := by
+      have hpt : ∀ z : ℝ,
+          Real.exp (-B) * Real.exp (-a * |z|)
+            ≤ Real.exp (m * A (x + Real.sqrt v * z)) := by
+        intro z
+        rw [← Real.exp_add]
+        refine Real.exp_le_exp.2 ?_
+        have h1 : -(|m| * |A (x + Real.sqrt v * z)|) ≤ m * A (x + Real.sqrt v * z) := by
+          calc -(|m| * |A (x + Real.sqrt v * z)|)
+              = -|m * A (x + Real.sqrt v * z)| := by rw [abs_mul]
+            _ ≤ m * A (x + Real.sqrt v * z) := neg_abs_le _
+        linarith [hkey z]
+      calc Real.exp (-B) * K'
+          = ∫ z, Real.exp (-B) * Real.exp (-a * |z|) ∂(gaussianReal 0 1) :=
+            (integral_const_mul _ _).symm
+        _ ≤ I :=
+            integral_mono ((integrable_exp_abs_mul_stdGaussian (-a)).const_mul _) hIint hpt
+    have hlogup : Real.log I ≤ B + Real.log K := by
+      have h := Real.log_le_log hIpos hup
+      rwa [Real.log_mul (Real.exp_ne_zero _) (ne_of_gt hKpos), Real.log_exp] at h
+    have hloglow : -B + Real.log K' ≤ Real.log I := by
+      have h := Real.log_le_log (by positivity) hlow
+      rwa [Real.log_mul (Real.exp_ne_zero _) (ne_of_gt hK'pos), Real.log_exp] at h
+    have habsI : |Real.log I| ≤ B + E := by
+      refine abs_le.2 ⟨?_, ?_⟩
+      · have h1 : -Real.log K' ≤ |Real.log K'| := neg_le_abs _
+        have h2 : (0 : ℝ) ≤ |Real.log K| := abs_nonneg _
+        rw [hEdef]
+        linarith
+      · have h1 : Real.log K ≤ |Real.log K| := le_abs_self _
+        have h2 : (0 : ℝ) ≤ |Real.log K'| := abs_nonneg _
+        rw [hEdef]
+        linarith
+    rw [abs_mul, abs_one_div]
+    calc 1 / |m| * |Real.log I|
+        ≤ 1 / |m| * (B + E) := mul_le_mul_of_nonneg_left habsI (by positivity)
+      _ = (C + E / |m|) + D * |x| := by
+          rw [hBdef]
+          field_simp
+          ring
+
 /-- Backward Parisi recursion for the SK model (`ξ(x) = x²/2`, so `ξ'(x) = x`).
 
 `parisiF s β j` is the function `F_{k+2-j}` of Talagrand's recursion:

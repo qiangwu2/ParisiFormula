@@ -242,7 +242,7 @@ theorem integrable_of_hasLinearGrowth {A : ℝ → ℝ}
   rw [Real.norm_eq_abs]
   refine (hbound (x + Real.sqrt v * z)).trans ?_
   have habs : |x + Real.sqrt v * z| ≤ |x| + |Real.sqrt v| * |z| := by
-    calc |x + Real.sqrt v * z| ≤ |x| + |Real.sqrt v * z| := abs_add _ _
+    calc |x + Real.sqrt v * z| ≤ |x| + |Real.sqrt v * z| := abs_add_le _ _
       _ = |x| + |Real.sqrt v| * |z| := by rw [abs_mul]
   nlinarith [abs_nonneg z, abs_nonneg (Real.sqrt v)]
 
@@ -265,7 +265,7 @@ theorem integrable_exp_mul_of_hasLinearGrowth {A : ℝ → ℝ}
   rw [Real.norm_eq_abs, abs_of_nonneg (Real.exp_pos _).le, ← Real.exp_add]
   refine Real.exp_le_exp.2 ?_
   have habs : |x + Real.sqrt v * z| ≤ |x| + |Real.sqrt v| * |z| := by
-    calc |x + Real.sqrt v * z| ≤ |x| + |Real.sqrt v * z| := abs_add _ _
+    calc |x + Real.sqrt v * z| ≤ |x| + |Real.sqrt v * z| := abs_add_le _ _
       _ = |x| + |Real.sqrt v| * |z| := by rw [abs_mul]
   have h1 : m * A (x + Real.sqrt v * z) ≤ |m| * |A (x + Real.sqrt v * z)| := by
     calc m * A (x + Real.sqrt v * z) ≤ |m * A (x + Real.sqrt v * z)| := le_abs_self _
