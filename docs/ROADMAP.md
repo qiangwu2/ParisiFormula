@@ -45,9 +45,18 @@ right statements: `parisiFunctional` typechecked both before and after an off-by
         under linear images and no closure lemma exists in `Lemmas/SpinGlass/`.
         Concatenating the transported bases does not work: with `(A u)(γ) = u(α)` and
         `(B v)(γ) = v(σ)` one gets `⟪A u, B v⟫ = (∑_α u α)(∑_σ v σ) ≠ 0`.
-        Workable route: `HasGaussianLaw.map_fun` to push the law forward, then
-        `HasGaussianLaw.iIndepFun_of_covariance_inner` on an eigenbasis of the covariance
-        operator — which needs the finite-dimensional spectral theorem.  (L)
+        **Resolved — the blocker is avoidable.**  `IsGaussianHilbert (K_block)` is not
+        actually needed.  All three of `skL.U`, `skN.U`, `skM.U` are `IsGaussianHilbert` by
+        hypothesis, and `K_interpol t` is a *linear image* of that triple
+        (`K_interpol t ω = √t · skL.U ω + √(1-t) · (A (skN.U ω) + B (skM.U ω))`), so apply the
+        IBP lemma to the **packaged triple** instead of to the pair `(skL.U, K_block)`.
+        Nothing needs diagonalising and the spectral theorem is not required.
+        What is needed instead: generalise RSAT's `isGaussianHilbert_UV` from its special
+        form (`SKDisorder` × `SimpleDisorder`, both at size `N`) to two arbitrary independent
+        `IsGaussianHilbert` vectors in possibly different Hilbert spaces, then nest once for
+        the triple.  Its proof is already generic in substance (it opens with
+        `let hU := sk.hU; let hV := sim.hV` and uses only those plus independence, never
+        `cov_eq`), so this is a mechanical generalisation, not new mathematics.  (M, not L.)
   - [ ] trace reduction and sign argument (adapt `port/GuerraTrace.lean` +
         `cov_deriv_*` + `hessian_free_energy_std_basis_offdiag_nonpos`). (M)
 - [ ] **1c** `free_entropy_tendsto`: plug 1a, 1b into `free_entropy_tendsto_of_bddAbove`. (S)

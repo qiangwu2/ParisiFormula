@@ -274,13 +274,33 @@ Only step 2, in two halves:
   rescaled isometry, fine) but `⟪A u, B v⟫ = (∑_α u α)(∑_σ v σ) ≠ 0` in general, so the two
   transported bases are *not* mutually orthogonal and cannot simply be concatenated.
 
-  The workable route is via Mathlib's `HasGaussianLaw`: push the law forward along the
-  continuous linear map (`HasGaussianLaw.map_fun`), then use
-  `HasGaussianLaw.iIndepFun_of_covariance_inner` (uncorrelated + jointly Gaussian ⟹
-  independent) on an eigenbasis of the covariance operator to assemble the
-  `IsGaussianHilbert` data.  This needs the finite-dimensional spectral theorem and is a
-  substantial piece of work in its own right — plausibly the single largest remaining item
-  in Milestone 1.
+  **Resolution: the obstacle can be avoided entirely.**  `IsGaussianHilbert (K_block …)` is
+  *not* actually needed.  All three of `skL.U`, `skN.U`, `skM.U` are `IsGaussianHilbert` by
+  hypothesis, and
+
+      `K_interpol t ω = √t · skL.U ω + √(1-t) · (A (skN.U ω) + B (skM.U ω))`
+
+  is a *linear image* of the triple `(skL.U, skN.U, skM.U)`, where `(A u)(γ) = u α` and
+  `(B v)(γ) = v σ`.  So one applies the IBP lemma to the **packaged triple** — which is
+  Gaussian-Hilbert because each factor is and they are independent — rather than to the pair
+  `(skL.U, K_block)`.  The function being integrated is then
+  `(x₁,x₂,x₃) ↦ free_energy_density (√t x₁ + √(1-t) (A x₂ + B x₃))`, smooth on the product
+  space.  Nothing has to be diagonalised, and the spectral theorem is not needed.
+
+  What this needs instead: a **generalisation of RSAT's `isGaussianHilbert_UV`** from its
+  current special form (an `SKDisorder` paired with a `SimpleDisorder`, both at size `N`) to
+  two arbitrary independent `IsGaussianHilbert` vectors in possibly different Hilbert
+  spaces, and then one nesting to reach a triple.  Its proof is already generic in
+  substance — it opens with `let hU := sk.hU; let hV := sim.hV` and thereafter uses only
+  those two coordinate models plus the independence hypothesis, never `cov_eq` or the SK
+  kernels — so this is a mechanical generalisation of an existing proof rather than new
+  mathematics.  That is a much smaller task than the eigenbasis construction, and it is the
+  recommended route.
+
+  (For the record, the eigenbasis route — `HasGaussianLaw.map_fun` to push the law forward,
+  then `HasGaussianLaw.iIndepFun_of_covariance_inner` on an eigenbasis of the covariance
+  operator — would also work, but needs the finite-dimensional spectral theorem and is
+  considerably larger.)
 
 Then `Φ' ≥ 0` on `Ioo 0 1` by `covDiff_hessian_sum_nonneg`, and `MonotoneOn Φ (Icc 0 1)`
 follows from continuity of `Φ` on `Icc 0 1` plus the derivative sign on the interior.
