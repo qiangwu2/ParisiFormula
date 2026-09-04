@@ -921,7 +921,7 @@ theorem tilted_bound_algebra {Q R P E m : ℝ} (hE : 0 < E)
     (hQ : Q ≤ E - R) (hCS : P ^ 2 ≤ R * E) (hm0 : 0 ≤ m) (hm1 : m ≤ 1) :
     Q / E + m * (R / E - (P / E) ^ 2) ≤ 1 - (P / E) ^ 2 := by
   have hr : (P / E) ^ 2 ≤ R / E := by
-    rw [div_pow, div_le_div_iff (by positivity) hE]
+    rw [div_pow, div_le_div_iff₀ (by positivity) hE]
     nlinarith [hCS, hE.le]
   have hQE : Q / E ≤ 1 - R / E := by
     rw [div_le_iff₀ hE]
