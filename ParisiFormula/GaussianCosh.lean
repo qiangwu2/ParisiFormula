@@ -25,6 +25,7 @@ Throughout, `γ = gaussianReal 0 1` is the standard Gaussian on `ℝ`.
 import ParisiFormula.AnnealedBound
 import Mathlib.Probability.Distributions.Gaussian.Real
 import Mathlib.Probability.Moments.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
 
 open scoped BigOperators NNReal
 
@@ -104,40 +105,53 @@ theorem log_cosh_le_abs (y : ℝ) : Real.log (Real.cosh y) ≤ |y| := by
       Real.log_le_log (Real.cosh_pos y) hcosh
     _ = |y| := Real.log_exp _
 
-/-- `z ↦ log cosh (a z + b)` is integrable for the standard Gaussian. -/
+/--
+`z ↦ log cosh (b + a z)` is continuous.  (`fun_prop` cannot do this on its own: `Real.log`
+is not continuous at `0`, so it needs `cosh > 0`.)
+-/
+theorem continuous_log_cosh_affine (a b : ℝ) :
+    Continuous (fun z : ℝ => Real.log (Real.cosh (b + a * z))) :=
+  (Real.continuous_cosh.comp (by fun_prop)).log (fun _ => ne_of_gt (Real.cosh_pos _))
+
+/-- `z ↦ z` is `γ`-integrable. -/
+theorem integrable_id_stdGaussian :
+    Integrable (fun z : ℝ => z) (gaussianReal 0 1) := by
+  have h := (memLp_id_gaussianReal (μ := 0) (v := 1) 1).integrable (le_refl 1)
+  simpa [id] using h
+
+/-- `z ↦ log cosh (b + a z)` is `γ`-integrable, by `0 ≤ log cosh y ≤ |y|`. -/
 theorem integrable_log_cosh_stdGaussian (a b : ℝ) :
-    Integrable (fun z : ℝ => Real.log (Real.cosh (a * z + b))) (gaussianReal 0 1) := by
+    Integrable (fun z : ℝ => Real.log (Real.cosh (b + a * z))) (gaussianReal 0 1) := by
   have hmeas : AEStronglyMeasurable
-      (fun z : ℝ => Real.log (Real.cosh (a * z + b))) (gaussianReal 0 1) := by
-    fun_prop
-  have hdom : Integrable (fun z : ℝ => |a * z + b| + 1) (gaussianReal 0 1) := by
-    have h1 : Integrable (fun z : ℝ => a * z + b) (gaussianReal 0 1) := by
-      exact ((integrable_id_gaussianReal).const_mul a).add (integrable_const _)
-    exact h1.abs.add (integrable_const _)
+      (fun z : ℝ => Real.log (Real.cosh (b + a * z))) (gaussianReal 0 1) :=
+    (continuous_log_cosh_affine a b).aestronglyMeasurable
+  have hdom : Integrable (fun z : ℝ => |b + a * z|) (gaussianReal 0 1) :=
+    ((integrable_const b).add (integrable_id_stdGaussian.const_mul a)).abs
   refine hdom.mono' hmeas (Filter.Eventually.of_forall (fun z => ?_))
   rw [Real.norm_eq_abs, abs_of_nonneg (log_cosh_nonneg _)]
-  have := log_cosh_le_abs (a * z + b)
-  linarith
+  exact log_cosh_le_abs _
 
 /-! ## 4. Reflection symmetry of the standard Gaussian -/
 
 /--
-`∫ f (b - a z) dγ(z) = ∫ f (b + a z) dγ(z)`: the standard Gaussian is symmetric.
+`∫ f (b + a z) dγ(z) = ∫ f (b - a z) dγ(z)`: the standard Gaussian is symmetric.
 
-Needed because `√(β² q) = |β| √q`, while Target 2a is stated with `β √q`.
+Needed because `√(β² q) = |β| √q`, while Target 2a is stated with `β √q` and no sign
+hypothesis on `β`.
 -/
-theorem integral_reflect_stdGaussian (f : ℝ → ℝ) (hf : AEStronglyMeasurable f (gaussianReal 0 1))
-    (a b : ℝ) :
+theorem integral_reflect_stdGaussian {f : ℝ → ℝ} (hf : Continuous f) (a b : ℝ) :
     (∫ z, f (b + a * z) ∂(gaussianReal 0 1))
       = ∫ z, f (b + -a * z) ∂(gaussianReal 0 1) := by
   have hmap : (gaussianReal 0 1).map (fun x : ℝ => -x) = gaussianReal 0 1 := by
     simpa using (gaussianReal_map_neg (μ := 0) (v := 1))
+  have hcont : Continuous (fun z : ℝ => f (b + a * z)) :=
+    hf.comp (continuous_const.add (continuous_const.mul continuous_id))
   calc
     (∫ z, f (b + a * z) ∂(gaussianReal 0 1))
         = ∫ z, f (b + a * z) ∂((gaussianReal 0 1).map (fun x : ℝ => -x)) := by
           rw [hmap]
-    _ = ∫ z, f (b + a * (-z)) ∂(gaussianReal 0 1) := by
-          rw [integral_map (by fun_prop) (by fun_prop)]
+    _ = ∫ z, f (b + a * -z) ∂(gaussianReal 0 1) := by
+          rw [integral_map measurable_neg.aemeasurable hcont.aestronglyMeasurable]
     _ = ∫ z, f (b + -a * z) ∂(gaussianReal 0 1) := by
           refine integral_congr_ae (Filter.Eventually.of_forall (fun z => ?_))
           rw [show a * -z = -a * z by ring]
