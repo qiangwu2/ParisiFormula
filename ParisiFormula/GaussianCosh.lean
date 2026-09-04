@@ -1255,4 +1255,175 @@ theorem hasDerivAt_stepD2 {A A' A'' : ℝ → ℝ} {m v : ℝ} (hm : m ≠ 0)
   rw [hfun, smoothing_second_deriv_eq hm hA'bd hA''bd hA hmeas hmeas' hmeas'' x] at h
   exact h
 
+/-! ## 14. The improved `O(w)` variance estimate
+
+With the second-order invariant in hand (`|A''| ≤ 1`), the first-order term of the variance
+perturbation vanishes by symmetry of the Gaussian, upgrading the `√w` of
+`abs_integral_shift_sub_le` to `w`:
+
+  `|∫ A (x + √w z) dγ - A x| ≤ w`.
+
+This is what makes Target 2b's **Lipschitz** statement in `q` reachable; the `√w` bound only
+gives a 1/2-Hölder modulus, and that `√` is sharp for merely Lipschitz `A`.
+-/
+
+/-- If `|A''| ≤ 1` then `A'` is 1-Lipschitz. -/
+theorem abs_deriv_sub_le {A' A'' : ℝ → ℝ}
+    (hd2 : ∀ t, HasDerivAt A' (A'' t) t) (hA''bd : ∀ t, |A'' t| ≤ 1) (a b : ℝ) :
+    |A' a - A' b| ≤ |a - b| := by
+  have hg : ∀ s ∈ Set.Icc (0 : ℝ) 1,
+      HasDerivWithinAt (fun s : ℝ => A' (b + s * (a - b)))
+        ((a - b) * A'' (b + s * (a - b))) (Set.Icc (0 : ℝ) 1) s := by
+    intro s _
+    have hlin : HasDerivAt (fun s : ℝ => b + s * (a - b)) (a - b) s := by
+      simpa using ((hasDerivAt_id s).mul_const (a - b)).const_add b
+    have hcomp : HasDerivAt (fun s : ℝ => A' (b + s * (a - b)))
+        (A'' (b + s * (a - b)) * (a - b)) s := (hd2 (b + s * (a - b))).comp s hlin
+    have hcomp' : HasDerivAt (fun s : ℝ => A' (b + s * (a - b)))
+        ((a - b) * A'' (b + s * (a - b))) s := by
+      rw [mul_comm] at hcomp
+      exact hcomp
+    exact hcomp'.hasDerivWithinAt
+  have hbound : ∀ s ∈ Set.Ico (0 : ℝ) 1,
+      ‖(a - b) * A'' (b + s * (a - b))‖ ≤ |a - b| := by
+    intro s _
+    rw [Real.norm_eq_abs, abs_mul]
+    have h1 : |A'' (b + s * (a - b))| ≤ 1 := hA''bd _
+    nlinarith [abs_nonneg (a - b), abs_nonneg (A'' (b + s * (a - b)))]
+  have h := norm_image_sub_le_of_norm_deriv_le_segment_01' hg hbound
+  have hone : b + (1 : ℝ) * (a - b) = a := by ring
+  have hzero : b + (0 : ℝ) * (a - b) = b := by ring
+  rw [Real.norm_eq_abs, hone, hzero] at h
+  exact h
+
+/--
+**Second-order Taylor bound** (with the crude constant `1` rather than `1/2`, which is all we
+need): if `|A''| ≤ 1` then `|A y - A x - A' x (y - x)| ≤ (y - x)²`.
+-/
+theorem abs_taylor_second_le {A A' A'' : ℝ → ℝ}
+    (hd1 : ∀ t, HasDerivAt A (A' t) t) (hd2 : ∀ t, HasDerivAt A' (A'' t) t)
+    (hA''bd : ∀ t, |A'' t| ≤ 1) (x y : ℝ) :
+    |A y - A x - A' x * (y - x)| ≤ (y - x) ^ 2 := by
+  have hLip := abs_deriv_sub_le hd2 hA''bd
+  have hh : ∀ s ∈ Set.Icc (0 : ℝ) 1,
+      HasDerivWithinAt
+        (fun s : ℝ => A (x + s * (y - x)) - A x - s * (A' x * (y - x)))
+        ((y - x) * A' (x + s * (y - x)) - A' x * (y - x)) (Set.Icc (0 : ℝ) 1) s := by
+    intro s _
+    have hlin : HasDerivAt (fun s : ℝ => x + s * (y - x)) (y - x) s := by
+      simpa using ((hasDerivAt_id s).mul_const (y - x)).const_add x
+    have hcomp : HasDerivAt (fun s : ℝ => A (x + s * (y - x)))
+        (A' (x + s * (y - x)) * (y - x)) s := (hd1 (x + s * (y - x))).comp s hlin
+    have hlin2 : HasDerivAt (fun s : ℝ => s * (A' x * (y - x))) (A' x * (y - x)) s := by
+      simpa using (hasDerivAt_id s).mul_const (A' x * (y - x))
+    have hsub := (hcomp.sub_const (A x)).sub hlin2
+    have heq : A' (x + s * (y - x)) * (y - x) - A' x * (y - x)
+        = (y - x) * A' (x + s * (y - x)) - A' x * (y - x) := by ring
+    rw [heq] at hsub
+    exact hsub.hasDerivWithinAt
+  have hbound : ∀ s ∈ Set.Ico (0 : ℝ) 1,
+      ‖(y - x) * A' (x + s * (y - x)) - A' x * (y - x)‖ ≤ (y - x) ^ 2 := by
+    intro s hs
+    have hs0 : 0 ≤ s := hs.1
+    have hs1 : s ≤ 1 := le_of_lt hs.2
+    have hd : |A' (x + s * (y - x)) - A' x| ≤ |s * (y - x)| := by
+      have h := hLip (x + s * (y - x)) x
+      have hrw : |x + s * (y - x) - x| = |s * (y - x)| := by
+        congr 1
+        ring
+      rwa [hrw] at h
+    have hsy : |s * (y - x)| ≤ |y - x| := by
+      rw [abs_mul, abs_of_nonneg hs0]
+      nlinarith [abs_nonneg (y - x)]
+    rw [Real.norm_eq_abs, show (y - x) * A' (x + s * (y - x)) - A' x * (y - x)
+      = (y - x) * (A' (x + s * (y - x)) - A' x) by ring, abs_mul]
+    calc |y - x| * |A' (x + s * (y - x)) - A' x| ≤ |y - x| * |y - x| :=
+          mul_le_mul_of_nonneg_left (hd.trans hsy) (abs_nonneg _)
+      _ = (y - x) ^ 2 := by rw [← abs_mul, abs_of_nonneg (mul_self_nonneg _)]; ring
+  have h := norm_image_sub_le_of_norm_deriv_le_segment_01' hh hbound
+  have hone : A (x + (1 : ℝ) * (y - x)) - A x - (1 : ℝ) * (A' x * (y - x))
+      = A y - A x - A' x * (y - x) := by
+    rw [show x + (1 : ℝ) * (y - x) = y by ring]
+    ring
+  have hzero : A (x + (0 : ℝ) * (y - x)) - A x - (0 : ℝ) * (A' x * (y - x)) = 0 := by
+    rw [show x + (0 : ℝ) * (y - x) = x by ring]
+    ring
+  rw [Real.norm_eq_abs, hone, hzero, sub_zero] at h
+  exact h
+
+/-- `∫ z² dγ = 1` for the standard Gaussian. -/
+theorem integral_sq_stdGaussian :
+    (∫ z : ℝ, z ^ 2 ∂(gaussianReal 0 1)) = 1 := by
+  have h := integral_sq_sub_mean_gaussianReal (0 : ℝ) (1 : ℝ≥0)
+  simpa using h
+
+/--
+**The improved variance-perturbation estimate.**
+
+`|∫ A (x + √w z) dγ - A x| ≤ w` — order `w`, not `√w`.
+
+The first-order term vanishes because the Gaussian is centred (`∫ z dγ = 0`), and the
+remainder is controlled by the second-order Taylor bound, which the invariant `|A''| ≤ 1`
+supplies.  This is the estimate that makes Target 2b's Lipschitz statement in `q` reachable;
+the earlier `abs_integral_shift_sub_le` gives only `L √w 𝔼|Z|`, and that `√` is sharp for a
+merely Lipschitz `A`.
+-/
+theorem abs_integral_shift_sub_le_second {A A' A'' : ℝ → ℝ} {w : ℝ} (hw : 0 ≤ w)
+    (hd1 : ∀ t, HasDerivAt A (A' t) t) (hd2 : ∀ t, HasDerivAt A' (A'' t) t)
+    (hA''bd : ∀ t, |A'' t| ≤ 1)
+    (hgrow : HasLinearGrowth A) (hmeas : Measurable A) (x : ℝ) :
+    |(∫ z, A (x + Real.sqrt w * z) ∂(gaussianReal 0 1)) - A x| ≤ w := by
+  classical
+  set μ : Measure ℝ := gaussianReal 0 1 with hμ
+  have hint : Integrable (fun z : ℝ => A (x + Real.sqrt w * z)) μ :=
+    integrable_of_hasLinearGrowth hgrow hmeas x w
+  have hidint : Integrable (fun z : ℝ => z) μ := integrable_id_stdGaussian
+  have hsqint : Integrable (fun z : ℝ => z ^ 2) μ :=
+    integrable_sq_gaussianReal_centered 1
+  have hlinint : Integrable (fun z : ℝ => A' x * (Real.sqrt w * z)) μ := by
+    have h : Integrable (fun z : ℝ => (A' x * Real.sqrt w) * z) μ :=
+      hidint.const_mul _
+    refine h.congr (Filter.Eventually.of_forall (fun z => ?_))
+    ring
+  -- the first-order term integrates to zero
+  have hzero : (∫ z : ℝ, A' x * (Real.sqrt w * z) ∂μ) = 0 := by
+    have hfun : (fun z : ℝ => A' x * (Real.sqrt w * z))
+        = fun z : ℝ => (A' x * Real.sqrt w) * z := by
+      funext z; ring
+    rw [hfun, integral_const_mul, hμ, integral_id_gaussianReal]
+    simp
+  have hsplit : (∫ z, (A (x + Real.sqrt w * z) - A x
+        - A' x * (Real.sqrt w * z)) ∂μ)
+      = (∫ z, A (x + Real.sqrt w * z) ∂μ) - A x := by
+    have hAsub : Integrable (fun z : ℝ => A (x + Real.sqrt w * z) - A x) μ :=
+      hint.sub (integrable_const (A x))
+    rw [integral_sub hAsub hlinint,
+      integral_sub hint (integrable_const (A x)), hzero, integral_const]
+    simp [hμ, probReal_univ]
+  -- pointwise second-order bound
+  have hpt : ∀ z : ℝ, |A (x + Real.sqrt w * z) - A x
+      - A' x * (Real.sqrt w * z)| ≤ w * z ^ 2 := by
+    intro z
+    have h := abs_taylor_second_le hd1 hd2 hA''bd x (x + Real.sqrt w * z)
+    have hrw : (x + Real.sqrt w * z - x) = Real.sqrt w * z := by ring
+    rw [hrw] at h
+    have hsq : (Real.sqrt w * z) ^ 2 = w * z ^ 2 := by
+      rw [mul_pow, Real.sq_sqrt hw]
+    rw [hsq] at h
+    exact h
+  have hdomint : Integrable (fun z : ℝ => w * z ^ 2) μ := hsqint.const_mul w
+  have hfullint : Integrable (fun z : ℝ => A (x + Real.sqrt w * z) - A x
+      - A' x * (Real.sqrt w * z)) μ :=
+    (hint.sub (integrable_const (A x))).sub hlinint
+  rw [← hsplit]
+  calc |∫ z, (A (x + Real.sqrt w * z) - A x - A' x * (Real.sqrt w * z)) ∂μ|
+      ≤ ∫ z, |A (x + Real.sqrt w * z) - A x - A' x * (Real.sqrt w * z)| ∂μ := by
+        simpa [Real.norm_eq_abs] using
+          norm_integral_le_integral_norm (μ := μ)
+            (f := fun z => A (x + Real.sqrt w * z) - A x - A' x * (Real.sqrt w * z))
+    _ ≤ ∫ z, w * z ^ 2 ∂μ :=
+        integral_mono hfullint.abs hdomint hpt
+    _ = w := by
+        rw [integral_const_mul, hμ, integral_sq_stdGaussian, mul_one]
+
 end SpinGlass
