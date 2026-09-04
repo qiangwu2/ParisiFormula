@@ -404,24 +404,33 @@ energy is computed through the iterated `(1/m_p) log 𝔼_p exp(m_p ·)`, i.e. t
 `parisiStep`.  A search confirms RSAT has **no** cascade/Ruelle machinery, so this must be
 built.  Two halves:
 
-1. **Endpoint (`t = 0`) — moderate.**  The comparison Hamiltonian is
-   `∑_i σ_i (∑_p z_p^i) + h ∑_i σ_i`, a sum over sites of independent terms, so the whole
-   `k+2`-fold recursion **factorises over sites**:
+1. **Endpoint (`t = 0`) — DONE (2026-09-04).**  `Targets/CascadeEndpoint.lean`, no `sorry`,
+   all results axiom-clean.  The comparison Hamiltonian is `∑_i σ_i (∑_p z_p^i) + h ∑_i σ_i`,
+   a sum over sites of independent terms, so the whole `k+2`-fold recursion **factorises over
+   sites** and the surviving one-dimensional recursion is exactly `parisiF`:
 
-       X_{k+1} = N log 2 + ∑_i log cosh (Y_i + h),   X_0 = N (log 2 + F_0(h)),
-
-   because `(1/m) log 𝔼 exp (m ∑_i f_i)` splits as `∑_i (1/m) log 𝔼 exp (m f_i)` for
-   independent `f_i`.  The one-dimensional recursion that survives *is* `parisiF`.  So this
-   half reduces to: the log-exp operator is additive on independent summands, plus an
-   induction over the `k+2` levels.  Estimated 300–500 lines; nothing here is deep.
+   * `parisiStepPi_sum` — one `N`-site level applied to `y ↦ ∑_i a (y i)` is
+     `∑_i parisiStep m v a (x i)`.  For `m ≠ 0` this is Fubini for products
+     (`integral_fintype_prod_eq_prod`) plus `log (∏ …) = ∑ log …`; for `m = 0` it is
+     linearity plus the coordinate marginal of `Measure.pi` (`piGauss_map_eval`).
+   * `spinSum_exp` / `log_spinSum_exp` — the innermost level, `∑_σ exp (∑_i σ_i c_i)
+     = ∏_i 2 cosh (c_i)`.
+   * `parisiStep_const_add` — `T (c + A) = c + T A`, so the `log 2` passes through.
+   * `parisiFPi_eq` — every level is `∑_i (log 2 + parisiF s β j (y_i))`.
+   * `parisiFPi_top` / `parisiFPi_top_eq_parisiFunctional` — at the constant configuration
+     `h`, `(1/N)` times the top of the cascade is `𝒫_k(m,q)` **plus exactly the correction
+     term** `(β²/4) ∑_p m_{p+1}(q_{p+2}² - q_{p+1}²)` that the derivative half supplies.
 
 2. **Derivative (`φ'(t) ≤ 0`) — the large piece.**  Gaussian integration by parts applied
    *through* the nested exponential averages, producing
    `-(β²/4) ∑_p (m_{p+1} - m_p) 𝔼⟨(R_{1,2} - q_p)²⟩_t ≤ 0`.  This is where the tree Gibbs
    measure appears and is the genuine infrastructure cost.  Estimated 1500–3000 lines.
 
-**Recommended next milestone:** half 1 (the endpoint factorisation).  It is bounded, uses
-`parisiStep`/`parisiF` as they already stand, and is required whatever route half 2 takes.
+**Next milestone: half 2**, the only remaining piece of Target 3.  It needs the Gaussian
+interpolation derivative *through the nested exponential averages* — the tree Gibbs measure.
+This is the same engine that Target 1b needs for the Guerra–Toninelli path, in a harder
+setting; RSAT supplies it only for the single-Gaussian comparison field (which is how the
+`k = 0` case was closed).
 
 
 
