@@ -6,15 +6,17 @@
 
 Target 4 is `Tendsto (fun N => s_N) atTop (𝓝 (parisiValue β h))`, which follows from
 
-* **limsup ≤** — Target 3' , itself immediate from Target 3 (Guerra's RSB bound) via
-  `parisiValue_le`; and
+* **limsup ≤** — Target 3', proved from Target 3 (Guerra's RSB bound) and the now-complete
+  SK-model Theorem 2.1; and
 * **liminf ≥** — Talagrand's coupled-replica lower bound (Milestone 4), whose induction on
   the number of RSB levels needs **Target 2b-i** (continuity of `𝒫_k` in the parameters for
-  fixed `k`, hence existence of a minimiser — Talagrand's (2.17)).  **2b-i is now proved**,
-  so the critical path to Target 4 is reduced to Milestone 3 (`3 → 3'`).
+  fixed `k`, hence existence of a minimiser — Talagrand's (2.17)). **2b-i is proved**;
+  Theorem 2.2, the coupled-replica convergence argument, remains open.
 
-So the critical path is: **3 → 3'** and **2b → 4**, with `parisiValue` well-definedness
-(done: `bddBelow_parisiSet`) underneath both.
+**Current critical path: prove `talagrand_theorem_2_2`.** Theorem 2.1, Targets 3 and 3',
+the minimizer, and `parisiValue` well-definedness are proved. `parisi_formula` is already
+deduced from these results and Theorem 2.2. The axiom guards in `Targets/GuerraAudit.lean`
+verify that Theorem 2.1 and the upper bounds have no placeholder dependencies.
 
 **Milestone 1 (Targets 1b, 1c) is *not* on this critical path.**  Target 4 is strictly
 stronger than 1c — convergence to `parisiValue` subsumes existence of a limit — and deriving
@@ -320,9 +322,11 @@ exponential moments (`GTFrame.ExpMoments`).
 scheme parameters, and instantiate RSAT's `GoodFam` / `step0_good` / `stepM_good` rather than
 carrying our own hand-rolled invariant.  (M, and mostly bookkeeping.)
 
-### Where the project stands, and the one engine that unblocks the rest (2026-09-04)
+### Historical checkpoint before completion of Theorem 2.1 (2026-09-04)
 
-With Milestone 2 complete and Target 3' derived from Target 3, five `sorry`s remain:
+The following engine assessment predates the completed cascade proof below; its
+recommended order is superseded by the current critical path at the top of this file.
+At that checkpoint, five `sorry`s remained:
 
 | target | statement | on critical path? |
 |---|---|---|
@@ -375,7 +379,7 @@ the two coordinate families are independent of each other (`Replicas.lean` 107�
 expectation with a dominating bound; apply the IBP lemma and `trace_formula`; conclude from
 `covDiff_hessian_sum_nonneg` plus continuity on `Icc 0 1`.  Estimated 600–800 lines total.
 
-## Phase 3 — Milestone 3: Guerra's RSB bound
+## Phase 3 — Milestone 3: Guerra's RSB bound — done for the SK model
 
 ### `k = 0` is DONE (2026-09-04)
 
@@ -393,8 +397,8 @@ assembled as `replica_symmetric_sum_rule`.  Combining that with our Target 2a
 (`parisiFunctional_rsScheme`) and `overlapVariance_nonneg` gives the bound in a few lines.
 The two closed forms match exactly (`rsPressure_eq_parisiFunctional`).
 
-*This supersedes the previous "the engine is missing" note for the `k = 0` case.*  The engine
-is still missing for the cascade, and for the Guerra–Toninelli path of Target 1b.
+This earlier RS-only checkpoint is now superseded by the full finite cascade proof below.
+The separate Guerra–Toninelli path of Target 1b remains outside the active critical path.
 
 ### The proof structure is now in Lean (2026-09-04) — `Targets/Talagrand.lean`
 
@@ -408,18 +412,21 @@ proof structure in Lean was the wrong order.  Talagrand's §2 is now formalised 
 | (2.18) `ψ(t)` | `guerraPsi`; `ψ(1) = 𝒫_k` on the nose | proved |
 | (2.14) `φ(0) = log 2 + X_0` | `guerraPhi_zero` | proved, axiom-clean |
 | `φ(1) =` free entropy | `guerraPhi_one` | proved, axiom-clean |
-| **Theorem 2.1** Guerra's identity | `guerra_identity` | **`sorry`** — core 1 |
+| **Theorem 2.1** Guerra's identity (SK) | `guerra_identity` | **proved, axiom-clean** |
 | **Theorem 2.2** | `talagrand_theorem_2_2` | **`sorry`** — core 2 |
-| (2.12)–(2.15) Target 3 | `guerra_rsb_bound` | derived from core 1 |
-| Target 3′ | `limsup_free_entropy_le_parisiValue` | derived |
+| (2.12)–(2.15) Target 3 | `guerra_rsb_bound` | proved, axiom-clean |
+| Target 3′ | `limsup_free_entropy_le_parisiValue` | proved, axiom-clean |
 | **Theorem 1.1 = Target 4** | `parisi_formula` | **derived from cores 1 + 2 + 2b-i** |
 
-`#print axioms` confirms `parisi_formula` depends on `sorryAx` only through the two cores.
+`#print axioms` confirms that Theorem 2.1 and both upper bounds use only `propext`,
+`Classical.choice`, and `Quot.sound`. `parisi_formula` still depends on `sorryAx` through
+Theorem 2.2. The three legacy placeholders in `Targets/Milestones.lean` are not used by
+this deduction.
 The deduction of Theorem 1.1 is exactly the paper's (pp. 229–230): `|φ'| ≤ L` from core 1
 gives `φ_N(1) ≥ φ_N(t₀) - L(1-t₀)`, core 2 gives `φ_N(t₀) → ψ(t₀) ≥ 𝒫`, and `t₀ < 1` is
 arbitrary; the upper half is Target 3′.
 
-**So the Parisi formula is now formalised modulo exactly two named theorems of the paper.**
+**The current SK Parisi formula is now formalised modulo Theorem 2.2 alone.**
 
 #### Core 1 — `guerra_identity` (Theorem 2.1)
 
@@ -475,12 +482,29 @@ Talagrand's Theorem 2.1 is implemented without new `sorry`s:
   `r_j(y) = y · ∇F_j(y)`, it proves
   `T_j[r_j](x) = r_{j+1}(x) + v_j T_j[∑ᵢ(∂ᵢᵢF_j + m_j(∂ᵢF_j)²)](x)`.
 
-Remaining for Theorem 2.1: assemble these conditional field corrections across the
-cascade levels and combine them with the disorder trace in `hasDerivAt_guerraPhi`;
-define the two-replica measures `μ_ℓ`; and identify the result with
-`-corr - (β²/4)∑(m_ℓ - m_{ℓ-1})μ_ℓ((R-q_ℓ)²)`. Continuity at the interpolation
-endpoints also remains. Both analytic-core `sorry`s are still open. The scope remains
-Talagrand's *The Parisi formula*, Ann. of Math. 163 (2006), 221–263; no change of proof route.
+**Step 12 (2026-09-04): Theorem 2.1 completed for the current SK formulation.**
+
+* `Targets/CascadeContinuityPi.lean` proves parameter continuity under uniform affine
+  growth, including zero mass; `continuousOn_guerraPhi` includes both endpoints.
+* `guerraProb` gives normalized, nonnegative single-replica probabilities at every
+  level. `guerraReplicaAvg` and `guerraReplicaAccum` construct the two-replica averages
+  and their mass-weighted accumulation. Their bounds, measurability, and linearity
+  justify every finite-sum/integral interchange.
+* `guerraUUD_eq_replicas` identifies the mixed Hessian exactly. The covariance and field
+  contractions become overlap-square and overlap averages, respectively.
+* `guerraFieldTerm_step` telescopes the conditional field corrections;
+  `guerraD_eq_radials_overlap` assembles them through all levels, and
+  `guerraD_top_expectation` combines them with the disorder IBP.
+* `guerraRemainder` is the explicit `(β²/4)` times accumulated squared-overlap average,
+  extended by zero outside `(0,1)`. `guerraRemainder_nonneg_le` proves its bounds;
+  `guerraRemainder_eq_expansion` and `parisiCorrection_eq_mass_q` finish the identity.
+* `guerra_identity` has no `sorry`. `Targets/GuerraAudit.lean`, included in
+  `lake build Targets`, guards the exact standard-axiom lists for Theorem 2.1 and both
+  upper-bound consequences. `lake build ParisiFormula Targets` succeeds.
+
+Theorem 2.2 is unchanged and remains open. The formulation uses the exact SK covariance
+`(Nβ²/2)R²`, not a general mixed-p-spin covariance or a finite-size covariance error.
+The proof route remains Talagrand, *The Parisi formula*, Ann. of Math. 163 (2006), 221–263.
 
 #### Core 2 — `talagrand_theorem_2_2` (Theorem 2.2)
 

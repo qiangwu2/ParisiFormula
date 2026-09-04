@@ -4,20 +4,26 @@ A Lean 4 formalisation project for the **Parisi formula** for the Sherrington–
 spin glass, following Guerra's interpolation bounds and Talagrand's proof
 (*Ann. of Math.* 163, 2006).
 
-**Status (September 2026):** project skeleton. The vendored core library (Gaussian
-integration by parts, SK model definitions, Guerra's algebraic identities) is fully
-machine-verified. The Guerra–Toninelli argument is formalised up to two open hypotheses,
-which are the project's first targets. See [`docs/ROADMAP.md`](docs/ROADMAP.md) and
-[`blueprint/blueprint.tex`](blueprint/blueprint.tex).
+**Status (September 4, 2026):** the SK-model version of Talagrand's **Theorem 2.1**
+(`guerra_identity`) is proved, including endpoint continuity and an explicit nonnegative,
+bounded squared-overlap remainder. The Guerra RSB upper bound and its thermodynamic
+upper-bound consequence are also proved without `sorry` dependencies. Build-time axiom
+checks live in [`Targets/GuerraAudit.lean`](Targets/GuerraAudit.lean).
 
-## Goals, in order
+**The full Parisi formula is not yet complete:** Theorem 2.2 remains the one open theorem
+on the current critical path. Three older, off-path placeholders remain in
+`Targets/Milestones.lean`. See [`docs/ROADMAP.md`](docs/ROADMAP.md) for the current status;
+the older [`blueprint/blueprint.tex`](blueprint/blueprint.tex) records the broader milestones.
+
+## Project milestones
 
 1. **Existence of the thermodynamic limit** (Guerra–Toninelli superadditivity + Fekete).
 2. **The finite-step Parisi functional** (Talagrand's recursion; no PDE) and its continuity.
 3. **Guerra's replica-symmetry-breaking upper bound** `F_N ≤ 𝒫_k(m,q)`.
 4. **Talagrand's lower bound**, hence the Parisi formula. (Long-term.)
 
-Milestones 1–3 form a self-contained, publishable project even if 4 takes years.
+The active proof route is Talagrand (2006); the next critical step is Theorem 2.2, not
+the separate Guerra–Toninelli development in milestone 1.
 
 ---
 

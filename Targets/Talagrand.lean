@@ -7,8 +7,8 @@ New work for the ParisiFormula project (not vendored).
 
 The top-down skeleton of Talagrand (Annals 2006) §2, with Targets 3 and 4 *derived* from the
 two analytic cores of the paper rather than assumed separately.  The point is legibility:
-after this file, every remaining `sorry` on the critical path is a named theorem of the
-paper, and the deduction of the Parisi formula from those theorems is machine-checked.
+Theorem 2.1 is proved below. The only remaining `sorry` on the critical path is Theorem
+2.2, and the deduction of the Parisi formula from these results is machine-checked.
 
 ## The objects (Talagrand (2.1)–(2.4), (2.18))
 
@@ -26,8 +26,8 @@ paper, and the deduction of the Parisi formula from those theorems is machine-ch
 
 * `guerra_identity` — **Theorem 2.1** (Guerra's identity, (2.10)–(2.11)): on `(0,1)`,
   `φ'(t) = ψ'(t) - Rem(t)` with `0 ≤ Rem(t) ≤ β²`.  The remainder is
-  `(β²/4) ∑_ℓ (m_ℓ - m_{ℓ-1}) μ_ℓ((R_{1,2} - q_ℓ)²)`; it is stated abstractly here because
-  only its sign and size are consumed downstream.  No `c(N)` error term appears: our
+  `(β²/4) ∑_ℓ (m_ℓ - m_{ℓ-1}) μ_ℓ((R_{1,2} - q_ℓ)²)`, constructed as `guerraRemainder`.
+  The theorem exposes its sign and size for downstream use. No `c(N)` error term appears: our
   covariance kernel is exactly `(Nβ²/2) R²`.
 * `talagrand_theorem_2_2` — **Theorem 2.2**: for `t₀ < 1` there is `ε > 0` such that, for any
   scheme that is `ε`-optimal (2.16) and minimises at its own level (2.17),
@@ -45,6 +45,7 @@ paper, and the deduction of the Parisi formula from those theorems is machine-ch
 -/
 import ParisiFormula.CoordStein
 import Targets.CascadeFieldPi
+import Targets.CascadeContinuityPi
 
 open MeasureTheory ProbabilityTheory Real Filter Topology
 
@@ -1962,6 +1963,1260 @@ theorem guerra_field_radial_step {k : ℕ} (n : ℕ) (s : RSBScheme k) (β : ℝ
     _ = _ := by
       rw [Finset.sum_add_distrib, ← Finset.mul_sum, ← guerraYD_eq_sum n s β U h ht x x (j + 1)]
 
+/-! ## 2i. Continuity on the closed interpolation interval -/
+
+/-- Uniform affine growth and continuity of every cascade level on `[0,1]`.
+No bound on the square-root derivatives at the endpoints is required. -/
+theorem guerra_cascade_continuous_Icc {k : ℕ} (n : ℕ) (s : RSBScheme k) (β h : ℝ) (j : ℕ) :
+    ∃ a D : ℝ, 0 ≤ D ∧ ∀ U : EnergySpace n,
+      (∀ t ∈ Set.Icc (0 : ℝ) 1, Measurable (cascadeT n s β 1 (guerraBase n U h t) j)) ∧
+      (∀ t ∈ Set.Icc (0 : ℝ) 1, ∀ y,
+        |cascadeT n s β 1 (guerraBase n U h t) j y| ≤ a + uAbs n U + D * l1 y) ∧
+      (∀ y, ContinuousOn (fun t => cascadeT n s β 1 (guerraBase n U h t) j y) (Set.Icc (0 : ℝ) 1)) := by
+  induction j with
+  | zero =>
+      refine ⟨Real.log (Fintype.card (Config n)) + Fintype.card (Config n) * (n * |h|),
+        Fintype.card (Config n), by positivity, fun U => ?_⟩
+      refine ⟨fun t _ => measurable_guerraBase n U h t, fun t ht y => ?_, fun y => ?_⟩
+      · have hb := abs_guerraBase_le n U h ht.1 ht.2 y
+        change |guerraBase n U h t y| ≤ _
+        linarith
+      · have hZ : Continuous (fun t : ℝ => ∑ σ : Config n, Real.exp (guerraH n U h t y σ)) := by
+          refine continuous_finsetSum _ (fun σ _ => Real.continuous_exp.comp ?_)
+          unfold guerraH
+          fun_prop
+        exact (hZ.log (fun t => (Finset.sum_pos (fun σ _ => Real.exp_pos _)
+          Finset.univ_nonempty).ne')).continuousOn
+  | succ j ih =>
+      obtain ⟨a, D, hD, hprops⟩ := ih
+      set m := s.m (k + 1 - j)
+      set v := 1 * (β ^ 2 * (s.q (k + 2 - j) - s.q (k + 1 - j)))
+      refine ⟨a + stepK n m v D, D, hD, fun U => ?_⟩
+      obtain ⟨hAm, hAb, hAc⟩ := hprops U
+      refine ⟨fun t ht => measurable_parisiStepPi (hAm t ht) m v, fun t ht y => ?_, fun y => ?_⟩
+      · have hb := parisiStepPi_abs_le (m := m) (v := v)
+          (s.m_nonneg (by omega)) (levelVar_nonneg s β j) hD (hAb t ht) (hAm t ht) y
+        change |parisiStepPi n m v (cascadeT n s β 1 (guerraBase n U h t) j) y| ≤ _
+        linarith
+      · exact continuousOn_parisiStepPi_param hD hAm hAb hAc y
+
+/-- Continuity of the interpolation pressure, including both endpoints. -/
+theorem continuousOn_guerraPhi {N : ℕ} (β h : ℝ)
+    (sk : SKDisorder (Ω := Ω) N β h) {k : ℕ} (s : RSBScheme k) :
+    ContinuousOn (guerraPhi N s β h sk.U) (Set.Icc (0 : ℝ) 1) := by
+  obtain ⟨a, D, hD, hprops⟩ := guerra_cascade_continuous_Icc N s β h (k + 2)
+  have hc : ContinuousOn (fun t => ∫ ω,
+      cascadeT N s β 1 (guerraBase N (sk.U ω) h t) (k + 2) 0 ∂ℙ) (Set.Icc (0 : ℝ) 1) := by
+    apply continuousOn_of_dominated (bound := fun ω => a + Fintype.card (Config N) * ‖sk.U ω‖)
+    · intro t _
+      exact ((measurable_cascade_top_U s β h t).comp sk.hU.repr_measurable).aestronglyMeasurable
+    · intro t ht
+      filter_upwards with ω
+      have hb := (hprops (sk.U ω)).2.1 t ht 0
+      simp only [l1, Pi.zero_apply, abs_zero, Finset.sum_const_zero, mul_zero, add_zero] at hb
+      rw [Real.norm_eq_abs]
+      exact hb.trans (add_le_add_right (uAbs_le_card_mul_norm N (sk.U ω)) a)
+    · exact (integrable_const a).add
+        ((PhysLean.Probability.GaussianIBP.integrable_norm_of_gaussian sk.hU).const_mul _)
+    · exact Filter.Eventually.of_forall (fun ω => (hprops (sk.U ω)).2.2 0)
+  exact hc.const_mul (1 / (N : ℝ))
+
+/-! ## 2j. Normalized cascade averages and two replicas -/
+
+/-- The normalized conditional average at one cascade level. -/
+noncomputable def guerraStepAvg {k : ℕ} (n : ℕ) (s : RSBScheme k) (β : ℝ)
+    (U : EnergySpace n) (h t : ℝ) (j : ℕ) (f : (Fin n → ℝ) → ℝ) (x : Fin n → ℝ) : ℝ :=
+  ∫ z, f (fun i => x i + Real.sqrt
+      (1 * (β ^ 2 * (s.q (k + 2 - j) - s.q (k + 1 - j)))) * z i) *
+    tiltWeightPi n (s.m (k + 1 - j))
+      (1 * (β ^ 2 * (s.q (k + 2 - j) - s.q (k + 1 - j))))
+      (cascadeT n s β 1 (guerraBase n U h t) j) x z ∂piGauss n
+
+theorem integrable_guerraStepAvg_integrand {k : ℕ} (n : ℕ) (s : RSBScheme k) (β : ℝ)
+    (U : EnergySpace n) (h : ℝ) {t : ℝ} (ht : t ∈ Set.Ioo (0 : ℝ) 1) (j : ℕ)
+    {f : (Fin n → ℝ) → ℝ} (hf : Measurable f) {a b : ℝ} (hb : 0 ≤ b)
+    (hbound : ∀ y, |f y| ≤ a + b * l1 y) (x : Fin n → ℝ) :
+    Integrable (fun z => f (fun i => x i + Real.sqrt
+        (1 * (β ^ 2 * (s.q (k + 2 - j) - s.q (k + 1 - j)))) * z i) *
+      tiltWeightPi n (s.m (k + 1 - j))
+        (1 * (β ^ 2 * (s.q (k + 2 - j) - s.q (k + 1 - j))))
+        (cascadeT n s β 1 (guerraBase n U h t) j) x z) (piGauss n) := by
+  obtain ⟨c, d, D, L, a', b', D', hd, hD, hL, hb', hD', hprops⟩ :=
+    guerra_cascade_hasDerivAt n s β h ht j
+  obtain ⟨hAm, -, hAb, hAlip, -, -⟩ := hprops U
+  have htt := self_mem_talNbhd ht
+  set v := 1 * (β ^ 2 * (s.q (k + 2 - j) - s.q (k + 1 - j)))
+  apply integrable_mul_tiltWeightPi_of_bound hL hD (hAlip t htt) (hAb t htt) (hAm t htt) x
+    (hf.comp (measurable_shift v x)) (b := b * Real.sqrt v) (mul_nonneg hb (Real.sqrt_nonneg _))
+  intro z
+  calc
+    _ ≤ a + b * l1 (fun i => x i + Real.sqrt v * z i) := hbound _
+    _ ≤ a + b * (l1 x + Real.sqrt v * l1 z) := by gcongr; exact l1_shift_le v x z
+    _ = (a + b * l1 x) + (b * Real.sqrt v) * l1 z := by ring
+
+theorem guerraStepAvg_const {k : ℕ} (n : ℕ) (s : RSBScheme k) (β : ℝ)
+    (U : EnergySpace n) (h : ℝ) {t : ℝ} (ht : t ∈ Set.Icc (0 : ℝ) 1)
+    (j : ℕ) (c : ℝ) (x : Fin n → ℝ) :
+    guerraStepAvg n s β U h t j (fun _ => c) x = c := by
+  obtain ⟨a, D, hD, hprops⟩ := guerra_cascade_continuous_Icc n s β h j
+  unfold guerraStepAvg
+  rw [integral_const_mul, tiltWeightPi_integral_one hD ((hprops U).2.1 t ht)
+    ((hprops U).1 t ht), mul_one]
+
+theorem guerraStepAvg_nonneg {k : ℕ} (n : ℕ) (s : RSBScheme k) (β : ℝ)
+    (U : EnergySpace n) (h : ℝ) {t : ℝ} (ht : t ∈ Set.Icc (0 : ℝ) 1)
+    (j : ℕ) {f : (Fin n → ℝ) → ℝ} (hf : ∀ y, 0 ≤ f y) (x : Fin n → ℝ) :
+    0 ≤ guerraStepAvg n s β U h t j f x := by
+  obtain ⟨a, D, hD, hprops⟩ := guerra_cascade_continuous_Icc n s β h j
+  exact integral_nonneg (fun z => mul_nonneg (hf _)
+    (tiltWeightPi_nonneg hD ((hprops U).2.1 t ht) ((hprops U).1 t ht) x z))
+
+theorem guerraStepAvg_abs_le {k : ℕ} (n : ℕ) (s : RSBScheme k) (β : ℝ)
+    (U : EnergySpace n) (h : ℝ) {t : ℝ} (ht : t ∈ Set.Ioo (0 : ℝ) 1) (j : ℕ)
+    {f : (Fin n → ℝ) → ℝ} (hf : Measurable f) {C : ℝ}
+    (hbound : ∀ y, |f y| ≤ C) (x : Fin n → ℝ) :
+    |guerraStepAvg n s β U h t j f x| ≤ C := by
+  obtain ⟨a, b, D, L, a', b', D', hb, hD, hL, hb', hD', hprops⟩ :=
+    guerra_cascade_hasDerivAt n s β h ht j
+  obtain ⟨hAm, -, hAb, hAlip, -, -⟩ := hprops U
+  have htt := self_mem_talNbhd ht
+  have hh := abs_integral_mul_tiltWeightPi_le (m := s.m (k + 1 - j))
+    (v := 1 * (β ^ 2 * (s.q (k + 2 - j) - s.q (k + 1 - j)))) hL hD (hAlip t htt) (hAb t htt)
+    (hAm t htt) hf (D' := 0) le_rfl (by simpa using hbound) x
+  simpa only [guerraStepAvg, zero_mul, add_zero] using hh
+
+theorem measurable_guerraStepAvg_joint {n k : ℕ} (s : RSBScheme k) (β h t : ℝ) (j : ℕ)
+    {f : EnergySpace n → (Fin n → ℝ) → ℝ}
+    (hf : Measurable (fun p : EnergySpace n × (Fin n → ℝ) => f p.1 p.2)) :
+    Measurable (fun p : EnergySpace n × (Fin n → ℝ) =>
+      guerraStepAvg n s β p.1 h t j (f p.1) p.2) :=
+  measurable_tiltAvg_joint (F := fun U => cascadeT n s β 1 (guerraBase n U h t) j)
+    (G := f) (measurable_cascade_joint (n := n) s β h t j).1 hf _ _
+
+theorem guerraStepAvg_sum {ι : Type*} [Fintype ι] {k : ℕ} (n : ℕ) (s : RSBScheme k)
+    (β : ℝ) (U : EnergySpace n) (h : ℝ) {t : ℝ} (ht : t ∈ Set.Ioo (0 : ℝ) 1)
+    (j : ℕ) (f : ι → (Fin n → ℝ) → ℝ) (hf : ∀ i, Measurable (f i))
+    (C : ι → ℝ) (hbound : ∀ i y, |f i y| ≤ C i) (x : Fin n → ℝ) :
+    guerraStepAvg n s β U h t j (fun y => ∑ i, f i y) x =
+      ∑ i, guerraStepAvg n s β U h t j (f i) x := by
+  unfold guerraStepAvg
+  simp_rw [Finset.sum_mul]
+  exact integral_finsetSum _ (fun i _ => integrable_guerraStepAvg_integrand n s β U h ht j
+    (hf i) (b := 0) le_rfl (by simpa using hbound i) x)
+
+/-- Single-replica probabilities propagated through the normalized cascade. -/
+noncomputable def guerraProb {k : ℕ} (n : ℕ) (s : RSBScheme k) (β : ℝ)
+    (U : EnergySpace n) (h t : ℝ) : ℕ → Config n → (Fin n → ℝ) → ℝ
+  | 0 => fun σ y => Real.exp (guerraH n U h t y σ) /
+      ∑ τ : Config n, Real.exp (guerraH n U h t y τ)
+  | j + 1 => fun σ => guerraStepAvg n s β U h t j (guerraProb n s β U h t j σ)
+
+theorem measurable_guerraProb_joint {n k : ℕ} (s : RSBScheme k) (β h t : ℝ)
+    (j : ℕ) (σ : Config n) :
+    Measurable (fun p : EnergySpace n × (Fin n → ℝ) => guerraProb n s β p.1 h t j σ p.2) := by
+  induction j with
+  | zero =>
+      change Measurable (fun p : EnergySpace n × (Fin n → ℝ) =>
+        Real.exp (guerraH n p.1 h t p.2 σ) / ∑ τ : Config n, Real.exp (guerraH n p.1 h t p.2 τ))
+      have hH : ∀ τ : Config n, Measurable (fun p : EnergySpace n × (Fin n → ℝ) =>
+          guerraH n p.1 h t p.2 τ) := by
+        intro τ
+        unfold guerraH
+        fun_prop
+      exact (hH σ).exp.div (Finset.measurable_sum _ (fun τ _ => (hH τ).exp))
+  | succ j ih =>
+      exact measurable_guerraStepAvg_joint s β h t j
+        (f := fun U => guerraProb n s β U h t j σ) ih
+
+theorem guerraProb_nonneg_sum_one {k : ℕ} (n : ℕ) (s : RSBScheme k) (β : ℝ)
+    (U : EnergySpace n) (h : ℝ) {t : ℝ} (ht : t ∈ Set.Ioo (0 : ℝ) 1) (j : ℕ) :
+    (∀ σ y, 0 ≤ guerraProb n s β U h t j σ y) ∧
+      ∀ y, (∑ σ : Config n, guerraProb n s β U h t j σ y) = 1 := by
+  induction j with
+  | zero =>
+      refine ⟨fun σ y => div_nonneg (Real.exp_pos _).le
+        (Finset.sum_nonneg (fun τ _ => (Real.exp_pos _).le)), fun y => ?_⟩
+      change (∑ σ : Config n, Real.exp (guerraH n U h t y σ) /
+        ∑ τ : Config n, Real.exp (guerraH n U h t y τ)) = 1
+      rw [← Finset.sum_div, div_self (Finset.sum_pos (fun τ _ => Real.exp_pos _)
+        Finset.univ_nonempty).ne']
+  | succ j ih =>
+      refine ⟨fun σ y => guerraStepAvg_nonneg n s β U h ⟨ht.1.le, ht.2.le⟩ j (ih.1 σ) y,
+        fun y => ?_⟩
+      have hb : ∀ σ y, |guerraProb n s β U h t j σ y| ≤ 1 := by
+        intro σ y
+        rw [abs_of_nonneg (ih.1 σ y), ← ih.2 y]
+        exact Finset.single_le_sum (fun τ _ => ih.1 τ y) (Finset.mem_univ σ)
+      have hm : ∀ σ, Measurable (guerraProb n s β U h t j σ) :=
+        fun σ => (measurable_guerraProb_joint s β h t j σ).comp
+        (measurable_const.prodMk measurable_id)
+      change (∑ σ : Config n, guerraStepAvg n s β U h t j (guerraProb n s β U h t j σ) y) = 1
+      rw [← guerraStepAvg_sum n s β U h ht j _ hm (fun _ => 1) hb, show
+        (fun x => ∑ σ : Config n, guerraProb n s β U h t j σ x) = (fun _ => 1) from funext ih.2]
+      exact guerraStepAvg_const n s β U h ⟨ht.1.le, ht.2.le⟩ j 1 y
+
+/-- Two conditionally independent replicas at a given cascade level. -/
+noncomputable def guerraReplicaAvg {k : ℕ} (n : ℕ) (s : RSBScheme k) (β : ℝ)
+    (U : EnergySpace n) (h t : ℝ) (j : ℕ) (K : Config n → Config n → ℝ) (y : Fin n → ℝ) : ℝ :=
+  ∑ σ : Config n, ∑ τ : Config n,
+    guerraProb n s β U h t j σ y * guerraProb n s β U h t j τ y * K σ τ
+
+theorem measurable_guerraReplicaAvg_joint {n k : ℕ} (s : RSBScheme k) (β h t : ℝ)
+    (j : ℕ) (K : Config n → Config n → ℝ) :
+    Measurable (fun p : EnergySpace n × (Fin n → ℝ) =>
+      guerraReplicaAvg n s β p.1 h t j K p.2) := by
+  exact Finset.measurable_sum _ (fun σ _ => Finset.measurable_sum _ (fun τ _ =>
+    ((measurable_guerraProb_joint s β h t j σ).mul
+      (measurable_guerraProb_joint s β h t j τ)).mul_const (K σ τ)))
+
+theorem guerraReplicaAvg_nonneg {k : ℕ} (n : ℕ) (s : RSBScheme k) (β : ℝ)
+    (U : EnergySpace n) (h : ℝ) {t : ℝ} (ht : t ∈ Set.Ioo (0 : ℝ) 1)
+    (j : ℕ) {K : Config n → Config n → ℝ} (hK : ∀ σ τ, 0 ≤ K σ τ) (y : Fin n → ℝ) :
+    0 ≤ guerraReplicaAvg n s β U h t j K y := by
+  have hp := (guerraProb_nonneg_sum_one n s β U h ht j).1
+  exact Finset.sum_nonneg (fun σ _ => Finset.sum_nonneg (fun τ _ =>
+    mul_nonneg (mul_nonneg (hp σ y) (hp τ y)) (hK σ τ)))
+
+theorem guerraReplicaAvg_abs_le {k : ℕ} (n : ℕ) (s : RSBScheme k) (β : ℝ)
+    (U : EnergySpace n) (h : ℝ) {t : ℝ} (ht : t ∈ Set.Ioo (0 : ℝ) 1)
+    (j : ℕ) {K : Config n → Config n → ℝ} {C : ℝ} (hK : ∀ σ τ, |K σ τ| ≤ C)
+    (y : Fin n → ℝ) : |guerraReplicaAvg n s β U h t j K y| ≤ C := by
+  obtain ⟨hp, hsum⟩ := guerraProb_nonneg_sum_one n s β U h ht j
+  calc
+    _ ≤ ∑ σ : Config n, ∑ τ : Config n,
+        guerraProb n s β U h t j σ y * guerraProb n s β U h t j τ y * C := by
+      refine (Finset.abs_sum_le_sum_abs _ _).trans (Finset.sum_le_sum (fun σ _ => ?_))
+      refine (Finset.abs_sum_le_sum_abs _ _).trans (Finset.sum_le_sum (fun τ _ => ?_))
+      rw [abs_mul, abs_of_nonneg (mul_nonneg (hp σ y) (hp τ y))]
+      exact mul_le_mul_of_nonneg_left (hK σ τ) (mul_nonneg (hp σ y) (hp τ y))
+    _ = C := by
+      simp only [← Finset.sum_mul, ← Finset.mul_sum, hsum, mul_one, one_mul]
+
+/-- The remaining cascade mass, indexed from the Gibbs base downwards. -/
+noncomputable def guerraMass {k : ℕ} (s : RSBScheme k) : ℕ → ℝ
+  | 0 => 1
+  | j + 1 => s.m (k + 1 - j)
+
+theorem guerraMass_mem_Icc {k : ℕ} (s : RSBScheme k) (j : ℕ) :
+    guerraMass s j ∈ Set.Icc (0 : ℝ) 1 := by
+  cases j with
+  | zero => exact ⟨zero_le_one, le_rfl⟩
+  | succ j => exact ⟨s.m_nonneg (by omega), s.m_le_one (by omega)⟩
+
+theorem guerraMass_drop_nonneg {k : ℕ} (s : RSBScheme k) (j : ℕ) :
+    0 ≤ guerraMass s j - guerraMass s (j + 1) := by
+  cases j with
+  | zero => simp [guerraMass, s.m_top]
+  | succ j =>
+      exact sub_nonneg.mpr (s.m_mono' (k + 1 - j) (by omega) (k + 1 - (j + 1)) (by omega))
+
+@[simp] theorem guerraMass_top {k : ℕ} (s : RSBScheme k) : guerraMass s (k + 2) = 0 := by
+  change s.m (k + 1 - (k + 1)) = 0
+  simp only [Nat.sub_self, s.m_zero]
+
+/-- Accumulated two-replica averages with weights `m_ℓ - m_{ℓ-1}`.
+The kernel may depend on the level (in particular through `q_ℓ`). -/
+noncomputable def guerraReplicaAccum {k : ℕ} (n : ℕ) (s : RSBScheme k) (β : ℝ)
+    (U : EnergySpace n) (h t : ℝ) (K : ℕ → Config n → Config n → ℝ) :
+    ℕ → (Fin n → ℝ) → ℝ
+  | 0 => fun _ => 0
+  | j + 1 => guerraStepAvg n s β U h t j (fun y =>
+      guerraReplicaAccum n s β U h t K j y +
+        (guerraMass s j - guerraMass s (j + 1)) * guerraReplicaAvg n s β U h t j (K j) y)
+
+theorem measurable_guerraReplicaAccum_joint {n k : ℕ} (s : RSBScheme k) (β h t : ℝ)
+    (K : ℕ → Config n → Config n → ℝ) (j : ℕ) :
+    Measurable (fun p : EnergySpace n × (Fin n → ℝ) =>
+      guerraReplicaAccum n s β p.1 h t K j p.2) := by
+  induction j with
+  | zero => exact measurable_const
+  | succ j ih =>
+      exact measurable_guerraStepAvg_joint s β h t j
+        (f := fun U y => guerraReplicaAccum n s β U h t K j y +
+          (guerraMass s j - guerraMass s (j + 1)) * guerraReplicaAvg n s β U h t j (K j) y)
+        (ih.add ((measurable_guerraReplicaAvg_joint s β h t j (K j)).const_mul _))
+
+theorem guerraReplicaAccum_nonneg {k : ℕ} (n : ℕ) (s : RSBScheme k) (β : ℝ)
+    (U : EnergySpace n) (h : ℝ) {t : ℝ} (ht : t ∈ Set.Ioo (0 : ℝ) 1)
+    {K : ℕ → Config n → Config n → ℝ} (hK : ∀ j σ τ, 0 ≤ K j σ τ) (j : ℕ) (y : Fin n → ℝ) :
+    0 ≤ guerraReplicaAccum n s β U h t K j y := by
+  induction j generalizing y with
+  | zero => exact le_rfl
+  | succ j ih =>
+      exact guerraStepAvg_nonneg n s β U h ⟨ht.1.le, ht.2.le⟩ j (fun y =>
+        add_nonneg (ih y) (mul_nonneg (guerraMass_drop_nonneg s j)
+          (guerraReplicaAvg_nonneg n s β U h ht j (hK j) y))) y
+
+theorem guerraReplicaAccum_abs_le {k : ℕ} (n : ℕ) (s : RSBScheme k) (β : ℝ)
+    (U : EnergySpace n) (h : ℝ) {t : ℝ} (ht : t ∈ Set.Ioo (0 : ℝ) 1)
+    {K : ℕ → Config n → Config n → ℝ} {C : ℝ} (_hC : 0 ≤ C)
+    (hK : ∀ j σ τ, |K j σ τ| ≤ C) (j : ℕ) (y : Fin n → ℝ) :
+    |guerraReplicaAccum n s β U h t K j y| ≤ C * (1 - guerraMass s j) := by
+  induction j generalizing y with
+  | zero => simp [guerraReplicaAccum, guerraMass]
+  | succ j ih =>
+      have hm : Measurable (fun y => guerraReplicaAccum n s β U h t K j y +
+          (guerraMass s j - guerraMass s (j + 1)) * guerraReplicaAvg n s β U h t j (K j) y) :=
+        ((measurable_guerraReplicaAccum_joint s β h t K j).comp
+          (measurable_const.prodMk measurable_id)).add
+        (((measurable_guerraReplicaAvg_joint s β h t j (K j)).comp
+          (measurable_const.prodMk measurable_id)).const_mul _)
+      apply guerraStepAvg_abs_le n s β U h ht j hm _ y
+      intro x
+      calc
+        _ ≤ |guerraReplicaAccum n s β U h t K j x| +
+            |(guerraMass s j - guerraMass s (j + 1)) * guerraReplicaAvg n s β U h t j (K j) x| :=
+          abs_add_le _ _
+        _ ≤ C * (1 - guerraMass s j) + (guerraMass s j - guerraMass s (j + 1)) * C := by
+          refine add_le_add (ih x) ?_
+          rw [abs_mul, abs_of_nonneg (guerraMass_drop_nonneg s j)]
+          exact mul_le_mul_of_nonneg_left (guerraReplicaAvg_abs_le n s β U h ht j (hK j) x)
+            (guerraMass_drop_nonneg s j)
+        _ = C * (1 - guerraMass s (j + 1)) := by ring
+
+theorem abs_overlap_le_one {n : ℕ} (hn : 0 < n) (σ τ : Config n) :
+    |overlap n σ τ| ≤ 1 := by
+  have hnR : (0 : ℝ) < n := by exact_mod_cast hn
+  unfold overlap
+  rw [abs_mul, abs_of_nonneg (by positivity : 0 ≤ 1 / (n : ℝ))]
+  calc
+    _ ≤ (1 / (n : ℝ)) * ∑ i, |spin n σ i * spin n τ i| :=
+      mul_le_mul_of_nonneg_left (Finset.abs_sum_le_sum_abs _ _) (by positivity)
+    _ = 1 := by simp [abs_mul, abs_spin, ne_of_gt hnR]
+
+theorem guerra_overlap_sq_le_four {n k : ℕ} (hn : 0 < n) (s : RSBScheme k)
+    (j : ℕ) (σ τ : Config n) : |(overlap n σ τ - s.q (k + 2 - j)) ^ 2| ≤ 4 := by
+  have hR := abs_overlap_le_one hn σ τ
+  have hq0 := s.q_nonneg (p := k + 2 - j) (by omega)
+  have hq1 := s.q_le_one (p := k + 2 - j) (by omega)
+  have hd : |overlap n σ τ - s.q (k + 2 - j)| ≤ 2 := by
+    calc
+      _ ≤ |overlap n σ τ| + |s.q (k + 2 - j)| := abs_sub _ _
+      _ ≤ 2 := by rw [abs_of_nonneg hq0]; linarith
+  rw [abs_of_nonneg (sq_nonneg _)]
+  have hs := mul_self_le_mul_self (abs_nonneg _) hd
+  nlinarith [sq_abs (overlap n σ τ - s.q (k + 2 - j))]
+
+/-- The explicit squared-overlap remainder, extended by zero outside `(0,1)`.
+Its identification with the pressure derivative is a separate assertion. -/
+noncomputable def guerraRemainder {k : ℕ} (n : ℕ) (s : RSBScheme k) (β h : ℝ)
+    (U : Ω → EnergySpace n) (t : ℝ) : ℝ :=
+  if t ∈ Set.Ioo (0 : ℝ) 1 then
+    (β ^ 2 / 4) * ∫ ω, guerraReplicaAccum n s β (U ω) h t
+      (fun j σ τ => (overlap n σ τ - s.q (k + 2 - j)) ^ 2) (k + 2) 0 ∂ℙ
+  else 0
+
+theorem guerraRemainder_nonneg_le {n : ℕ} (hn : 0 < n) {k : ℕ} (s : RSBScheme k)
+    (β h : ℝ) (U : Ω → EnergySpace n) (t : ℝ) :
+    0 ≤ guerraRemainder n s β h U t ∧ guerraRemainder n s β h U t ≤ β ^ 2 := by
+  by_cases ht : t ∈ Set.Ioo (0 : ℝ) 1
+  · rw [guerraRemainder, if_pos ht]
+    have hnn := integral_nonneg (μ := (ℙ : Measure Ω))
+      (f := fun ω => guerraReplicaAccum n s β (U ω) h t
+        (fun j σ τ => (overlap n σ τ - s.q (k + 2 - j)) ^ 2) (k + 2) 0)
+      (fun ω => guerraReplicaAccum_nonneg n s β (U ω) h ht
+        (fun j σ τ => sq_nonneg (overlap n σ τ - s.q (k + 2 - j))) (k + 2) 0)
+    have hb := norm_integral_le_of_norm_le_const (μ := (ℙ : Measure Ω)) (C := 4)
+      (f := fun ω => guerraReplicaAccum n s β (U ω) h t
+        (fun j σ τ => (overlap n σ τ - s.q (k + 2 - j)) ^ 2) (k + 2) 0)
+      (Filter.Eventually.of_forall (fun ω => by
+        simpa only [Real.norm_eq_abs, guerraMass_top, sub_zero, mul_one] using
+          guerraReplicaAccum_abs_le n s β (U ω) h ht (by norm_num : (0 : ℝ) ≤ 4)
+            (guerra_overlap_sq_le_four hn s) (k + 2) 0))
+    simp only [probReal_univ, mul_one, Real.norm_eq_abs, abs_of_nonneg hnn] at hb
+    exact ⟨mul_nonneg (by positivity) hnn, by nlinarith [sq_nonneg β]⟩
+  · simp only [guerraRemainder, if_neg ht]
+    exact ⟨le_rfl, sq_nonneg β⟩
+
+theorem guerraStepAvg_const_mul {k : ℕ} (n : ℕ) (s : RSBScheme k) (β : ℝ)
+    (U : EnergySpace n) (h t : ℝ) (j : ℕ) (c : ℝ) (f : (Fin n → ℝ) → ℝ) (x : Fin n → ℝ) :
+    guerraStepAvg n s β U h t j (fun y => c * f y) x = c * guerraStepAvg n s β U h t j f x := by
+  unfold guerraStepAvg
+  simp only [mul_assoc, integral_const_mul]
+
+/-- A one-replica expectation at a cascade level. -/
+noncomputable def guerraMean {k : ℕ} (n : ℕ) (s : RSBScheme k) (β : ℝ)
+    (U : EnergySpace n) (h t : ℝ) (j : ℕ) (f : Config n → ℝ) (y : Fin n → ℝ) : ℝ :=
+  ∑ σ : Config n, guerraProb n s β U h t j σ y * f σ
+
+theorem measurable_guerraMean_joint {n k : ℕ} (s : RSBScheme k) (β h t : ℝ)
+    (j : ℕ) (f : Config n → ℝ) :
+    Measurable (fun p : EnergySpace n × (Fin n → ℝ) => guerraMean n s β p.1 h t j f p.2) := by
+  exact Finset.measurable_sum _ (fun σ _ => (measurable_guerraProb_joint s β h t j σ).mul_const _)
+
+theorem guerraMean_abs_le {k : ℕ} (n : ℕ) (s : RSBScheme k) (β : ℝ)
+    (U : EnergySpace n) (h : ℝ) {t : ℝ} (ht : t ∈ Set.Ioo (0 : ℝ) 1)
+    (j : ℕ) (f : Config n → ℝ) (y : Fin n → ℝ) :
+    |guerraMean n s β U h t j f y| ≤ ∑ σ, |f σ| := by
+  obtain ⟨hp, hsum⟩ := guerraProb_nonneg_sum_one n s β U h ht j
+  refine (Finset.abs_sum_le_sum_abs _ _).trans (Finset.sum_le_sum (fun σ _ => ?_))
+  rw [abs_mul, abs_of_nonneg (hp σ y)]
+  have hle : guerraProb n s β U h t j σ y ≤ 1 := by
+    rw [← hsum y]
+    exact Finset.single_le_sum (fun τ _ => hp τ y) (Finset.mem_univ σ)
+  simpa only [one_mul] using mul_le_mul_of_nonneg_right hle (abs_nonneg (f σ))
+
+theorem guerraMean_zero {k : ℕ} (n : ℕ) (s : RSBScheme k) (β : ℝ)
+    (U : EnergySpace n) (h t : ℝ) (f : Config n → ℝ) (y : Fin n → ℝ) :
+    guerraMean n s β U h t 0 f y = gibbsAvg (guerraH n U h t y) f := by
+  simp only [guerraMean, guerraProb, gibbsAvg, div_mul_eq_mul_div, Finset.sum_div]
+
+theorem guerraMean_succ {k : ℕ} (n : ℕ) (s : RSBScheme k) (β : ℝ)
+    (U : EnergySpace n) (h : ℝ) {t : ℝ} (ht : t ∈ Set.Ioo (0 : ℝ) 1)
+    (j : ℕ) (f : Config n → ℝ) (y : Fin n → ℝ) :
+    guerraMean n s β U h t (j + 1) f y =
+      guerraStepAvg n s β U h t j (guerraMean n s β U h t j f) y := by
+  have hp := guerraProb_nonneg_sum_one n s β U h ht j
+  have hm : ∀ σ, Measurable (fun y => f σ * guerraProb n s β U h t j σ y) :=
+    fun σ => ((measurable_guerraProb_joint s β h t j σ).comp
+      (measurable_const.prodMk measurable_id)).const_mul _
+  have hb : ∀ σ y, |f σ * guerraProb n s β U h t j σ y| ≤ |f σ| := by
+    intro σ y
+    rw [abs_mul, abs_of_nonneg (hp.1 σ y)]
+    have hle : guerraProb n s β U h t j σ y ≤ 1 := by
+      rw [← hp.2 y]
+      exact Finset.single_le_sum (fun τ _ => hp.1 τ y) (Finset.mem_univ σ)
+    simpa only [mul_one] using mul_le_mul_of_nonneg_left hle (abs_nonneg (f σ))
+  change (∑ σ, guerraStepAvg n s β U h t j (guerraProb n s β U h t j σ) y * f σ) = _
+  have he : guerraMean n s β U h t j f = fun y => ∑ σ, f σ * guerraProb n s β U h t j σ y := by
+    funext y
+    exact Finset.sum_congr rfl (fun σ _ => mul_comm _ _)
+  rw [he, guerraStepAvg_sum n s β U h ht j _ hm (fun σ => |f σ|) hb]
+  simp only [guerraStepAvg_const_mul, mul_comm]
+
+theorem guerraReplicaAvg_mul {k : ℕ} (n : ℕ) (s : RSBScheme k) (β : ℝ)
+    (U : EnergySpace n) (h t : ℝ) (j : ℕ) (f g : Config n → ℝ) (y : Fin n → ℝ) :
+    guerraReplicaAvg n s β U h t j (fun σ τ => f σ * g τ) y =
+      guerraMean n s β U h t j f y * guerraMean n s β U h t j g y := by
+  unfold guerraReplicaAvg guerraMean
+  rw [Finset.sum_mul]
+  refine Finset.sum_congr rfl (fun σ _ => ?_)
+  rw [Finset.mul_sum]
+  exact Finset.sum_congr rfl (fun τ _ => by ring)
+
+/-- The first disorder derivative is the one-replica average of its direction. -/
+theorem guerraUD_eq_mean {k : ℕ} (n : ℕ) (s : RSBScheme k) (β : ℝ)
+    (U V : EnergySpace n) (h : ℝ) {t : ℝ} (ht : t ∈ Set.Ioo (0 : ℝ) 1) (j : ℕ) (y : Fin n → ℝ) :
+    guerraUD n s β U V h t j y = Real.sqrt t * guerraMean n s β U h t j V y := by
+  induction j generalizing y with
+  | zero => rw [guerraMean_zero]; rfl
+  | succ j ih =>
+      change guerraStepAvg n s β U h t j (guerraUD n s β U V h t j) y = _
+      rw [show guerraUD n s β U V h t j = fun x => Real.sqrt t * guerraMean n s β U h t j V x
+        from funext ih, guerraStepAvg_const_mul, ← guerraMean_succ n s β U h ht]
+
+theorem guerraStepAvg_sub {k : ℕ} (n : ℕ) (s : RSBScheme k) (β : ℝ)
+    (U : EnergySpace n) (h : ℝ) {t : ℝ} (ht : t ∈ Set.Ioo (0 : ℝ) 1) (j : ℕ)
+    {f g : (Fin n → ℝ) → ℝ} (hf : Measurable f) (hg : Measurable g) {C D : ℝ}
+    (hfb : ∀ x, |f x| ≤ C) (hgb : ∀ x, |g x| ≤ D) (y : Fin n → ℝ) :
+    guerraStepAvg n s β U h t j (fun x => f x - g x) y =
+      guerraStepAvg n s β U h t j f y - guerraStepAvg n s β U h t j g y := by
+  unfold guerraStepAvg
+  simp_rw [sub_mul]
+  exact integral_sub
+    (integrable_guerraStepAvg_integrand n s β U h ht j hf (b := 0) le_rfl (by simpa using hfb) y)
+    (integrable_guerraStepAvg_integrand n s β U h ht j hg (b := 0) le_rfl (by simpa using hgb) y)
+
+/-- The mixed Hessian is a one-replica diagonal term minus the current pair term
+and the accumulated pair terms.  This is the exact replica representation, not
+an estimate of the Hessian. -/
+theorem guerraUUD_eq_replicas {k : ℕ} (n : ℕ) (s : RSBScheme k) (β : ℝ)
+    (U V W : EnergySpace n) (h : ℝ) {t : ℝ} (ht : t ∈ Set.Ioo (0 : ℝ) 1) (j : ℕ) (y : Fin n → ℝ) :
+    guerraUUD n s β U V W h t j y = t *
+      (guerraMean n s β U h t j (fun σ => V σ * W σ) y -
+        guerraMass s j * guerraMean n s β U h t j V y * guerraMean n s β U h t j W y -
+        guerraReplicaAccum n s β U h t (fun _ σ τ => V σ * W τ) j y) := by
+  induction j generalizing y with
+  | zero =>
+      simp only [guerraUUD, guerraBaseUUDeriv, guerraMean_zero, guerraMass,
+        guerraReplicaAccum, one_mul, sub_zero, Real.sq_sqrt ht.1.le]
+  | succ j ih =>
+      let K : ℕ → Config n → Config n → ℝ := fun _ σ τ => V σ * W τ
+      let f := guerraMean n s β U h t j (fun σ => V σ * W σ)
+      let g := fun x => guerraReplicaAccum n s β U h t K j x +
+        (guerraMass s j - guerraMass s (j + 1)) * guerraReplicaAvg n s β U h t j (K j) x
+      have hf : Measurable f := (measurable_guerraMean_joint s β h t j _).comp
+        (measurable_const.prodMk measurable_id)
+      have hg : Measurable g :=
+        ((measurable_guerraReplicaAccum_joint s β h t K j).comp
+          (measurable_const.prodMk measurable_id)).add
+        (((measurable_guerraReplicaAvg_joint s β h t j (K j)).comp
+          (measurable_const.prodMk measurable_id)).const_mul _)
+      have hK : ∀ l σ τ, |K l σ τ| ≤ uAbs n V * uAbs n W := by
+        intro l σ τ
+        exact (abs_mul (V σ) (W τ)).le.trans (mul_le_mul (abs_le_uAbs n V σ)
+          (abs_le_uAbs n W τ) (abs_nonneg _) (uAbs_nonneg n V))
+      have hgb : ∀ x, |g x| ≤ (uAbs n V * uAbs n W) * (1 - guerraMass s j) +
+          (guerraMass s j - guerraMass s (j + 1)) * (uAbs n V * uAbs n W) := by
+        intro x
+        refine (abs_add_le _ _).trans (add_le_add
+          (guerraReplicaAccum_abs_le n s β U h ht
+            (mul_nonneg (uAbs_nonneg n V) (uAbs_nonneg n W)) hK j x) ?_)
+        rw [abs_mul, abs_of_nonneg (guerraMass_drop_nonneg s j)]
+        exact mul_le_mul_of_nonneg_left (guerraReplicaAvg_abs_le n s β U h ht j (hK j) x)
+          (guerraMass_drop_nonneg s j)
+      have he : (fun x => guerraUUD n s β U V W h t j x +
+          s.m (k + 1 - j) * guerraUD n s β U V h t j x * guerraUD n s β U W h t j x) =
+          fun x => t * (f x - g x) := by
+        funext x
+        rw [ih, guerraUD_eq_mean n s β U V h ht, guerraUD_eq_mean n s β U W h ht]
+        dsimp only [f, g, K]
+        rw [guerraReplicaAvg_mul]
+        change t * (_ - _ - _) + guerraMass s (j + 1) * (Real.sqrt t * _) *
+          (Real.sqrt t * _) = _
+        ring_nf
+        rw [Real.sq_sqrt ht.1.le]
+        ring
+      change guerraStepAvg n s β U h t j
+        (fun x => guerraUUD n s β U V W h t j x +
+          s.m (k + 1 - j) * guerraUD n s β U V h t j x * guerraUD n s β U W h t j x) y -
+        s.m (k + 1 - j) * guerraUD n s β U V h t (j + 1) y *
+          guerraUD n s β U W h t (j + 1) y = _
+      rw [he, guerraStepAvg_const_mul, guerraStepAvg_sub n s β U h ht j hf hg
+        (guerraMean_abs_le n s β U h ht j _) hgb]
+      change t * (guerraStepAvg n s β U h t j f y -
+        guerraReplicaAccum n s β U h t K (j + 1) y) - _ = _
+      dsimp only [f, K]
+      rw [← guerraMean_succ n s β U h ht,
+        guerraUD_eq_mean n s β U V h ht, guerraUD_eq_mean n s β U W h ht]
+      change t * (_ - _) - guerraMass s (j + 1) * (Real.sqrt t * _) * (Real.sqrt t * _) = _
+      ring_nf
+      rw [Real.sq_sqrt ht.1.le]
+      ring
+
+theorem guerraReplicaAvg_const_mul {k : ℕ} (n : ℕ) (s : RSBScheme k) (β : ℝ)
+    (U : EnergySpace n) (h t : ℝ) (j : ℕ) (c : ℝ) (K : Config n → Config n → ℝ) (y : Fin n → ℝ) :
+    guerraReplicaAvg n s β U h t j (fun σ τ => c * K σ τ) y =
+      c * guerraReplicaAvg n s β U h t j K y := by
+  unfold guerraReplicaAvg
+  simp only [Finset.mul_sum]
+  exact Finset.sum_congr rfl (fun σ _ => Finset.sum_congr rfl (fun τ _ => by ring))
+
+theorem guerraReplicaAvg_sum_mul {ι : Type*} [Fintype ι] {k : ℕ} (n : ℕ) (s : RSBScheme k)
+    (β : ℝ) (U : EnergySpace n) (h t : ℝ) (j : ℕ) (c : ι → ℝ)
+    (K : ι → Config n → Config n → ℝ) (y : Fin n → ℝ) :
+    guerraReplicaAvg n s β U h t j (fun σ τ => ∑ i, c i * K i σ τ) y =
+      ∑ i, c i * guerraReplicaAvg n s β U h t j (K i) y := by
+  let p := fun σ => guerraProb n s β U h t j σ y
+  change (∑ σ, ∑ τ, p σ * p τ * ∑ i, c i * K i σ τ) = _
+  simp only [Finset.mul_sum]
+  calc
+    _ = ∑ σ, ∑ i, ∑ τ, p σ * p τ * (c i * K i σ τ) :=
+      Finset.sum_congr rfl (fun σ _ => Finset.sum_comm)
+    _ = ∑ i, ∑ σ, ∑ τ, p σ * p τ * (c i * K i σ τ) := Finset.sum_comm
+    _ = _ := by
+      simp only [guerraReplicaAvg, Finset.mul_sum]
+      exact Finset.sum_congr rfl (fun i _ => Finset.sum_congr rfl (fun σ _ =>
+        Finset.sum_congr rfl (fun τ _ => by dsimp [p]; ring)))
+
+/-- Contracting two first derivatives is precisely a two-replica kernel average. -/
+theorem guerraUD_square_sum {ι : Type*} [Fintype ι] {k : ℕ} (n : ℕ) (s : RSBScheme k)
+    (β : ℝ) (U : EnergySpace n) (h : ℝ) {t : ℝ} (ht : t ∈ Set.Ioo (0 : ℝ) 1)
+    (j : ℕ) (c : ι → ℝ) (V : ι → EnergySpace n) (y : Fin n → ℝ) :
+    (∑ i, c i * (guerraUD n s β U (V i) h t j y) ^ 2) =
+      t * guerraReplicaAvg n s β U h t j (fun σ τ => ∑ i, c i * (V i σ * V i τ)) y := by
+  rw [guerraReplicaAvg_sum_mul, Finset.mul_sum]
+  refine Finset.sum_congr rfl (fun i _ => ?_)
+  rw [guerraUD_eq_mean n s β U (V i) h ht, guerraReplicaAvg_mul, mul_pow, Real.sq_sqrt ht.1.le]
+  ring
+
+theorem sk_covariance_spectral_sum {N : ℕ} (β h : ℝ) (sk : SKDisorder (Ω := Ω) N β h)
+    (σ τ : Config N) :
+    (∑ i : sk.hU.ι, (sk.hU.τ i : ℝ) * (sk.hU.w i σ * sk.hU.w i τ)) = sk_cov_kernel N β σ τ := by
+  have hc := sk.cov_eq σ τ
+  rw [PhysLean.Probability.GaussianIBP.covOp_apply] at hc
+  simp only [sum_inner, real_inner_smul_left, inner_std_basis_apply] at hc
+  have hi : ∀ i : sk.hU.ι, inner ℝ (sk.hU.w i) (std_basis N τ) = sk.hU.w i τ := by
+    intro i
+    rw [real_inner_comm, inner_std_basis_apply]
+  simp only [hi] at hc
+  simpa only [mul_assoc] using hc
+
+/-- The disorder-gradient contraction uses the square of the overlap. -/
+theorem guerra_disorder_gradient_overlap {N : ℕ} (β h : ℝ)
+    (sk : SKDisorder (Ω := Ω) N β h) {k : ℕ} (s : RSBScheme k) (U : EnergySpace N)
+    {t : ℝ} (ht : t ∈ Set.Ioo (0 : ℝ) 1) (j : ℕ) (y : Fin N → ℝ) :
+    (∑ i : sk.hU.ι, (sk.hU.τ i : ℝ) * (guerraUD N s β U (sk.hU.w i) h t j y) ^ 2) =
+      (t * (N * β ^ 2 / 2)) * guerraReplicaAvg N s β U h t j (fun σ τ => (overlap N σ τ) ^ 2) y := by
+  rw [guerraUD_square_sum N s β U h ht]
+  simp_rw [sk_covariance_spectral_sum β h sk, sk_cov_kernel]
+  rw [guerraReplicaAvg_const_mul]
+  ring
+
+/-- The field-gradient contraction uses the overlap itself. -/
+theorem guerra_field_gradient_overlap {N : ℕ} (hN : 0 < N) {k : ℕ} (s : RSBScheme k)
+    (β h : ℝ) (U : EnergySpace N) {t : ℝ} (ht : t ∈ Set.Ioo (0 : ℝ) 1)
+    (j : ℕ) (y : Fin N → ℝ) :
+    (∑ i : Fin N, (guerraYD N s β U (Pi.single i 1) h t j y) ^ 2) =
+      ((1 - t) * N) * guerraReplicaAvg N s β U h t j (overlap N) y := by
+  have hNR : (N : ℝ) ≠ 0 := by exact_mod_cast (Nat.ne_of_gt hN)
+  have hK : (fun σ τ : Config N => ∑ i : Fin N,
+      guerraFieldDirection N t (Pi.single i 1) σ * guerraFieldDirection N t (Pi.single i 1) τ) =
+      fun σ τ => ((1 - t) / t * N) * overlap N σ τ := by
+    funext σ τ
+    simp_rw [guerraFieldDirection_single]
+    calc
+      _ = (Real.sqrt (1 - t) / Real.sqrt t) ^ 2 * ∑ i, spin N σ i * spin N τ i := by
+        rw [Finset.mul_sum]
+        exact Finset.sum_congr rfl (fun i _ => by ring)
+      _ = _ := by
+        rw [div_pow, Real.sq_sqrt (sub_pos.mpr ht.2).le, Real.sq_sqrt ht.1.le, overlap]
+        field_simp
+  have hg := guerraUD_square_sum N s β U h ht j (fun _ : Fin N => (1 : ℝ))
+    (fun i => guerraFieldDirection N t (Pi.single i 1)) y
+  simp only [one_mul] at hg
+  change (∑ i : Fin N, (guerraUD N s β U (guerraFieldDirection N t (Pi.single i 1)) h t j y) ^ 2) = _
+  rw [hg, hK, guerraReplicaAvg_const_mul]
+  field_simp [ht.1.ne']
+
+/-- Discrete integration by parts for the masses and overlap parameters. -/
+theorem guerra_mass_q_telescope {k : ℕ} (s : RSBScheme k) (j : ℕ) :
+    (∑ l ∈ Finset.range j, (guerraMass s l - guerraMass s (l + 1)) * s.q (k + 2 - l) ^ 2) +
+      (∑ l ∈ Finset.range j, s.m (k + 1 - l) *
+        (s.q (k + 2 - l) ^ 2 - s.q (k + 1 - l) ^ 2)) =
+      1 - guerraMass s j * s.q (k + 2 - j) ^ 2 := by
+  induction j with
+  | zero => simp [guerraMass, s.q_top]
+  | succ j ih =>
+      rw [Finset.sum_range_succ, Finset.sum_range_succ]
+      have hq : k + 2 - (j + 1) = k + 1 - j := by omega
+      rw [hq]
+      change _ = 1 - s.m (k + 1 - j) * _
+      change _ + _ = _ at ih
+      change (∑ l ∈ Finset.range j, _) +
+        (guerraMass s j - s.m (k + 1 - j)) * s.q (k + 2 - j) ^ 2 +
+        ((∑ l ∈ Finset.range j, _) + s.m (k + 1 - j) *
+          (s.q (k + 2 - j) ^ 2 - s.q (k + 1 - j) ^ 2)) = _
+      nlinarith only [ih]
+
+/-- The reversed cascade indexing gives exactly the correction in the paper. -/
+theorem parisiCorrection_eq_mass_q {k : ℕ} (s : RSBScheme k) (β : ℝ) :
+    parisiCorrection s β = (β ^ 2 / 4) *
+      (1 - ∑ j ∈ Finset.range (k + 2),
+        (guerraMass s j - guerraMass s (j + 1)) * s.q (k + 2 - j) ^ 2) := by
+  have hr : (∑ j ∈ Finset.range (k + 2), s.m (k + 1 - j) *
+      (s.q (k + 2 - j) ^ 2 - s.q (k + 1 - j) ^ 2)) =
+      ∑ p ∈ Finset.range (k + 1), s.m (p + 1) * (s.q (p + 2) ^ 2 - s.q (p + 1) ^ 2) := by
+    rw [Finset.sum_range_succ]
+    simp only [Nat.sub_self, s.m_zero, zero_mul, add_zero]
+    rw [← Finset.sum_range_reflect
+      (fun p => s.m (p + 1) * (s.q (p + 2) ^ 2 - s.q (p + 1) ^ 2)) (k + 1)]
+    refine Finset.sum_congr rfl (fun j hj => ?_)
+    rw [Finset.mem_range] at hj
+    have h1 : k + 1 - 1 - j + 1 = k + 1 - j := by omega
+    have h2 : k + 1 - 1 - j + 2 = k + 2 - j := by omega
+    rw [h1, h2]
+  have hh := guerra_mass_q_telescope s (k + 2)
+  rw [guerraMass_top, zero_mul, sub_zero, hr] at hh
+  unfold parisiCorrection
+  congr 1
+  linarith
+
+theorem guerraReplicaAccum_const_mul {k : ℕ} (n : ℕ) (s : RSBScheme k) (β : ℝ)
+    (U : EnergySpace n) (h t : ℝ) (c : ℝ) (K : ℕ → Config n → Config n → ℝ)
+    (j : ℕ) (y : Fin n → ℝ) :
+    guerraReplicaAccum n s β U h t (fun l σ τ => c * K l σ τ) j y =
+      c * guerraReplicaAccum n s β U h t K j y := by
+  induction j generalizing y with
+  | zero => simp [guerraReplicaAccum]
+  | succ j ih =>
+      simp only [guerraReplicaAccum, ih, guerraReplicaAvg_const_mul]
+      rw [show (fun x => c * guerraReplicaAccum n s β U h t K j x +
+          (guerraMass s j - guerraMass s (j + 1)) * (c * guerraReplicaAvg n s β U h t j (K j) x)) =
+          (fun x => c * (guerraReplicaAccum n s β U h t K j x +
+            (guerraMass s j - guerraMass s (j + 1)) * guerraReplicaAvg n s β U h t j (K j) x)) by
+        funext x; ring, guerraStepAvg_const_mul]
+
+theorem guerraReplicaAccum_sum_mul {ι : Type*} [Fintype ι] {k : ℕ} (n : ℕ) (s : RSBScheme k)
+    (β : ℝ) (U : EnergySpace n) (h : ℝ) {t : ℝ} (ht : t ∈ Set.Ioo (0 : ℝ) 1)
+    (c : ι → ℝ) (K : ι → ℕ → Config n → Config n → ℝ) (C : ι → ℝ)
+    (hK : ∀ i l σ τ, |K i l σ τ| ≤ C i) (j : ℕ) (y : Fin n → ℝ) :
+    guerraReplicaAccum n s β U h t (fun l σ τ => ∑ i, c i * K i l σ τ) j y =
+      ∑ i, c i * guerraReplicaAccum n s β U h t (K i) j y := by
+  have hC : ∀ i, 0 ≤ C i := fun i => (abs_nonneg (K i 0 default default)).trans (hK i 0 _ _)
+  induction j generalizing y with
+  | zero => simp [guerraReplicaAccum]
+  | succ j ih =>
+      let f := fun i x => guerraReplicaAccum n s β U h t (K i) j x +
+        (guerraMass s j - guerraMass s (j + 1)) * guerraReplicaAvg n s β U h t j (K i j) x
+      let B := fun i => C i * (1 - guerraMass s j) + (guerraMass s j - guerraMass s (j + 1)) * C i
+      have hfm : ∀ i, Measurable (f i) := fun i =>
+        ((measurable_guerraReplicaAccum_joint s β h t (K i) j).comp
+          (measurable_const.prodMk measurable_id)).add
+        (((measurable_guerraReplicaAvg_joint s β h t j (K i j)).comp
+          (measurable_const.prodMk measurable_id)).const_mul _)
+      have hfb : ∀ i x, |f i x| ≤ B i := by
+        intro i x
+        refine (abs_add_le _ _).trans (add_le_add
+          (guerraReplicaAccum_abs_le n s β U h ht (hC i) (hK i) j x) ?_)
+        rw [abs_mul, abs_of_nonneg (guerraMass_drop_nonneg s j)]
+        exact mul_le_mul_of_nonneg_left (guerraReplicaAvg_abs_le n s β U h ht j (hK i j) x)
+          (guerraMass_drop_nonneg s j)
+      have he : (fun x =>
+          guerraReplicaAccum n s β U h t (fun l σ τ => ∑ i, c i * K i l σ τ) j x +
+            (guerraMass s j - guerraMass s (j + 1)) *
+              guerraReplicaAvg n s β U h t j (fun σ τ => ∑ i, c i * K i j σ τ) x) =
+          fun x => ∑ i, c i * f i x := by
+        funext x
+        rw [ih, guerraReplicaAvg_sum_mul, Finset.mul_sum, ← Finset.sum_add_distrib]
+        exact Finset.sum_congr rfl (fun i _ => by dsimp [f]; ring)
+      change guerraStepAvg n s β U h t j _ y = _
+      rw [he, guerraStepAvg_sum n s β U h ht j (fun i x => c i * f i x)
+        (fun i => (hfm i).const_mul _) (fun i => |c i| * B i)
+        (fun i x => by rw [abs_mul]; exact mul_le_mul_of_nonneg_left (hfb i x) (abs_nonneg _))]
+      simp only [guerraStepAvg_const_mul]
+      rfl
+
+theorem guerraMean_const {k : ℕ} (n : ℕ) (s : RSBScheme k) (β : ℝ)
+    (U : EnergySpace n) (h : ℝ) {t : ℝ} (ht : t ∈ Set.Ioo (0 : ℝ) 1)
+    (j : ℕ) (c : ℝ) (y : Fin n → ℝ) : guerraMean n s β U h t j (fun _ => c) y = c := by
+  rw [guerraMean, ← Finset.sum_mul, (guerraProb_nonneg_sum_one n s β U h ht j).2, one_mul]
+
+theorem guerraMean_const_mul {k : ℕ} (n : ℕ) (s : RSBScheme k) (β : ℝ)
+    (U : EnergySpace n) (h t : ℝ) (j : ℕ) (c : ℝ) (f : Config n → ℝ) (y : Fin n → ℝ) :
+    guerraMean n s β U h t j (fun σ => c * f σ) y = c * guerraMean n s β U h t j f y := by
+  unfold guerraMean
+  rw [Finset.mul_sum]
+  exact Finset.sum_congr rfl (fun σ _ => by ring)
+
+theorem guerraMean_sum_mul {ι : Type*} [Fintype ι] {k : ℕ} (n : ℕ) (s : RSBScheme k)
+    (β : ℝ) (U : EnergySpace n) (h t : ℝ) (j : ℕ) (c : ι → ℝ)
+    (f : ι → Config n → ℝ) (y : Fin n → ℝ) :
+    guerraMean n s β U h t j (fun σ => ∑ i, c i * f i σ) y =
+      ∑ i, c i * guerraMean n s β U h t j (f i) y := by
+  unfold guerraMean
+  simp only [Finset.mul_sum]
+  rw [Finset.sum_comm]
+  exact Finset.sum_congr rfl (fun i _ => Finset.sum_congr rfl (fun σ _ => by ring))
+
+/-- The complete Hessian trace for any finite family of directions, expressed
+using its covariance kernel. -/
+theorem guerraUUD_trace_replicas {ι : Type*} [Fintype ι] {k : ℕ} (n : ℕ) (s : RSBScheme k)
+    (β : ℝ) (U : EnergySpace n) (h : ℝ) {t : ℝ} (ht : t ∈ Set.Ioo (0 : ℝ) 1)
+    (j : ℕ) (c : ι → ℝ) (V : ι → EnergySpace n) (y : Fin n → ℝ) :
+    (∑ i, c i * guerraUUD n s β U (V i) (V i) h t j y) = t *
+      (guerraMean n s β U h t j (fun σ => ∑ i, c i * (V i σ * V i σ)) y -
+        guerraMass s j * guerraReplicaAvg n s β U h t j (fun σ τ => ∑ i, c i * (V i σ * V i τ)) y -
+        guerraReplicaAccum n s β U h t (fun _ σ τ => ∑ i, c i * (V i σ * V i τ)) j y) := by
+  have hK : ∀ i (l : ℕ) σ τ, |V i σ * V i τ| ≤ uAbs n (V i) * uAbs n (V i) := by
+    intro i l σ τ
+    rw [abs_mul]
+    exact mul_le_mul (abs_le_uAbs n (V i) σ) (abs_le_uAbs n (V i) τ)
+      (abs_nonneg _) (uAbs_nonneg n (V i))
+  rw [guerraMean_sum_mul, guerraReplicaAvg_sum_mul,
+    guerraReplicaAccum_sum_mul n s β U h ht c (fun i _ σ τ => V i σ * V i τ)
+      (fun i => uAbs n (V i) * uAbs n (V i)) hK,
+    Finset.mul_sum, ← Finset.sum_sub_distrib, ← Finset.sum_sub_distrib, Finset.mul_sum]
+  refine Finset.sum_congr rfl (fun i _ => ?_)
+  rw [guerraUUD_eq_replicas n s β U (V i) (V i) h ht, guerraReplicaAvg_mul]
+  ring
+
+/-- The disorder Hessian trace in the precise form needed by Gaussian IBP. -/
+theorem guerra_disorder_hessian_overlap {N : ℕ} (hN : 0 < N) (β h : ℝ)
+    (sk : SKDisorder (Ω := Ω) N β h) {k : ℕ} (s : RSBScheme k) (U : EnergySpace N)
+    {t : ℝ} (ht : t ∈ Set.Ioo (0 : ℝ) 1) (j : ℕ) (y : Fin N → ℝ) :
+    (∑ i : sk.hU.ι, (sk.hU.τ i : ℝ) * guerraUUD N s β U (sk.hU.w i) (sk.hU.w i) h t j y) =
+      (t * (N * β ^ 2 / 2)) * (1 -
+        guerraMass s j * guerraReplicaAvg N s β U h t j (fun σ τ => (overlap N σ τ) ^ 2) y -
+        guerraReplicaAccum N s β U h t (fun _ σ τ => (overlap N σ τ) ^ 2) j y) := by
+  have hd : ∀ σ : Config N, overlap N σ σ = 1 := by
+    intro σ
+    have hNR : (N : ℝ) ≠ 0 := by exact_mod_cast (Nat.ne_of_gt hN)
+    have hs : ∀ i, spin N σ i * spin N σ i = 1 := by
+      intro i
+      have hh := abs_spin N σ i
+      nlinarith [sq_abs (spin N σ i)]
+    simp [overlap, hs, hNR]
+  rw [guerraUUD_trace_replicas N s β U h ht]
+  simp_rw [sk_covariance_spectral_sum β h sk, sk_cov_kernel, hd, one_pow, mul_one]
+  rw [guerraMean_const N s β U h ht, guerraReplicaAvg_const_mul, guerraReplicaAccum_const_mul]
+  ring
+
+theorem guerra_field_hessian_overlap {N : ℕ} (hN : 0 < N) {k : ℕ} (s : RSBScheme k)
+    (β h : ℝ) (U : EnergySpace N) {t : ℝ} (ht : t ∈ Set.Ioo (0 : ℝ) 1)
+    (j : ℕ) (y : Fin N → ℝ) :
+    (∑ i : Fin N, guerraYYD N s β U (Pi.single i 1) (Pi.single i 1) h t j y) =
+      ((1 - t) * N) * (1 - guerraMass s j * guerraReplicaAvg N s β U h t j (overlap N) y -
+        guerraReplicaAccum N s β U h t (fun _ => overlap N) j y) := by
+  have hNR : (N : ℝ) ≠ 0 := by exact_mod_cast (Nat.ne_of_gt hN)
+  have hd : ∀ σ : Config N, overlap N σ σ = 1 := by
+    intro σ
+    have hs : ∀ i, spin N σ i * spin N σ i = 1 := by
+      intro i
+      have hh := abs_spin N σ i
+      nlinarith [sq_abs (spin N σ i)]
+    simp [overlap, hs, hNR]
+  have hK : ∀ σ τ : Config N, (∑ i : Fin N,
+      guerraFieldDirection N t (Pi.single i 1) σ * guerraFieldDirection N t (Pi.single i 1) τ) =
+      ((1 - t) / t * N) * overlap N σ τ := by
+    intro σ τ
+    simp_rw [guerraFieldDirection_single]
+    calc
+      _ = (Real.sqrt (1 - t) / Real.sqrt t) ^ 2 * ∑ i, spin N σ i * spin N τ i := by
+        rw [Finset.mul_sum]
+        exact Finset.sum_congr rfl (fun i _ => by ring)
+      _ = _ := by
+        rw [div_pow, Real.sq_sqrt (sub_pos.mpr ht.2).le, Real.sq_sqrt ht.1.le, overlap]
+        field_simp
+  have hh := guerraUUD_trace_replicas N s β U h ht j (fun _ : Fin N => (1 : ℝ))
+    (fun i => guerraFieldDirection N t (Pi.single i 1)) y
+  simp only [one_mul] at hh
+  simp_rw [hK, hd, mul_one] at hh
+  change (∑ i : Fin N, guerraUUD N s β U (guerraFieldDirection N t (Pi.single i 1))
+    (guerraFieldDirection N t (Pi.single i 1)) h t j y) = _
+  rw [hh, guerraMean_const N s β U h ht, guerraReplicaAvg_const_mul, guerraReplicaAccum_const_mul]
+  field_simp [ht.1.ne']
+
+/-- One field-IBP step, now expressed entirely in terms of the overlap. -/
+theorem guerra_field_radial_overlap_step {N : ℕ} (hN : 0 < N) {k : ℕ} (s : RSBScheme k)
+    (β h : ℝ) (U : EnergySpace N) {t : ℝ} (ht : t ∈ Set.Ioo (0 : ℝ) 1)
+    (j : ℕ) (y : Fin N → ℝ) :
+    guerraStepAvg N s β U h t j (fun x => guerraYD N s β U x h t j x) y =
+      guerraYD N s β U y h t (j + 1) y +
+        (β ^ 2 * (s.q (k + 2 - j) - s.q (k + 1 - j))) * ((1 - t) * N) *
+          (1 - guerraReplicaAccum N s β U h t (fun _ => overlap N) (j + 1) y) := by
+  have hs := guerra_field_radial_step N s β U h ht j y
+  dsimp only at hs
+  change guerraStepAvg N s β U h t j (fun x => guerraYD N s β U x h t j x) y = _ at hs
+  have hi : ∀ i : Fin N,
+      guerraStepAvg N s β U h t j (fun x =>
+        guerraYYD N s β U (Pi.single i 1) (Pi.single i 1) h t j x +
+          s.m (k + 1 - j) * (guerraYD N s β U (Pi.single i 1) h t j x) ^ 2) y =
+        guerraYYD N s β U (Pi.single i 1) (Pi.single i 1) h t (j + 1) y +
+          s.m (k + 1 - j) * (guerraYD N s β U (Pi.single i 1) h t (j + 1) y) ^ 2 := by
+    intro i
+    simp only [guerraYYD, guerraYD, guerraUUD, guerraStepAvg, pow_two, mul_assoc]
+    ring
+  change guerraStepAvg N s β U h t j (fun x => guerraYD N s β U x h t j x) y =
+    guerraYD N s β U y h t (j + 1) y +
+      (1 * (β ^ 2 * (s.q (k + 2 - j) - s.q (k + 1 - j)))) *
+        ∑ i : Fin N, guerraStepAvg N s β U h t j (fun x =>
+          guerraYYD N s β U (Pi.single i 1) (Pi.single i 1) h t j x +
+            s.m (k + 1 - j) * (guerraYD N s β U (Pi.single i 1) h t j x) ^ 2) y at hs
+  rw [hs]
+  simp_rw [hi]
+  rw [Finset.sum_add_distrib, ← Finset.mul_sum,
+    guerra_field_hessian_overlap hN s β h U ht,
+    guerra_field_gradient_overlap hN s β h U ht]
+  change _ = _
+  change _ + _ * (((1 - t) * N) * (1 - s.m (k + 1 - j) * _ - _) + _ * _) = _
+  ring
+
+/-- Measurability and affine field growth, bundled for linear integral operations. -/
+structure GuerraGrowth {n : ℕ} (f : (Fin n → ℝ) → ℝ) : Prop where
+  measurable : Measurable f
+  bound : ∃ a b : ℝ, 0 ≤ b ∧ ∀ y, |f y| ≤ a + b * l1 y
+
+theorem GuerraGrowth.of_bound {n : ℕ} {f : (Fin n → ℝ) → ℝ}
+    (hf : Measurable f) {C : ℝ} (hb : ∀ y, |f y| ≤ C) : GuerraGrowth f :=
+  ⟨hf, C, 0, le_rfl, by simpa using hb⟩
+
+theorem GuerraGrowth.const {n : ℕ} (c : ℝ) : GuerraGrowth (fun _ : Fin n → ℝ => c) :=
+  GuerraGrowth.of_bound measurable_const (fun _ => le_rfl)
+
+theorem GuerraGrowth.const_mul {n : ℕ} {f : (Fin n → ℝ) → ℝ}
+    (hf : GuerraGrowth f) (c : ℝ) : GuerraGrowth (fun y => c * f y) := by
+  obtain ⟨a, b, hb, hbound⟩ := hf.bound
+  refine ⟨hf.measurable.const_mul c, |c| * a, |c| * b, mul_nonneg (abs_nonneg _) hb, fun y => ?_⟩
+  rw [abs_mul]
+  calc
+    _ ≤ |c| * (a + b * l1 y) := mul_le_mul_of_nonneg_left (hbound y) (abs_nonneg _)
+    _ = _ := by ring
+
+theorem GuerraGrowth.sub {n : ℕ} {f g : (Fin n → ℝ) → ℝ}
+    (hf : GuerraGrowth f) (hg : GuerraGrowth g) : GuerraGrowth (fun y => f y - g y) := by
+  obtain ⟨a, b, hb, hfb⟩ := hf.bound
+  obtain ⟨c, d, hd, hgb⟩ := hg.bound
+  refine ⟨hf.measurable.sub hg.measurable, a + c, b + d, add_nonneg hb hd, fun y => ?_⟩
+  calc
+    _ ≤ |f y| + |g y| := abs_sub _ _
+    _ ≤ (a + b * l1 y) + (c + d * l1 y) := add_le_add (hfb y) (hgb y)
+    _ = _ := by ring
+
+theorem GuerraGrowth.add {n : ℕ} {f g : (Fin n → ℝ) → ℝ}
+    (hf : GuerraGrowth f) (hg : GuerraGrowth g) : GuerraGrowth (fun y => f y + g y) := by
+  have hh := hf.sub (hg.const_mul (-1))
+  simpa only [neg_one_mul, sub_neg_eq_add] using hh
+
+theorem guerraStepAvg_sub_growth {k : ℕ} (n : ℕ) (s : RSBScheme k) (β : ℝ)
+    (U : EnergySpace n) (h : ℝ) {t : ℝ} (ht : t ∈ Set.Ioo (0 : ℝ) 1) (j : ℕ)
+    {f g : (Fin n → ℝ) → ℝ} (hf : GuerraGrowth f) (hg : GuerraGrowth g) (y : Fin n → ℝ) :
+    guerraStepAvg n s β U h t j (fun x => f x - g x) y =
+      guerraStepAvg n s β U h t j f y - guerraStepAvg n s β U h t j g y := by
+  obtain ⟨a, b, hb, hfb⟩ := hf.bound
+  obtain ⟨c, d, hd, hgb⟩ := hg.bound
+  unfold guerraStepAvg
+  simp_rw [sub_mul]
+  exact integral_sub (integrable_guerraStepAvg_integrand n s β U h ht j hf.measurable hb hfb y)
+    (integrable_guerraStepAvg_integrand n s β U h ht j hg.measurable hd hgb y)
+
+theorem guerraStepAvg_add_growth {k : ℕ} (n : ℕ) (s : RSBScheme k) (β : ℝ)
+    (U : EnergySpace n) (h : ℝ) {t : ℝ} (ht : t ∈ Set.Ioo (0 : ℝ) 1) (j : ℕ)
+    {f g : (Fin n → ℝ) → ℝ} (hf : GuerraGrowth f) (hg : GuerraGrowth g) (y : Fin n → ℝ) :
+    guerraStepAvg n s β U h t j (fun x => f x + g x) y =
+      guerraStepAvg n s β U h t j f y + guerraStepAvg n s β U h t j g y := by
+  have hh := guerraStepAvg_sub_growth n s β U h ht j hf (hg.const_mul (-1)) y
+  rw [guerraStepAvg_const_mul] at hh
+  simpa only [neg_one_mul, sub_neg_eq_add] using hh
+
+theorem guerraReplicaAvg_growth {k : ℕ} (n : ℕ) (s : RSBScheme k) (β : ℝ)
+    (U : EnergySpace n) (h : ℝ) {t : ℝ} (ht : t ∈ Set.Ioo (0 : ℝ) 1)
+    {K : Config n → Config n → ℝ} {C : ℝ} (hK : ∀ σ τ, |K σ τ| ≤ C) (j : ℕ) :
+    GuerraGrowth (guerraReplicaAvg n s β U h t j K) := by
+  apply GuerraGrowth.of_bound (C := C)
+  · exact (measurable_guerraReplicaAvg_joint (n := n) s β h t j K).comp
+      (f := fun y : Fin n → ℝ => (U, y)) (measurable_const.prodMk measurable_id)
+  · exact guerraReplicaAvg_abs_le n s β U h ht j hK
+
+theorem guerraReplicaAccum_growth {k : ℕ} (n : ℕ) (s : RSBScheme k) (β : ℝ)
+    (U : EnergySpace n) (h : ℝ) {t : ℝ} (ht : t ∈ Set.Ioo (0 : ℝ) 1)
+    {K : ℕ → Config n → Config n → ℝ} {C : ℝ} (hK : ∀ l σ τ, |K l σ τ| ≤ C) (j : ℕ) :
+    GuerraGrowth (guerraReplicaAccum n s β U h t K j) := by
+  have hC : 0 ≤ C := (abs_nonneg (K 0 default default)).trans (hK 0 _ _)
+  apply GuerraGrowth.of_bound ((measurable_guerraReplicaAccum_joint s β h t K j).comp
+    (measurable_const.prodMk measurable_id))
+  intro y
+  exact (guerraReplicaAccum_abs_le n s β U h ht hC hK j y).trans
+    (mul_le_of_le_one_right hC (by linarith [(guerraMass_mem_Icc s j).1]))
+
+theorem guerraUD_growth {k : ℕ} (n : ℕ) (s : RSBScheme k) (β : ℝ)
+    (U V : EnergySpace n) (h : ℝ) {t : ℝ} (ht : t ∈ Set.Ioo (0 : ℝ) 1) (j : ℕ) :
+    GuerraGrowth (guerraUD n s β U V h t j) := by
+  obtain ⟨hm, hb⟩ := guerraUD_measurable_and_bound n s β U V h ht j
+  exact GuerraGrowth.of_bound hm hb
+
+theorem guerraYD_radial_growth {k : ℕ} (n : ℕ) (s : RSBScheme k) (β : ℝ)
+    (U : EnergySpace n) (h : ℝ) {t : ℝ} (ht : t ∈ Set.Ioo (0 : ℝ) 1) (j : ℕ) :
+    GuerraGrowth (fun y => guerraYD n s β U y h t j y) := by
+  let B := fun i : Fin n => Real.sqrt t * uAbs n (guerraFieldDirection n t (Pi.single i 1))
+  have hB : ∀ i, 0 ≤ B i := fun i => mul_nonneg (Real.sqrt_nonneg _) (uAbs_nonneg _ _)
+  have hb : ∀ i y, |guerraYD n s β U (Pi.single i 1) h t j y| ≤ B i := fun i =>
+    (guerraUD_measurable_and_bound n s β U (guerraFieldDirection n t (Pi.single i 1)) h ht j).2
+  have he : (fun y => guerraYD n s β U y h t j y) =
+      fun y => ∑ i, y i * guerraYD n s β U (Pi.single i 1) h t j y :=
+    funext (fun y => guerraYD_eq_sum n s β U h ht y y j)
+  rw [he]
+  refine ⟨Finset.measurable_sum _ (fun i _ => (measurable_pi_apply i).mul
+    (measurable_guerraYD n s β U h ht (Pi.single i 1) j)), 0, ∑ i, B i,
+    Finset.sum_nonneg (fun i _ => hB i), fun y => ?_⟩
+  simp only [zero_add]
+  calc
+    _ ≤ ∑ i, |y i * guerraYD n s β U (Pi.single i 1) h t j y| := Finset.abs_sum_le_sum_abs _ _
+    _ ≤ ∑ i, |y i| * (∑ l, B l) := by
+      refine Finset.sum_le_sum (fun i _ => ?_)
+      rw [abs_mul]
+      exact mul_le_mul_of_nonneg_left ((hb i y).trans
+        (Finset.single_le_sum (fun l _ => hB l) (Finset.mem_univ i))) (abs_nonneg _)
+    _ = _ := by rw [← Finset.sum_mul]; exact mul_comm _ _
+
+theorem guerraReplicaAccum_succ_split {k : ℕ} (n : ℕ) (s : RSBScheme k) (β : ℝ)
+    (U : EnergySpace n) (h : ℝ) {t : ℝ} (ht : t ∈ Set.Ioo (0 : ℝ) 1)
+    {K : ℕ → Config n → Config n → ℝ} {C : ℝ} (hK : ∀ l σ τ, |K l σ τ| ≤ C)
+    (j : ℕ) (y : Fin n → ℝ) :
+    guerraReplicaAccum n s β U h t K (j + 1) y =
+      guerraStepAvg n s β U h t j (guerraReplicaAccum n s β U h t K j) y +
+        (guerraMass s j - guerraMass s (j + 1)) *
+          guerraStepAvg n s β U h t j (guerraReplicaAvg n s β U h t j (K j)) y := by
+  rw [guerraReplicaAccum, guerraStepAvg_add_growth n s β U h ht j
+    (guerraReplicaAccum_growth n s β U h ht hK j)
+    ((guerraReplicaAvg_growth n s β U h ht (hK j) j).const_mul _), guerraStepAvg_const_mul]
+
+theorem abs_q_mul_overlap_le_one {N k : ℕ} (hN : 0 < N) (s : RSBScheme k)
+    (j : ℕ) (σ τ : Config N) : |s.q (k + 2 - j) * overlap N σ τ| ≤ 1 := by
+  rw [abs_mul, abs_of_nonneg (s.q_nonneg (by omega))]
+  simpa only [one_mul] using mul_le_mul (s.q_le_one (by omega)) (abs_overlap_le_one hN σ τ)
+    (abs_nonneg _) zero_le_one
+
+/-- The field correction after `j` integrations, divided by `N β² / 2`. -/
+noncomputable def guerraFieldTerm {k : ℕ} (n : ℕ) (s : RSBScheme k) (β : ℝ)
+    (U : EnergySpace n) (h t : ℝ) (j : ℕ) (y : Fin n → ℝ) : ℝ :=
+  1 - s.q (k + 2 - j) -
+    guerraReplicaAccum n s β U h t (fun l σ τ => s.q (k + 2 - l) * overlap n σ τ) j y +
+    s.q (k + 2 - j) * guerraReplicaAccum n s β U h t (fun _ => overlap n) j y
+
+theorem guerraFieldTerm_growth {n : ℕ} (hn : 0 < n) {k : ℕ} (s : RSBScheme k)
+    (β h : ℝ) (U : EnergySpace n) {t : ℝ} (ht : t ∈ Set.Ioo (0 : ℝ) 1) (j : ℕ) :
+    GuerraGrowth (guerraFieldTerm n s β U h t j) := by
+  exact ((GuerraGrowth.const (1 - s.q (k + 2 - j))).sub
+    (guerraReplicaAccum_growth n s β U h ht (abs_q_mul_overlap_le_one hn s) j)).add
+    ((guerraReplicaAccum_growth n s β U h ht (fun _ => abs_overlap_le_one hn) j).const_mul _)
+
+/-- The overlap representation telescopes the field corrections through a level. -/
+theorem guerraFieldTerm_step {n : ℕ} (hn : 0 < n) {k : ℕ} (s : RSBScheme k)
+    (β h : ℝ) (U : EnergySpace n) {t : ℝ} (ht : t ∈ Set.Ioo (0 : ℝ) 1)
+    (j : ℕ) (y : Fin n → ℝ) :
+    guerraStepAvg n s β U h t j (guerraFieldTerm n s β U h t j) y +
+      (s.q (k + 2 - j) - s.q (k + 2 - (j + 1))) *
+        (1 - guerraReplicaAccum n s β U h t (fun _ => overlap n) (j + 1) y) =
+      guerraFieldTerm n s β U h t (j + 1) y := by
+  have hR := guerraReplicaAccum_growth n s β U h ht (fun _ => abs_overlap_le_one hn) j
+  have hQ := guerraReplicaAccum_growth n s β U h ht (abs_q_mul_overlap_le_one hn s) j
+  unfold guerraFieldTerm
+  rw [guerraStepAvg_add_growth n s β U h ht j
+    ((GuerraGrowth.const (1 - s.q (k + 2 - j))).sub hQ) (hR.const_mul _),
+    guerraStepAvg_sub_growth n s β U h ht j (GuerraGrowth.const _) hQ,
+    guerraStepAvg_const n s β U h ⟨ht.1.le, ht.2.le⟩, guerraStepAvg_const_mul]
+  rw [guerraReplicaAccum_succ_split n s β U h ht (fun _ => abs_overlap_le_one hn),
+    guerraReplicaAccum_succ_split n s β U h ht (abs_q_mul_overlap_le_one hn s)]
+  have he : guerraReplicaAvg n s β U h t j (fun σ τ => s.q (k + 2 - j) * overlap n σ τ) =
+      fun x => s.q (k + 2 - j) * guerraReplicaAvg n s β U h t j (overlap n) x :=
+    funext (fun x => guerraReplicaAvg_const_mul n s β U h t j _ _ x)
+  rw [he, guerraStepAvg_const_mul]
+  ring
+
+theorem gibbsAvg_sub {n : ℕ} (E f g : Config n → ℝ) :
+    gibbsAvg E (fun σ => f σ - g σ) = gibbsAvg E f - gibbsAvg E g := by
+  simp only [gibbsAvg, mul_sub, Finset.sum_sub_distrib, sub_div]
+
+theorem guerraBaseDeriv_eq_radials {k : ℕ} (n : ℕ) (s : RSBScheme k) (β : ℝ)
+    (U : EnergySpace n) (h : ℝ) {t : ℝ} (ht : t ∈ Set.Ioo (0 : ℝ) 1) (y : Fin n → ℝ) :
+    guerraD n s β U h 0 t y = (1 / (2 * t)) * guerraUD n s β U U h t 0 y -
+      (1 / (2 * (1 - t))) * guerraYD n s β U y h t 0 y := by
+  have hrt : Real.sqrt t ≠ 0 := (Real.sqrt_pos.mpr ht.1).ne'
+  have hr1 : Real.sqrt (1 - t) ≠ 0 := (Real.sqrt_pos.mpr (sub_pos.mpr ht.2)).ne'
+  have h1t : 1 - t ≠ 0 := (sub_pos.mpr ht.2).ne'
+  have ha : 1 / (2 * Real.sqrt t) = (1 / (2 * t)) * Real.sqrt t := by
+    field_simp [hrt, ht.1.ne']
+    nlinarith [Real.sq_sqrt ht.1.le]
+  have hb : 1 / (2 * Real.sqrt (1 - t)) = (1 / (2 * (1 - t))) * Real.sqrt (1 - t) := by
+    field_simp [hr1, h1t]
+    nlinarith [Real.sq_sqrt (sub_pos.mpr ht.2).le]
+  have he : guerraHDeriv n U t y = fun σ =>
+      ((1 / (2 * t)) * Real.sqrt t) * U σ -
+        ((1 / (2 * (1 - t))) * Real.sqrt t) * guerraFieldDirection n t y σ := by
+    funext σ
+    have hd : Real.sqrt t * guerraFieldDirection n t y σ =
+        Real.sqrt (1 - t) * ∑ i, spin n σ i * y i := by
+      change Real.sqrt t * ((Real.sqrt (1 - t) / Real.sqrt t) * _) = _
+      field_simp
+    calc
+      _ = (1 / (2 * Real.sqrt t)) * U σ -
+          (1 / (2 * Real.sqrt (1 - t))) * (∑ i, spin n σ i * y i) := by
+        unfold guerraHDeriv
+        ring
+      _ = _ := by rw [ha, hb]; simp only [mul_assoc, hd]
+  change gibbsAvg (guerraH n U h t y) (guerraHDeriv n U t y) = _
+  rw [he, gibbsAvg_sub, gibbsAvg_const_mul, gibbsAvg_const_mul]
+  change _ = (1 / (2 * t)) * (Real.sqrt t * gibbsAvg _ _) -
+    (1 / (2 * (1 - t))) * (Real.sqrt t * gibbsAvg _ _)
+  ring
+
+/-- All conditional field-IBP terms assembled through the entire cascade. -/
+theorem guerraD_eq_radials_overlap {n : ℕ} (hn : 0 < n) {k : ℕ} (s : RSBScheme k)
+    (β h : ℝ) (U : EnergySpace n) {t : ℝ} (ht : t ∈ Set.Ioo (0 : ℝ) 1)
+    (j : ℕ) (y : Fin n → ℝ) :
+    guerraD n s β U h j t y =
+      (1 / (2 * t)) * guerraUD n s β U U h t j y -
+        (1 / (2 * (1 - t))) * guerraYD n s β U y h t j y -
+        (n * β ^ 2 / 2) * guerraFieldTerm n s β U h t j y := by
+  induction j generalizing y with
+  | zero =>
+      simpa only [guerraFieldTerm, guerraReplicaAccum, Nat.sub_zero, s.q_top,
+        sub_self, sub_zero, mul_zero, add_zero] using guerraBaseDeriv_eq_radials n s β U h ht y
+  | succ j ih =>
+      have hU := (guerraUD_growth n s β U U h ht j).const_mul (1 / (2 * t))
+      have hY := (guerraYD_radial_growth n s β U h ht j).const_mul (1 / (2 * (1 - t)))
+      have hF := (guerraFieldTerm_growth hn s β h U ht j).const_mul (n * β ^ 2 / 2)
+      change guerraStepAvg n s β U h t j (guerraD n s β U h j t) y = _
+      rw [show guerraD n s β U h j t = fun x =>
+        (1 / (2 * t)) * guerraUD n s β U U h t j x -
+          (1 / (2 * (1 - t))) * guerraYD n s β U x h t j x -
+          (n * β ^ 2 / 2) * guerraFieldTerm n s β U h t j x from funext ih,
+        guerraStepAvg_sub_growth n s β U h ht j (hU.sub hY) hF,
+        guerraStepAvg_sub_growth n s β U h ht j hU hY]
+      simp only [guerraStepAvg_const_mul]
+      rw [guerra_field_radial_overlap_step hn s β h U ht]
+      have hh := guerraFieldTerm_step hn s β h U ht j y
+      rw [eq_sub_iff_add_eq.mpr hh]
+      have hq : k + 2 - (j + 1) = k + 1 - j := by omega
+      rw [hq]
+      change (1 / (2 * t)) * guerraUD n s β U U h t (j + 1) y - _ - _ = _
+      field_simp [(sub_pos.mpr ht.2).ne', ht.1.ne']
+      ring
+
+theorem abs_overlap_sq_le_one {n : ℕ} (hn : 0 < n) (σ τ : Config n) :
+    |(overlap n σ τ) ^ 2| ≤ 1 := by
+  rw [pow_two, abs_mul]
+  simpa only [one_mul] using mul_le_mul (abs_overlap_le_one hn σ τ) (abs_overlap_le_one hn σ τ)
+    (abs_nonneg _) zero_le_one
+
+theorem guerraReplicaAvg_const {k : ℕ} (n : ℕ) (s : RSBScheme k) (β : ℝ)
+    (U : EnergySpace n) (h : ℝ) {t : ℝ} (ht : t ∈ Set.Ioo (0 : ℝ) 1)
+    (j : ℕ) (c : ℝ) (y : Fin n → ℝ) :
+    guerraReplicaAvg n s β U h t j (fun _ _ => c) y = c := by
+  have hs := (guerraProb_nonneg_sum_one n s β U h ht j).2
+  simp only [guerraReplicaAvg, ← Finset.sum_mul, ← Finset.mul_sum, hs, one_mul, mul_one]
+
+theorem guerraReplicaAccum_const_level {k : ℕ} (n : ℕ) (s : RSBScheme k) (β : ℝ)
+    (U : EnergySpace n) (h : ℝ) {t : ℝ} (ht : t ∈ Set.Ioo (0 : ℝ) 1)
+    (c : ℕ → ℝ) (j : ℕ) (y : Fin n → ℝ) :
+    guerraReplicaAccum n s β U h t (fun l _ _ => c l) j y =
+      ∑ l ∈ Finset.range j, (guerraMass s l - guerraMass s (l + 1)) * c l := by
+  induction j generalizing y with
+  | zero => simp [guerraReplicaAccum]
+  | succ j ih =>
+      rw [guerraReplicaAccum]
+      simp_rw [ih, guerraReplicaAvg_const n s β U h ht]
+      rw [guerraStepAvg_const n s β U h ⟨ht.1.le, ht.2.le⟩, Finset.sum_range_succ]
+
+/-- Completing the square inside the accumulated replica averages. -/
+theorem guerraReplicaAccum_overlap_sq {n : ℕ} (hn : 0 < n) {k : ℕ} (s : RSBScheme k)
+    (β h : ℝ) (U : EnergySpace n) {t : ℝ} (ht : t ∈ Set.Ioo (0 : ℝ) 1)
+    (j : ℕ) (y : Fin n → ℝ) :
+    guerraReplicaAccum n s β U h t (fun l σ τ => (overlap n σ τ - s.q (k + 2 - l)) ^ 2) j y =
+      guerraReplicaAccum n s β U h t (fun _ σ τ => (overlap n σ τ) ^ 2) j y -
+        2 * guerraReplicaAccum n s β U h t (fun l σ τ => s.q (k + 2 - l) * overlap n σ τ) j y +
+        ∑ l ∈ Finset.range j, (guerraMass s l - guerraMass s (l + 1)) * s.q (k + 2 - l) ^ 2 := by
+  let c : Fin 3 → ℝ := ![1, -2, 1]
+  let K : Fin 3 → ℕ → Config n → Config n → ℝ :=
+    ![fun _ σ τ => (overlap n σ τ) ^ 2,
+      fun l σ τ => s.q (k + 2 - l) * overlap n σ τ,
+      fun l _ _ => s.q (k + 2 - l) ^ 2]
+  have hK : ∀ i l σ τ, |K i l σ τ| ≤ 1 := by
+    intro i l σ τ
+    fin_cases i
+    · exact abs_overlap_sq_le_one hn σ τ
+    · exact abs_q_mul_overlap_le_one hn s l σ τ
+    · change |s.q (k + 2 - l) ^ 2| ≤ 1
+      rw [pow_two, abs_mul, abs_of_nonneg (s.q_nonneg (by omega))]
+      simpa only [one_mul] using mul_le_mul (s.q_le_one (p := k + 2 - l) (by omega))
+        (s.q_le_one (p := k + 2 - l) (by omega)) (s.q_nonneg (by omega)) zero_le_one
+  have he : (fun l σ τ => ∑ i, c i * K i l σ τ) =
+      fun l σ τ => (overlap n σ τ - s.q (k + 2 - l)) ^ 2 := by
+    funext l σ τ
+    simp [c, K, Fin.sum_univ_succ]
+    ring
+  have hh := guerraReplicaAccum_sum_mul n s β U h ht c K (fun _ => 1) hK j y
+  rw [he] at hh
+  simpa [c, K, Fin.sum_univ_succ, guerraReplicaAccum_const_level n s β U h ht, sub_eq_add_neg, add_assoc]
+    using hh
+
+theorem integrable_guerraReplicaAccum {N : ℕ} (β h : ℝ)
+    (sk : SKDisorder (Ω := Ω) N β h) {k : ℕ} (s : RSBScheme k)
+    {t : ℝ} (ht : t ∈ Set.Ioo (0 : ℝ) 1) {K : ℕ → Config N → Config N → ℝ}
+    {C : ℝ} (hK : ∀ l σ τ, |K l σ τ| ≤ C) (j : ℕ) (y : Fin N → ℝ) :
+    Integrable (fun ω => guerraReplicaAccum N s β (sk.U ω) h t K j y) (ℙ : Measure Ω) := by
+  have hC : 0 ≤ C := (abs_nonneg (K 0 default default)).trans (hK 0 _ _)
+  apply integrable_comp_of_affine_norm_bound sk.hU
+    ((measurable_guerraReplicaAccum_joint s β h t K j).comp
+      (f := fun U : EnergySpace N => (U, y)) (measurable_id.prodMk measurable_const))
+    (C := C * (1 - guerraMass s j)) (D := 0)
+    (mul_nonneg hC (sub_nonneg.mpr (guerraMass_mem_Icc s j).2)) le_rfl
+  intro U
+  simpa only [Function.comp_apply, zero_mul, add_zero] using guerraReplicaAccum_abs_le N s β U h ht hC hK j y
+
+theorem integrable_guerraUD_radial {N : ℕ} (β h : ℝ)
+    (sk : SKDisorder (Ω := Ω) N β h) {k : ℕ} (s : RSBScheme k)
+    {t : ℝ} (ht : t ∈ Set.Ioo (0 : ℝ) 1) (j : ℕ) (y : Fin N → ℝ) :
+    Integrable (fun ω => guerraUD N s β (sk.U ω) (sk.U ω) h t j y) (ℙ : Measure Ω) := by
+  have hm : Measurable (fun U : EnergySpace N => guerraUD N s β U U h t j y) := by
+    have he : (fun U : EnergySpace N => guerraUD N s β U U h t j y) =
+        fun U => Real.sqrt t * ∑ σ : Config N, guerraProb N s β U h t j σ y * U σ := by
+      funext U
+      exact guerraUD_eq_mean N s β U U h ht j y
+    rw [he]
+    exact (Finset.measurable_sum _ (fun σ _ =>
+      ((measurable_guerraProb_joint s β h t j σ).comp
+        (f := fun U : EnergySpace N => (U, y)) (measurable_id.prodMk measurable_const)).mul
+      (measurable_coord N σ))).const_mul _
+  apply integrable_comp_of_affine_norm_bound sk.hU hm (C := 0)
+    (D := Real.sqrt t * Fintype.card (Config N)) le_rfl (by positivity)
+  intro U
+  calc
+    _ ≤ Real.sqrt t * uAbs N U := (guerraUD_measurable_and_bound N s β U U h ht j).2 y
+    _ ≤ Real.sqrt t * (Fintype.card (Config N) * ‖U‖) :=
+      mul_le_mul_of_nonneg_left (uAbs_le_card_mul_norm N U) (Real.sqrt_nonneg _)
+    _ = _ := by ring
+
+theorem guerra_disorder_expectation_overlap {N : ℕ} (hN : 0 < N) (β h : ℝ)
+    (sk : SKDisorder (Ω := Ω) N β h) {k : ℕ} (s : RSBScheme k)
+    {t : ℝ} (ht : t ∈ Set.Ioo (0 : ℝ) 1) :
+    (∫ ω, guerraUD N s β (sk.U ω) (sk.U ω) h t (k + 2) 0 ∂ℙ) =
+      (t * (N * β ^ 2 / 2)) * (1 - ∫ ω,
+        guerraReplicaAccum N s β (sk.U ω) h t (fun _ σ τ => (overlap N σ τ) ^ 2) (k + 2) 0 ∂ℙ) := by
+  have hA := integrable_guerraReplicaAccum β h sk s ht (fun _ => abs_overlap_sq_le_one hN) (k + 2) 0
+  have hI : ∀ i : sk.hU.ι, Integrable (fun ω => (sk.hU.τ i : ℝ) *
+      guerraUUD N s β (sk.U ω) (sk.hU.w i) (sk.hU.w i) h t (k + 2) 0) ℙ := by
+    intro i
+    apply Integrable.const_mul
+    apply integrable_comp_of_affine_norm_bound sk.hU
+      ((measurable_guerraUUD_joint s β (sk.hU.w i) (sk.hU.w i) h t (k + 2)).comp
+        (f := fun U : EnergySpace N => (U, (0 : Fin N → ℝ))) (measurable_id.prodMk measurable_const))
+      (C := guerraUUBound N (sk.hU.w i) (sk.hU.w i) t (k + 2)) (D := 0)
+      (guerraUUBound_nonneg _ _ _ _ _) le_rfl
+    intro U
+    simpa only [Function.comp_apply, zero_mul, add_zero] using
+      abs_guerraUUD_le N s β U (sk.hU.w i) (sk.hU.w i) h ht (k + 2) 0
+  calc
+    _ = ∑ i : sk.hU.ι, (sk.hU.τ i : ℝ) *
+        ∫ ω, guerraUUD N s β (sk.U ω) (sk.hU.w i) (sk.hU.w i) h t (k + 2) 0 ∂ℙ :=
+      guerra_disorder_stein β h sk s ht (k + 2) 0
+    _ = ∫ ω, ∑ i : sk.hU.ι, (sk.hU.τ i : ℝ) *
+        guerraUUD N s β (sk.U ω) (sk.hU.w i) (sk.hU.w i) h t (k + 2) 0 ∂ℙ := by
+      rw [integral_finsetSum _ (fun i _ => hI i)]
+      simp only [integral_const_mul]
+    _ = ∫ ω, (t * (N * β ^ 2 / 2)) * (1 -
+        guerraReplicaAccum N s β (sk.U ω) h t (fun _ σ τ => (overlap N σ τ) ^ 2) (k + 2) 0) ∂ℙ := by
+      apply integral_congr_ae
+      filter_upwards with ω
+      simpa only [guerraMass_top, zero_mul, sub_zero] using
+        guerra_disorder_hessian_overlap hN β h sk s (sk.U ω) ht (k + 2) 0
+    _ = _ := by
+      rw [integral_const_mul, integral_sub (integrable_const 1) hA]
+      simp only [integral_const, probReal_univ, one_smul]
+
+theorem guerraD_top_expectation {N : ℕ} (hN : 0 < N) (β h : ℝ)
+    (sk : SKDisorder (Ω := Ω) N β h) {k : ℕ} (s : RSBScheme k)
+    {t : ℝ} (ht : t ∈ Set.Ioo (0 : ℝ) 1) :
+    (∫ ω, guerraD N s β (sk.U ω) h (k + 2) t 0 ∂ℙ) =
+      (N * β ^ 2 / 4) * (-1 -
+        (∫ ω, guerraReplicaAccum N s β (sk.U ω) h t (fun _ σ τ => (overlap N σ τ) ^ 2) (k + 2) 0 ∂ℙ) +
+        2 * ∫ ω, guerraReplicaAccum N s β (sk.U ω) h t
+          (fun l σ τ => s.q (k + 2 - l) * overlap N σ τ) (k + 2) 0 ∂ℙ) := by
+  have hU := integrable_guerraUD_radial β h sk s ht (k + 2) 0
+  have hQ := integrable_guerraReplicaAccum β h sk s ht (abs_q_mul_overlap_le_one hN s) (k + 2) 0
+  have h1Q : Integrable (fun ω => 1 - guerraReplicaAccum N s β (sk.U ω) h t
+      (fun l σ τ => s.q (k + 2 - l) * overlap N σ τ) (k + 2) 0) ℙ :=
+    (integrable_const 1).sub hQ
+  have hIQ : Integrable (fun ω => (N * β ^ 2 / 2) * (1 - guerraReplicaAccum N s β (sk.U ω) h t
+      (fun l σ τ => s.q (k + 2 - l) * overlap N σ τ) (k + 2) 0)) ℙ := h1Q.const_mul _
+  have he : ∀ ω, guerraD N s β (sk.U ω) h (k + 2) t 0 =
+      (1 / (2 * t)) * guerraUD N s β (sk.U ω) (sk.U ω) h t (k + 2) 0 -
+        (N * β ^ 2 / 2) * (1 - guerraReplicaAccum N s β (sk.U ω) h t
+          (fun l σ τ => s.q (k + 2 - l) * overlap N σ τ) (k + 2) 0) := by
+    intro ω
+    rw [guerraD_eq_radials_overlap hN s β h (sk.U ω) ht,
+      guerraYD_eq_sum N s β (sk.U ω) h ht]
+    simp only [Pi.zero_apply, zero_mul, Finset.sum_const_zero, mul_zero, sub_zero,
+      guerraFieldTerm, Nat.sub_self, s.q_zero, add_zero]
+  simp_rw [he]
+  rw [integral_sub (hU.const_mul _) hIQ,
+    integral_const_mul, integral_const_mul, integral_sub (integrable_const 1) hQ,
+    guerra_disorder_expectation_overlap hN β h sk s ht]
+  simp only [integral_const, probReal_univ, one_smul]
+  field_simp [ht.1.ne']
+  ring
+
+theorem guerraRemainder_eq_expansion {N : ℕ} (hN : 0 < N) (β h : ℝ)
+    (sk : SKDisorder (Ω := Ω) N β h) {k : ℕ} (s : RSBScheme k)
+    {t : ℝ} (ht : t ∈ Set.Ioo (0 : ℝ) 1) :
+    guerraRemainder N s β h sk.U t = (β ^ 2 / 4) *
+      ((∫ ω, guerraReplicaAccum N s β (sk.U ω) h t (fun _ σ τ => (overlap N σ τ) ^ 2) (k + 2) 0 ∂ℙ) -
+        2 * (∫ ω, guerraReplicaAccum N s β (sk.U ω) h t
+          (fun l σ τ => s.q (k + 2 - l) * overlap N σ τ) (k + 2) 0 ∂ℙ) +
+        ∑ l ∈ Finset.range (k + 2), (guerraMass s l - guerraMass s (l + 1)) * s.q (k + 2 - l) ^ 2) := by
+  have hR := integrable_guerraReplicaAccum β h sk s ht (fun _ => abs_overlap_sq_le_one hN) (k + 2) 0
+  have hQ := integrable_guerraReplicaAccum β h sk s ht (abs_q_mul_overlap_le_one hN s) (k + 2) 0
+  have hDiff : Integrable (fun ω =>
+      guerraReplicaAccum N s β (sk.U ω) h t (fun _ σ τ => (overlap N σ τ) ^ 2) (k + 2) 0 -
+        2 * guerraReplicaAccum N s β (sk.U ω) h t
+          (fun l σ τ => s.q (k + 2 - l) * overlap N σ τ) (k + 2) 0) ℙ := hR.sub (hQ.const_mul 2)
+  rw [guerraRemainder, if_pos ht]
+  simp_rw [guerraReplicaAccum_overlap_sq hN s β h _ ht]
+  rw [integral_add hDiff (integrable_const _),
+    integral_sub hR (hQ.const_mul 2), integral_const_mul]
+  simp only [integral_const, probReal_univ, one_smul]
+
 /-! ## 3. The two analytic cores of the paper -/
 
 /--
@@ -1975,11 +3230,10 @@ the SK model is `(β²/4) ∑_ℓ (m_ℓ - m_{ℓ-1}) μ_ℓ((R_{1,2} - q_ℓ)²
 and at most `β²` since `|R_{1,2} - q_ℓ| ≤ 2` and `∑_ℓ (m_ℓ - m_{ℓ-1}) = 1`.  No `c(N)`
 error term: the covariance kernel is exactly `(Nβ²/2) R²`.
 
-The parameter derivative, disorder IBP, and conditional field IBP at every level are
-proved above (`hasDerivAt_guerraPhi`, `guerra_disorder_stein`, `guerra_field_radial_step`).
-Remaining are the assembly of field corrections across levels, their combination with
-the disorder term, the two-replica overlap representation and algebra, and continuity
-at the interpolation endpoints.
+The proof combines closed-interval continuity, the assembled field identity
+`guerraD_eq_radials_overlap`, the disorder expectation `guerraD_top_expectation`, and
+completion of the square in `guerraRemainder_eq_expansion`. The explicit witness and
+its bounds are proved independently; no analytic-core placeholder is used here.
 -/
 theorem guerra_identity {N : ℕ} (hN : 0 < N) (β h : ℝ)
     (sk : SKDisorder (Ω := Ω) N β h) {k : ℕ} (s : RSBScheme k) :
@@ -1987,7 +3241,15 @@ theorem guerra_identity {N : ℕ} (hN : 0 < N) (β h : ℝ)
     ∃ Rem : ℝ → ℝ, (∀ t, 0 ≤ Rem t ∧ Rem t ≤ β ^ 2) ∧
       ∀ t ∈ Set.Ioo (0 : ℝ) 1,
         HasDerivAt (guerraPhi N s β h sk.U) (-(parisiCorrection s β) - Rem t) t := by
-  sorry
+  refine ⟨continuousOn_guerraPhi β h sk s, ?_⟩
+  refine ⟨guerraRemainder N s β h sk.U, guerraRemainder_nonneg_le hN s β h sk.U, ?_⟩
+  intro t ht
+  refine (hasDerivAt_guerraPhi β h sk s ht).congr_deriv ?_
+  rw [guerraD_top_expectation hN β h sk s ht, guerraRemainder_eq_expansion hN β h sk s ht,
+    parisiCorrection_eq_mass_q]
+  have hNR : (N : ℝ) ≠ 0 := by exact_mod_cast (Nat.ne_of_gt hN)
+  field_simp [hNR]
+  ring
 
 /--
 **Theorem 2.2.**  Given `t₀ < 1` there is `ε > 0`, depending only on `t₀`, `β`, `h`, such
