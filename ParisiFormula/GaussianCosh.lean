@@ -538,17 +538,19 @@ theorem hasDerivAt_integral_exp_mul {A A' : ℝ → ℝ} {m v : ℝ}
   set F : ℝ → ℝ → ℝ := fun t z => Real.exp (m * A (t + Real.sqrt v * z)) with hFdef
   set F' : ℝ → ℝ → ℝ := fun t z =>
     m * A' (t + Real.sqrt v * z) * Real.exp (m * A (t + Real.sqrt v * z)) with hF'def
-  have hFmeas : ∀ t : ℝ, Measurable (F t) := by
-    intro t
-    exact (Real.continuous_exp.measurable).comp
-      ((hmeas.comp (measurable_const_add t)).const_mul m)
-  have hF'meas : ∀ t : ℝ, Measurable (F' t) := by
-    intro t
-    have h1 : Measurable (fun z : ℝ => A' (t + Real.sqrt v * z)) :=
-      hmeas'.comp (measurable_const_add t)
-    exact ((h1.const_mul m).mul
-      ((Real.continuous_exp.measurable).comp
-        ((hmeas.comp (measurable_const_add t)).const_mul m)))
+  -- the shift `z ↦ t + √v z`; note this is *not* `measurable_const_add`, which would be
+  -- `fun x => t + x` without the scaling
+  have hshift_meas : ∀ t : ℝ, Measurable (fun z : ℝ => t + Real.sqrt v * z) :=
+    fun t => (measurable_id.const_mul (Real.sqrt v)).const_add t
+  have hAshift : ∀ t : ℝ, Measurable (fun z : ℝ => A (t + Real.sqrt v * z)) :=
+    fun t => hmeas.comp (hshift_meas t)
+  have hA'shift : ∀ t : ℝ, Measurable (fun z : ℝ => A' (t + Real.sqrt v * z)) :=
+    fun t => hmeas'.comp (hshift_meas t)
+  have hFmeas : ∀ t : ℝ, Measurable (F t) := fun t =>
+    (Real.continuous_exp.measurable).comp ((hAshift t).const_mul m)
+  have hF'meas : ∀ t : ℝ, Measurable (F' t) := fun t =>
+    ((hA'shift t).const_mul m).mul
+      ((Real.continuous_exp.measurable).comp ((hAshift t).const_mul m))
   -- the dominating function
   set bound : ℝ → ℝ := fun z => |m| * (Real.exp b * Real.exp (a * |z|)) with hbounddef
   have hbound_int : Integrable bound (gaussianReal 0 1) :=
@@ -569,8 +571,11 @@ theorem hasDerivAt_integral_exp_mul {A A' : ℝ → ℝ} {m v : ℝ}
     rw [habs, hbounddef]
     have h1 : |A' (t + Real.sqrt v * z)| ≤ 1 := hA'bd _
     have h2 : (0 : ℝ) ≤ |m| := abs_nonneg m
-    nlinarith [Real.exp_pos (m * A (t + Real.sqrt v * z)),
-      Real.exp_pos b, Real.exp_pos (a * |z|)]
+    have hep : (0 : ℝ) < Real.exp (m * A (t + Real.sqrt v * z)) := Real.exp_pos _
+    calc |m| * |A' (t + Real.sqrt v * z)| * Real.exp (m * A (t + Real.sqrt v * z))
+        ≤ |m| * 1 * Real.exp (m * A (t + Real.sqrt v * z)) := by nlinarith
+      _ = |m| * Real.exp (m * A (t + Real.sqrt v * z)) := by ring
+      _ ≤ |m| * (Real.exp b * Real.exp (a * |z|)) := mul_le_mul_of_nonneg_left hexp h2
   have hdiff : ∀ᵐ z ∂(gaussianReal 0 1), ∀ t ∈ Metric.ball x 1,
       HasDerivAt (fun t : ℝ => F t z) (F' t z) t := by
     refine Filter.Eventually.of_forall (fun z t _ => ?_)
@@ -581,7 +586,11 @@ theorem hasDerivAt_integral_exp_mul {A A' : ℝ → ℝ} {m v : ℝ}
       simpa using (hderiv (t + Real.sqrt v * z)).comp t hshift
     have hmul : HasDerivAt (fun s : ℝ => m * A (s + Real.sqrt v * z))
         (m * A' (t + Real.sqrt v * z)) t := hcomp.const_mul m
-    simpa [hFdef, hF'def, mul_comm, mul_assoc, mul_left_comm] using hmul.exp
+    have hres := hmul.exp
+    have heq : Real.exp (m * A (t + Real.sqrt v * z)) * (m * A' (t + Real.sqrt v * z))
+        = m * A' (t + Real.sqrt v * z) * Real.exp (m * A (t + Real.sqrt v * z)) := by ring
+    rw [heq] at hres
+    exact hres
   have hFint : Integrable (F x) (gaussianReal 0 1) :=
     integrable_exp_mul_of_hasLinearGrowth ⟨C, D, hC, hD, hb⟩ hmeas m x v
   have hmain := hasDerivAt_integral_of_dominated_loc_of_deriv_le
