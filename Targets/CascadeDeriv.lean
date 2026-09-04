@@ -431,5 +431,169 @@ theorem integral_abs_mul_tiltWeight_le (hL : 0 ≤ L)
 
 end Tilt
 
+
+/-! ## 5. One level preserves linear growth of the derivative
+
+The chain rule of §3 sends a level's derivative `A'` to the tilted average
+`x ↦ ∫ A'(x + √v z) W(z) dγ`.  For the induction over levels to run, that tilted average must
+again have linear growth in `x`.  It does, and the constant is explicit: since `W` is a
+probability density,
+
+  `|∫ A'(x + √v z) W| ≤ (C' + D'|x|) + D'√v · ∫|z| W`,
+
+and §4 bounds `∫|z| W` independently of `x`.  This is the last new ingredient; the remaining
+components of the induction (Lipschitzness, measurability, growth of the *function*) are
+already available from `Targets/Milestones.lean`.
+-/
+
+section TiltGrowth
+
+variable {m v L : ℝ} {A : ℝ → ℝ}
+
+theorem measurable_tiltWeight (hmeas : Measurable A) (x : ℝ) :
+    Measurable (fun z => tiltWeight m v A x z) := by
+  unfold tiltWeight
+  split
+  · exact measurable_const
+  · exact (Real.continuous_exp.measurable.comp
+      ((hmeas.comp ((measurable_id.const_mul (Real.sqrt v)).const_add x)).const_mul m)).div
+      measurable_const
+
+/-- Anything of linear growth is integrable against the tilted weight. -/
+theorem integrable_mul_tiltWeight_of_bound (hL : 0 ≤ L)
+    (hLip : ∀ y y', |A y - A y'| ≤ L * |y - y'|)
+    (hA : HasLinearGrowth A) (hmeas : Measurable A) (x : ℝ)
+    {f : ℝ → ℝ} (hfmeas : Measurable f) {a b : ℝ} (hb : 0 ≤ b)
+    (hf : ∀ z : ℝ, |f z| ≤ a + b * |z|) :
+    Integrable (fun z => f z * tiltWeight m v A x z) (gaussianReal 0 1) := by
+  classical
+  have ha : 0 ≤ a := by
+    have h0 := hf 0
+    rw [abs_zero, mul_zero, add_zero] at h0
+    exact le_trans (abs_nonneg _) h0
+  set c : ℝ := |m| * L * Real.sqrt v with hc
+  set K : ℝ := Real.exp (c * gAbsMoment) with hK
+  have hKpos : 0 < K := Real.exp_pos _
+  have hdom : Integrable
+      (fun z : ℝ => (a * K + (b * K) * |z|) * Real.exp (c * |z|)) (gaussianReal 0 1) :=
+    integrable_poly_mul_exp_abs _ _ _
+  refine Integrable.mono hdom
+    (hfmeas.mul (measurable_tiltWeight hmeas x)).aestronglyMeasurable ?_
+  filter_upwards with z
+  have hW := tiltWeight_le (m := m) (v := v) hL hLip hA hmeas x z
+  have hWnn : 0 ≤ tiltWeight m v A x z := tiltWeight_nonneg hA hmeas x z
+  have hane : 0 ≤ a + b * |z| := le_trans (abs_nonneg _) (hf z)
+  have hnn : (0 : ℝ) ≤ (a * K + (b * K) * |z|) * Real.exp (c * |z|) := by
+    have h1 : 0 ≤ a * K := mul_nonneg ha hKpos.le
+    have h2 : 0 ≤ (b * K) * |z| := mul_nonneg (mul_nonneg hb hKpos.le) (abs_nonneg z)
+    have h3 : 0 ≤ Real.exp (c * |z|) := (Real.exp_pos _).le
+    nlinarith
+  rw [Real.norm_eq_abs, Real.norm_eq_abs, abs_mul, abs_of_nonneg hnn]
+  calc |f z| * |tiltWeight m v A x z|
+      = |f z| * tiltWeight m v A x z := by rw [abs_of_nonneg hWnn]
+    _ ≤ (a + b * |z|) * (K * Real.exp (c * |z|)) := mul_le_mul (hf z) hW hWnn hane
+    _ = (a * K + (b * K) * |z|) * Real.exp (c * |z|) := by ring
+
+/-- The tilted weight is a probability density. -/
+theorem tiltWeight_integral_one (hA : HasLinearGrowth A) (hmeas : Measurable A) (x : ℝ) :
+    (∫ z, tiltWeight m v A x z ∂(gaussianReal 0 1)) = 1 := by
+  classical
+  by_cases hm : m = 0
+  · have hfun : (fun z : ℝ => tiltWeight m v A x z) = fun _ : ℝ => (1 : ℝ) := by
+      funext z; rw [tiltWeight, if_pos hm]
+    rw [hfun, integral_const, probReal_univ, one_smul]
+  · have hIpos : 0 < ∫ w, Real.exp (m * A (x + Real.sqrt v * w)) ∂(gaussianReal 0 1) :=
+      smoothing_integral_pos hA hmeas x
+    have hfun : (fun z : ℝ => tiltWeight m v A x z)
+        = fun z : ℝ => Real.exp (m * A (x + Real.sqrt v * z))
+            / (∫ w, Real.exp (m * A (x + Real.sqrt v * w)) ∂(gaussianReal 0 1)) := by
+      funext z; rw [tiltWeight, if_neg hm]
+    rw [hfun, integral_div, div_self hIpos.ne']
+
+/--
+**One level preserves linear growth of the derivative.**
+
+If `|g y| ≤ C' + D'|y|` then the tilted average `x ↦ ∫ g(x + √v z) W(z) dγ` again has linear
+growth, with an explicit constant that does not depend on `x`.
+-/
+theorem abs_integral_mul_tiltWeight_le (hL : 0 ≤ L)
+    (hLip : ∀ y y', |A y - A y'| ≤ L * |y - y'|)
+    (hA : HasLinearGrowth A) (hmeas : Measurable A)
+    {g : ℝ → ℝ} (hgmeas : Measurable g) {C' D' : ℝ} (hD' : 0 ≤ D')
+    (hg : ∀ y, |g y| ≤ C' + D' * |y|) (x : ℝ) :
+    |∫ z, g (x + Real.sqrt v * z) * tiltWeight m v A x z ∂(gaussianReal 0 1)|
+      ≤ (C' + D' * |x|)
+        + (D' * Real.sqrt v)
+          * (Real.exp ((|m| * L * Real.sqrt v) * gAbsMoment)
+              * gAbsExpMoment (|m| * L * Real.sqrt v)) := by
+  classical
+  have hDv : 0 ≤ D' * Real.sqrt v := mul_nonneg hD' (Real.sqrt_nonneg v)
+  have hC' : 0 ≤ C' := by
+    have h0 := hg 0
+    rw [abs_zero, mul_zero, add_zero] at h0
+    exact le_trans (abs_nonneg _) h0
+  have hshift : ∀ z : ℝ, |g (x + Real.sqrt v * z)|
+      ≤ (C' + D' * |x|) + (D' * Real.sqrt v) * |z| := by
+    intro z
+    refine (hg _).trans ?_
+    have h : |x + Real.sqrt v * z| ≤ |x| + Real.sqrt v * |z| := by
+      refine (abs_add_le _ _).trans ?_
+      rw [abs_mul, abs_of_nonneg (Real.sqrt_nonneg v)]
+    nlinarith [abs_nonneg z, Real.sqrt_nonneg v]
+  have hbnn : ∀ z : ℝ, 0 ≤ (C' + D' * |x|) + (D' * Real.sqrt v) * |z| := by
+    intro z
+    have h1 : 0 ≤ D' * |x| := mul_nonneg hD' (abs_nonneg x)
+    have h2 : 0 ≤ (D' * Real.sqrt v) * |z| := mul_nonneg hDv (abs_nonneg z)
+    linarith
+  have hWnn : ∀ z, 0 ≤ tiltWeight m v A x z := fun z => tiltWeight_nonneg hA hmeas x z
+  have hgW : Integrable
+      (fun z => g (x + Real.sqrt v * z) * tiltWeight m v A x z) (gaussianReal 0 1) :=
+    integrable_mul_tiltWeight_of_bound hL hLip hA hmeas x
+      (hgmeas.comp ((measurable_id.const_mul (Real.sqrt v)).const_add x)) hDv hshift
+  have hbW : Integrable
+      (fun z => ((C' + D' * |x|) + (D' * Real.sqrt v) * |z|) * tiltWeight m v A x z)
+      (gaussianReal 0 1) :=
+    integrable_mul_tiltWeight_of_bound hL hLip hA hmeas x
+      (measurable_const.add (measurable_id.abs.const_mul _)) hDv
+      (fun z => le_of_eq (abs_of_nonneg (hbnn z)))
+  have hzW : Integrable
+      (fun z => |z| * tiltWeight m v A x z) (gaussianReal 0 1) :=
+    integrable_mul_tiltWeight_of_bound (m := m) (v := v) hL hLip hA hmeas x measurable_id.abs
+      (a := 0) (b := 1) zero_le_one
+      (fun z => by rw [abs_abs]; linarith [abs_nonneg z])
+  have hWint : Integrable (fun z => tiltWeight m v A x z) (gaussianReal 0 1) := by
+    have h := integrable_mul_tiltWeight_of_bound (m := m) (v := v) hL hLip hA hmeas x
+      (measurable_const : Measurable (fun _ : ℝ => (1 : ℝ)))
+      (a := 1) (b := 0) (le_refl (0 : ℝ))
+      (fun z => by rw [abs_one]; linarith [abs_nonneg z])
+    simpa using h
+  calc |∫ z, g (x + Real.sqrt v * z) * tiltWeight m v A x z ∂(gaussianReal 0 1)|
+      ≤ ∫ z, |g (x + Real.sqrt v * z) * tiltWeight m v A x z| ∂(gaussianReal 0 1) :=
+        abs_integral_le_integral_abs
+    _ ≤ ∫ z, ((C' + D' * |x|) + (D' * Real.sqrt v) * |z|) * tiltWeight m v A x z
+          ∂(gaussianReal 0 1) := by
+        refine integral_mono hgW.abs hbW (fun z => ?_)
+        rw [abs_mul, abs_of_nonneg (hWnn z)]
+        exact mul_le_mul_of_nonneg_right (hshift z) (hWnn z)
+    _ = (C' + D' * |x|) * (∫ z, tiltWeight m v A x z ∂(gaussianReal 0 1))
+          + (D' * Real.sqrt v) * ∫ z, |z| * tiltWeight m v A x z ∂(gaussianReal 0 1) := by
+        rw [show (fun z : ℝ =>
+              ((C' + D' * |x|) + (D' * Real.sqrt v) * |z|) * tiltWeight m v A x z)
+            = fun z : ℝ => (C' + D' * |x|) * tiltWeight m v A x z
+              + (D' * Real.sqrt v) * (|z| * tiltWeight m v A x z) from
+          funext (fun z => by ring)]
+        rw [integral_add (hWint.const_mul _) (hzW.const_mul _),
+          integral_const_mul, integral_const_mul]
+    _ ≤ (C' + D' * |x|)
+          + (D' * Real.sqrt v)
+            * (Real.exp ((|m| * L * Real.sqrt v) * gAbsMoment)
+                * gAbsExpMoment (|m| * L * Real.sqrt v)) := by
+        rw [tiltWeight_integral_one hA hmeas, mul_one]
+        have hmom := integral_abs_mul_tiltWeight_le (m := m) (v := v) hL hLip hA hmeas x
+        have := mul_le_mul_of_nonneg_left hmom hDv
+        linarith
+
+end TiltGrowth
+
 end Targets
 end SpinGlass
