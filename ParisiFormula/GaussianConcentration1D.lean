@@ -4,7 +4,8 @@
 New work for the ParisiFormula project (not vendored).
 
 RSAT proves the Herbst sub-Gaussian bound for Lipschitz functions of a Gaussian vector,
-`SpinGlass.product_standardGaussian_mgf_le`, but states it on
+`SYK.product_standardGaussian_mgf_le` (note: RSAT's concentration file is in the `SYK`
+namespace, not `SpinGlass`), but states it on
 
   `standardGaussianMeasureOnEuclidean ι = (Measure.pi fun _ : ι => gaussianReal 0 1).map (WithLp.toLp 2)`.
 
@@ -27,6 +28,9 @@ import ParisiFormula.GaussianCosh
 import Lemmas.SpinGlass.gaussian_concentration
 
 open MeasureTheory ProbabilityTheory Real
+
+-- RSAT's concentration results live in the `SYK` namespace, not `SpinGlass`.
+open SYK
 
 open scoped BigOperators NNReal
 
