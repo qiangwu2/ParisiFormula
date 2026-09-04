@@ -9,7 +9,8 @@ Target 4 is `Tendsto (fun N => s_N) atTop (𝓝 (parisiValue β h))`, which foll
 * **limsup ≤** — Target 3' , itself immediate from Target 3 (Guerra's RSB bound) via
   `parisiValue_le`; and
 * **liminf ≥** — Talagrand's coupled-replica lower bound (Milestone 4), whose induction on
-  the number of RSB levels needs **Target 2b** (regularity of `𝒫_k` in the parameters).
+  the number of RSB levels needs **Target 2b-i** (continuity of `𝒫_k` in the parameters for
+  fixed `k`, hence existence of a minimiser — Talagrand's (2.17)).
 
 So the critical path is: **3 → 3'** and **2b → 4**, with `parisiValue` well-definedness
 (done: `bddBelow_parisiSet`) underneath both.
@@ -131,7 +132,11 @@ right statements: `parisiFunctional` typechecked both before and after an off-by
       `integrable_exp_mul_of_hasLinearGrowth`, and the Fubini step needs product-measure
       integrability, which follows from `exp (a|p₁ + p₂|) ≤ exp(a|p₁|) exp(a|p₂|)` and
       `integrable_exp_abs_mul_stdGaussian` on each factor.  (M)
-- [ ] **2b** Lipschitz continuity in `(m, q)`. (L) — **statement corrected, still unproved.**
+- [ ] **2b** Regularity in `(m, q)`. (L) — **split into 2b-i / 2b-ii; see the correction
+      from Talagrand's text below.  2b-i (continuity + compactness ⇒ minimiser) is what the
+      Annals proof actually consumes; 2b-ii (uniform Lipschitz) is Guerra's route and is off
+      the critical path.**  The `m = 0` boundary, previously the blocker, is now proved
+      (`Targets.parisiStep_zero_sandwich`).
       It previously read `∀ k, ∃ C, ∀ s s'`, allowing the constant to depend on `k`, which
       cannot control `parisiValue = inf_k inf_{(m,q)} 𝒫_k`: nothing survives the infimum over
       all `k` unless `C` is uniform in `k`.  `∃ C` is now hoisted outside `∀ k`.  Under the
@@ -169,25 +174,97 @@ right statements: `parisiFunctional` typechecked both before and after an off-by
       `abs_integral_shift_sub_le_second : |∫ A (x + √w z) dγ - A x| ≤ w` — order `w`, not
       `√w`.  The **`q`-perturbation half of 2b is therefore unblocked.**
 
-### Open obstruction: the `m`-perturbation
+### The `m`-perturbation: boundary case settled (2026-09-04)
 
-The `q` half is settled but the `m` half is not, and the difficulty is *not* just volume of
-work.  Writing `ψ(m) = T_{m,v} A (x) = (1/m) log 𝔼[e^{mY}]` with `Y = A(x + √v Z)`,
+Writing `ψ(m) = T_{m,v} A (x) = (1/m) log 𝔼[e^{mY}]` with `Y = A(x + √v Z)`:
 
   `dψ/dm = (⟨Y⟩_m - ψ(m)) / m`,   hence   `|dψ/dm| ≤ ½ · sup_{u ∈ [0,m]} Var_u(Y)`,
 
-where `⟨·⟩_u`, `Var_u` are taken in the tilted measure `∝ e^{uY} dγ`.  So a Lipschitz bound
-in `m` needs the **tilted variance bounded uniformly for `u ∈ [0,1]`**.
+`⟨·⟩_u`, `Var_u` in the tilted measure `∝ e^{uY} dγ`.  The tilted-variance route was tried
+and **abandoned**: our invariant gives `A'' ≥ 0`, so the tilted log-density
+`u A(x + √v z) - z²/2` is concave only while `uv < 1`; Brascamp–Lieb then gives
+`Var_u ≤ v/(1 - uv)`, degenerating as `uv → 1`.  Since `v = β²(q_{p+1} - q_p)` can be as
+large as `β²`, that silently imposes `β² < 1` — unacceptable, 2b must hold for all `β`.
 
-* At `u = 0` the Gaussian Poincaré inequality gives `Var ≤ v · sup|A'|² ≤ v`.
-* For `u > 0` the tilted log-density is `u A(x + √v z) - z²/2 + const`.  Our own invariant
-  gives `A'' ≥ 0`, i.e. `A` is **convex**, so this is concave only while
-  `u v · sup A'' < 1`, i.e. `u v < 1`.  Brascamp–Lieb then yields `Var_u ≤ v/(1 - uv)`,
-  which **degenerates as `uv → 1`**.
-* Since `v = β²(q_{p+1} - q_p)` can be as large as `β²`, this route silently imposes
-  `β² < 1`.  That is not acceptable: Target 2b must hold for all `β`.
+**Settled instead by a two-sided sandwich at the `m = 0` boundary**, which is where the
+difficulty actually sits (`parisiStep` *branches* at `m = 0`, and Talagrand's (1.6) allows
+`m_0 = 0`).  For `A` 1-Lipschitz of linear growth, `0 < m`, `0 ≤ v`:
 
-So the naive route fails at large `β`.  **But it should not be taken at all** — see below.
+  `parisiStep 0 v A x ≤ parisiStep m v A x ≤ parisiStep 0 v A x + m·v/2`
+
+— `Targets.parisiStep_zero_sandwich`, from two Tier-2 lemmas in
+`ParisiFormula/GaussianConcentration1D.lean`:
+
+```
+integral_le_inv_mul_log_integral_exp   𝔼[f] ≤ (1/m) log 𝔼[exp(m f)]          (Jensen)
+inv_mul_log_integral_exp_le            (1/m) log 𝔼[exp(m f)] ≤ 𝔼[f] + m L²/2  (Herbst)
+```
+
+Both are **uniform in `x`** (the constant is the Lipschitz constant `L = √v`, never
+`sup |A|`, which is infinite for `log cosh`) and **linear in `m`**, so they survive
+summation over the `k+2` levels with a constant independent of `k`.  This is exactly why the
+sub-Gaussian form of Herbst is needed: the naive `𝔼[exp(a|Z|)] ≤ 2 exp(a²/2)` contributes
+`(log 2)/m`, which blows up as `m → 0`.
+
+**What remains for a full Lipschitz-in-`m`.**  The sandwich is anchored at `0`, and that is
+genuinely all it gives: the same computation for general `0 ≤ m' ≤ m` yields
+`0 ≤ ψ(m) - ψ(m') ≤ m·v/2` (via `ψ` nondecreasing), a bound in `m`, *not* in `|m - m'|`.
+Chord-slope algebra confirms this is not an artefact — writing `g(m) = log 𝔼[e^{mY}]`,
+
+  `ψ(m) - ψ(m') = ((m - m')/m)·(h - ψ(m'))`,  `h` the chord slope of `g` on `[m', m]`,
+
+and `h - ψ(m')` is *not* bounded uniformly as `m' → m` by the sandwich alone.
+
+A genuine Lipschitz bound therefore needs `ψ'`, but — and this is the useful new
+observation — it needs only **convexity of `g` plus the sandwich**, no Brascamp–Lieb and no
+constraint on `β`:
+
+* `g` is convex (Hölder) with `g(0) = 0`, so `⟨Y⟩_m = g'(m) ≥ (g(m) - g(0))/m = ψ(m)`;
+* `g'(m) ≤ (g(2m) - g(m))/m ≤ (2m·𝔼Y + 2m²σ² - m·𝔼Y)/m = 𝔼Y + 2mσ²`, using
+  `g(m) ≥ m𝔼Y` (Jensen) and `g(2m) ≤ 2m𝔼Y + 2m²σ²` (Herbst);
+* hence `0 ≤ ⟨Y⟩_m - ψ(m) ≤ 2mσ²`, i.e. **`0 ≤ ψ'(m) ≤ 2σ² = 2v`**, uniformly in `x`.
+
+So `|ψ(m) - ψ(m')| ≤ 2v·|m - m'|`, for all `β`.  The remaining Lean work is to differentiate
+`m ↦ (1/m) log ∫ exp(m·A(x + √v z)) dγ` under the integral (the parametric-integral
+machinery for the *`x`*-derivative is already built in `GaussianCosh.lean` §§10–13 and
+transfers) and assemble the three bullets.  **(M, no longer blocked.)**
+
+### A correction to this target, from Talagrand's text (read 2026-09-04)
+
+The Annals paper was read directly.  Talagrand **does not prove, and does not use, a global
+Lipschitz estimate in `(m, q)`.**  Explicitly, after (1.13):
+
+> "Guerra proves that this definition can be extended by a continuity argument to any
+> probability measure µ on [0,1] … *We do not adopt this point of view since an essential
+> ingredient of our approach is that we need only consider discrete objects rather than
+> continuous ones.*"
+
+What his proof actually needs from the parameter dependence is:
+
+1. **(2.17) — existence of a minimiser**, by *compactness*: "The existence of `m` and `q`
+   satisfying (2.17) is obvious by a compactness argument. It is to permit this compactness
+   argument that equality is allowed in (1.6) and (1.7)."  This needs **continuity of
+   `𝒫_k` in `(m,q)` on the compact admissible set for fixed `k`** — not a modulus, and not
+   uniformity in `k`.
+2. **Partial derivatives at the minimiser** (§5, Lemma 5.8 and Prop. 5.5): the proof of
+   Theorem 2.2 extracts information from the vanishing/sign of `∂/∂λ` and `∂/∂m` of the
+   right-hand side of (5.20) *at* the minimising `(m, q)`.
+
+Consequently `parisiFunctional_lipschitz` as stated is **Guerra's route, not Talagrand's**,
+and the ROADMAP's claim that "2b is load-bearing for the induction on RSB levels" was wrong:
+the induction consumes (2.17), i.e. minimiser existence.
+
+**Restatement of Milestone 2b to match the source:**
+
+* **2b-i (what Talagrand needs).**  For fixed `k`, `(m,q) ↦ 𝒫_k(m,q)` is continuous on the
+  compact set of admissible schemes, hence attains its minimum.  Continuity at `m_p = 0` is
+  supplied by `parisiStep_zero_sandwich`; continuity elsewhere is dominated convergence.
+  This is the version that should be proved, and it is the one on the critical path to
+  Target 4.
+* **2b-ii (Guerra's extension, optional).**  The uniform-in-`k` Lipschitz bound currently
+  stated as `parisiFunctional_lipschitz`.  Needed only to extend `𝒫` from discrete schemes
+  to general probability measures `µ` on `[0,1]` — which Talagrand explicitly avoids.  Keep
+  it stated, but **off the critical path**.
 
 ### RSAT already has the right architecture (found 2026-09-04)
 
