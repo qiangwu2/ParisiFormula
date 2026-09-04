@@ -603,6 +603,66 @@ noncomputable def parisiF {k : ℕ} (s : RSBScheme k) (β : ℝ) : ℕ → (ℝ 
       parisiStep (s.m (k + 1 - j)) (β ^ 2 * (s.q (k + 2 - j) - s.q (k + 1 - j)))
         (parisiF s β j)
 
+/--
+**Every level of the Parisi recursion is measurable, of linear growth, and 1-Lipschitz.**
+
+These are exactly the three side conditions that `parisiStep_dist_le`,
+`hasLinearGrowth_parisiStep`, `parisiStep_lipschitz` and `abs_parisiStep_sub_self_le` all
+require of the function being smoothed, so proving them once by simultaneous induction
+discharges them at every level of `parisiF` — which is what Target 2b needs in order to sum
+the per-level perturbation estimates over `p = 0, …, k+1`.
+
+The three properties have to be carried *together*: the Lipschitz step needs measurability
+and linear growth as hypotheses, and measurability at the next level is obtained *from* the
+Lipschitz bound (Lipschitz ⟹ continuous ⟹ measurable), so neither can be proved on its own.
+
+Base case: `log cosh` is measurable, satisfies `|log cosh y| ≤ |y|`, and is 1-Lipschitz.
+Note the Lipschitz constant is `1` at every level — the smoothing step never increases it.
+-/
+theorem parisiF_props {k : ℕ} (s : RSBScheme k) (β : ℝ) : ∀ j : ℕ,
+    Measurable (parisiF s β j)
+      ∧ HasLinearGrowth (parisiF s β j)
+      ∧ ∀ x x' : ℝ, |parisiF s β j x - parisiF s β j x'| ≤ |x - x'| := by
+  intro j
+  induction j with
+  | zero =>
+      refine ⟨?_, hasLinearGrowth_log_cosh, fun x x' => log_cosh_dist_le x x'⟩
+      exact (Real.continuous_cosh.log (fun y => ne_of_gt (Real.cosh_pos y))).measurable
+  | succ j ih =>
+      obtain ⟨hmeas, hgrow, hlip⟩ := ih
+      have hlip' : ∀ y y' : ℝ,
+          |parisiF s β j y - parisiF s β j y'| ≤ 1 * |y - y'| := by
+        intro y y'
+        simpa using hlip y y'
+      have hstep : ∀ x x' : ℝ,
+          |parisiF s β (j + 1) x - parisiF s β (j + 1) x'| ≤ |x - x'| := by
+        intro x x'
+        have h := parisiStep_lipschitz (m := s.m (k + 1 - j))
+          (v := β ^ 2 * (s.q (k + 2 - j) - s.q (k + 1 - j))) (L := 1)
+          hlip' hgrow hmeas x x'
+        simpa using h
+      have hgrow' : HasLinearGrowth (parisiF s β (j + 1)) :=
+        hasLinearGrowth_parisiStep hgrow hmeas _ _
+      have hmeas' : Measurable (parisiF s β (j + 1)) := by
+        have hL : LipschitzWith 1 (parisiF s β (j + 1)) := by
+          refine LipschitzWith.of_dist_le_mul (fun a b => ?_)
+          rw [Real.dist_eq, Real.dist_eq]
+          simpa using hstep a b
+        exact hL.continuous.measurable
+      exact ⟨hmeas', hgrow', hstep⟩
+
+/-- Every level of the Parisi recursion is measurable. -/
+theorem parisiF_measurable {k : ℕ} (s : RSBScheme k) (β : ℝ) (j : ℕ) :
+    Measurable (parisiF s β j) := (parisiF_props s β j).1
+
+/-- Every level of the Parisi recursion has linear growth. -/
+theorem parisiF_hasLinearGrowth {k : ℕ} (s : RSBScheme k) (β : ℝ) (j : ℕ) :
+    HasLinearGrowth (parisiF s β j) := (parisiF_props s β j).2.1
+
+/-- Every level of the Parisi recursion is 1-Lipschitz. -/
+theorem parisiF_lipschitz {k : ℕ} (s : RSBScheme k) (β : ℝ) (j : ℕ) (x x' : ℝ) :
+    |parisiF s β j x - parisiF s β j x'| ≤ |x - x'| := (parisiF_props s β j).2.2 x x'
+
 /-- The `k`-step Parisi functional for the SK model with external field `h`:
 
   `𝒫_k(m,q) = log 2 + F_0(h) - (β²/4) ∑_{p=1}^{k+1} m_p (q_{p+1}² - q_p²)`.
