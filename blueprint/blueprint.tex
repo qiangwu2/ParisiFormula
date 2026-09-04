@@ -420,9 +420,48 @@ $\varphi_N(1)\ge\varphi_N(t_0)-L(1-t_0)$, hence the lower bound as $t_0\uparrow1
 Combine this with the proved upper bound.
 \end{proof}
 
+\begin{lemma}[Talagrand Lemma 2.7: unrestricted coupled cascade]\label{lem:coupled-cascade}
+\lean{SpinGlass.Targets.coupledPhi\_eq\_two\_guerraPhi}\leanok
+\lean{SpinGlass.Targets.coupledObservable\_eq\_replicaMeasure}\leanok
+Use independent increments at inner levels and shared increments at outer levels,
+halving the mass at each shared level. For the unrestricted two-replica cascade,
+\[
+\frac1N\mathbb E J_1=2\varphi_N(t),\qquad
+\mathbb E\bigl(V_1\cdots V_k\langle f\rangle\bigr)=\mu_r(f).
+\]
+The pressure identity is checked for $0\le t\le1$; the observable identity is
+checked for $0<t<1$ in iterated conditional-expectation form.
+Here the displayed indices follow the paper, whose $k$ is the local $k+1$.
+\end{lemma}
+
+\begin{proof}[Formalised proof]
+The joint partition sum factors. Integration against the product Gaussian measure preserves
+$J_\ell=F_\ell^1+F_\ell^2$ at independent levels; on the shared diagonal,
+$T_{m/2}(2F)=2T_m(F)$. The corresponding normalized densities are
+$V_\ell=W_\ell^1W_\ell^2$ at independent levels and $V_\ell=W_\ell$ at shared levels.
+Iterating these identities proves the assertions. Zero masses are included;
+finite sums are exchanged with integrals only after proving integrability.
+\end{proof}
+
+\begin{lemma}[Replica decomposition of the existing remainder]
+\lean{SpinGlass.Targets.guerraReplicaExpectation\_eq\_sum\_measures}\leanok
+\lean{SpinGlass.Targets.guerraOverlapTail\_le\_of\_replicaMeasure}\leanok
+Use local reversed-depth indexing. Write $a_d$ for the remaining mass at depth $d$
+and $\mu^{(d)}$ for the normalized replica expectation at that depth. Then
+\[
+\texttt{guerraReplicaExpectation}(K)
+ =\sum_{d=0}^{k+1}(a_d-a_{d+1})\,\mu^{(d)}(K_d).
+\]
+The weights are nonnegative and sum to one; the depth-zero weight vanishes.
+Thus a bound by $\delta$ on each genuine per-level overlap tail implies
+$T_N(t,a)\le\delta$, the precise input to Lemma~\ref{lem:concentration-convergence}.
+This connection is proved in \texttt{Targets/ReplicaMeasure.lean}; the per-level
+concentration bounds themselves remain open.
+\end{lemma}
+
 The remaining work follows Proposition~2.3 and the coupled-replica concentration
-argument in \S3--\S5 of \cite{Tal06}: construct the coupled cascade and prove
-Lemma~2.7, Proposition~2.5, and the a priori bound of Theorem~2.4. The reduction
+argument in \S3--\S5 of \cite{Tal06}: define the overlap-constrained pressure and
+prove Lemma~2.6, Proposition~2.5, and the a priori bound of Theorem~2.4. The reduction
 for coincident scheme levels in (2.19) also remains to be formalised before
 the concentration hypothesis is available for every admissible scheme.
 The active RSAT dependency includes

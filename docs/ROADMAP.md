@@ -23,6 +23,11 @@ The convergence deduction within Theorem 2.2 is now proved in
 overlap-concentration estimate. The next missing input is that concentration estimate,
 not the differential-inequality argument. The unconditional Theorem 2.2 remains open.
 
+The unrestricted coupled cascade and both identities in Lemma 2.7 are now proved in
+`Targets/CoupledCascade.lean`. `Targets/ReplicaMeasure.lean` identifies the individual
+replica probabilities with the components of the existing remainder. The next work is
+the overlap-constrained pressure, Lemma 2.6 / Proposition 2.5, and Theorem 2.4; see Step 14.
+
 **Milestone 1 (Targets 1b, 1c) is *not* on this critical path.**  Target 4 is strictly
 stronger than 1c — convergence to `parisiValue` subsumes existence of a limit — and deriving
 4 from 3' plus the lower bound never invokes 1c.  Milestone 1 is the classical
@@ -546,19 +551,51 @@ guards in `Targets/GuerraAudit.lean` certify that their proofs use only the stan
 axioms, not the existing Theorem 2.2 placeholder. No new placeholder was introduced;
 `talagrand_theorem_2_2` itself remains unchanged.
 
+**Step 14 (2026-09-04): Lemma 2.7 and the individual replica probabilities.**
+
+`Targets/CoupledCascade.lean` implements the **unrestricted** coupled cascade:
+
+* Independent levels integrate against the product of the two Gaussian field measures.
+  Shared levels use the same increment and half the single-replica mass.
+* The base is the actual two-replica partition sum; its factorisation is proved.
+  The two-field factorisation is preserved through the independent levels, and the
+  diagonal identity is preserved through the shared levels, including zero masses.
+* `coupledPhi_eq_two_guerraPhi` proves (2.38), including `t = 0, 1`.
+* The independent tilted density factors as `W¹ W²`; the shared diagonal density
+  equals `W`, not `W²`. Finite sums are interchanged with integrals using proved
+  integrability, and the independent replica probabilities factor at every depth.
+* `coupledObservable_eq_replicaMeasure` proves (2.39) in iterated conditional-expectation
+  form for `0 < t < 1`, for every finite observable and admissible split. The recursion
+  integrates the normalized densities; it does not postulate a replica measure identity.
+
+`Targets/ReplicaMeasure.lean` supplies the connection to Step 13:
+
+* `guerraReplicaMeasure` is nonnegative on nonnegative observables, has total mass one,
+  and preserves bounds. Measurability and integrability in the disorder are checked.
+* `guerraReplicaExpectation_eq_sum_measures` expresses the actual mass-weighted
+  expectation as the sum of the individual replica expectations with weights
+  `guerraMass d - guerraMass (d+1)`. Those weights sum to one.
+* `guerraOverlapTail_le_of_replicaMeasure` turns per-level tail bounds into the exact
+  mass-weighted concentration input already consumed by Step 13. Depth zero has zero
+  weight; no spurious concentration assumption is imposed on that extra index.
+
+These results have no new placeholders or axioms and are covered by `GuerraAudit`.
+**They do not prove Proposition 2.3 or remove the Theorem 2.2 placeholder.** In particular,
+handling zero masses in Lemma 2.7 does not establish the strict-scheme reduction needed
+by the remaining estimates.
+
 **Remaining work, following the Annals argument:**
 
-1. Construct the coupled finite-level cascade of (2.23)–(2.28), and identify its
-   unconstrained pressure and tilted replica averages as in Lemma 2.7.
-2. Prove the constrained free-energy gap-to-probability estimate (Lemma 2.6 and
+1. Define the overlap-constrained partition sum and pressure in (2.27)–(2.28).
+   Prove the constrained free-energy gap-to-probability estimate (Lemma 2.6 and
    Proposition 2.5), including Gaussian concentration under the cascade weights.
-3. Prove the a priori two-replica bound of Theorem 2.4 using §3–§5 and the scheme's
+2. Prove the a priori two-replica bound of Theorem 2.4 using §3–§5 and the scheme's
    optimality. The imported RS-level `twoReplica_GT_bound` is not this general result.
-4. Combine those bounds to obtain Proposition 2.3 and its mass-weighted form used
-   above. Handle coincident masses/overlap levels via the reduction in (2.19), or
+3. Combine those bounds to obtain Proposition 2.3; Step 14 now supplies its conversion
+   to the mass-weighted form. Handle coincident masses/overlap levels via (2.19), or
    prove the needed bound directly without strictness. This reduction is not yet
    formalised merely because the convergence lemma accepts degenerate schemes.
-5. Supply the concentration hypothesis and replace the original Theorem 2.2
+4. Supply the concentration hypothesis and replace the original Theorem 2.2
    placeholder; then audit `parisi_formula` itself.
 
 
@@ -579,7 +616,8 @@ statement asks for convergence `φ_N(t) → ψ(t)` on `0 ≤ t ≤ t₀ < 1` for
 are sufficiently close to `parisiValue` and minimize at their own fixed level.
 The deduction from this theorem and Theorem 2.1 to `parisi_formula` is already written.
 The deduction from a mass-weighted Proposition 2.3 hypothesis to Theorem 2.2 is now
-also proved separately, as detailed in Step 13 above.
+also proved separately, as detailed in Step 13 above. Lemma 2.7 and the individual-to-
+mass-weighted replica conversion are proved in Step 14.
 
 Supporting results available through the **active RSAT dependency** include:
 

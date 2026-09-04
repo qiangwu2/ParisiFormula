@@ -23,6 +23,14 @@ endpoint-safe differential inequality, and final quantifier assembly are checked
 placeholders. The concentration hypothesis itself is **not yet proved**; the original
 Theorem 2.2 placeholder has not been removed or relocated.
 
+[`Targets/CoupledCascade.lean`](Targets/CoupledCascade.lean) now proves both identities
+in **Lemma 2.7** for the unrestricted coupled cascade: its pressure is `2φ(t)` and its
+iterated tilted expectations are the individual replica probabilities `μ_r`.
+[`Targets/ReplicaMeasure.lean`](Targets/ReplicaMeasure.lean) connects those probabilities
+to the existing mass-weighted remainder and proves that per-level tail bounds imply the
+concentration input above. The constrained-pressure and concentration estimates
+(Lemma 2.6, Proposition 2.5, and Theorem 2.4) still remain to be proved.
+
 ## Project milestones
 
 1. **Existence of the thermodynamic limit** (Guerra–Toninelli superadditivity + Fekete).
@@ -73,7 +81,7 @@ lake build ParisiFormula Targets  # both local libraries, including the axiom gu
 bash scripts/check.sh            # both builds plus source-placeholder checks/report
 ```
 
-For the completed Theorem 2.1, upper bounds, and conditional convergence dependency audit:
+For the completed Theorem 2.1, upper bounds, Lemma 2.7, and convergence dependency audit:
 
 ```bash
 lake build Targets.GuerraAudit
@@ -83,9 +91,9 @@ lake build Targets.GuerraAudit
 do not mean a failed build, but a successful build alone does not certify the full Parisi
 formula. `GuerraAudit` checks that Theorem 2.1 and both upper bounds depend only on
 `propext`, `Classical.choice`, and `Quot.sound`—not `sorryAx` or extra axioms. It also
-checks the conditional convergence lemmas; this does not certify their concentration
-hypothesis. CI requires
-both local libraries to build; it does not ignore target or audit failures.
+checks Lemma 2.7, the replica-measure decomposition, and the conditional convergence
+lemmas; this does not certify their concentration hypothesis. CI requires both local
+libraries to build; it does not ignore target or audit failures.
 
 Open the folder in VS Code and click into any `.lean` file: the Lean extension shows the
 proof state live in the side panel ("Lean Infoview").
@@ -131,7 +139,9 @@ ParisiFormula/
 │   ├── CascadeContinuityPi.lean      parameter continuity through smoothing
 │   ├── Talagrand.lean                Theorem 2.1 proved; Theorem 2.2 open; final deduction
 │   ├── TalagrandConvergence.lean     overlap concentration implies Theorem 2.2 (conditional)
-│   └── GuerraAudit.lean              axiom guards for upper bounds and conditional convergence
+│   ├── CoupledCascade.lean          unrestricted coupled cascade; both Lemma 2.7 identities
+│   ├── ReplicaMeasure.lean          individual replica probabilities and remainder decomposition
+│   └── GuerraAudit.lean              axiom guards for completed critical-path results
 ├── .lake/packages/              generated dependency checkout; not tracked
 │   ├── mathlib/                      Mathlib v4.32.1
 │   └── QuantitativeStrictAT/         active RSAT source for Lemmas.* imports
