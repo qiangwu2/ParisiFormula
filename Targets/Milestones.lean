@@ -1,6 +1,7 @@
 import ParisiFormula.GuerraToninelli
 import ParisiFormula.AnnealedBound
 import ParisiFormula.GaussianCosh
+import ParisiFormula.ParisiOperator
 import Mathlib.Probability.Distributions.Gaussian.Real
 
 /-!
@@ -143,6 +144,27 @@ noncomputable def parisiStep (m v : ℝ) (A : ℝ → ℝ) (x : ℝ) : ℝ :=
     ∫ z, A (x + Real.sqrt v * z) ∂(gaussianReal 0 1)
   else
     (1 / m) * Real.log (∫ z, Real.exp (m * A (x + Real.sqrt v * z)) ∂(gaussianReal 0 1))
+
+/--
+**Reconciliation of `parisiStep` with the ported operator `Parisi.T`** (roadmap Phase 2).
+
+For `m ≠ 0` the two agree, via the Gaussian rescaling
+`integral_comp_sqrt_mul_gaussianReal`.
+
+They do **not** agree at `m = 0`, and this matters.  `Parisi.T` has no `m = 0` branch, so
+`Parisi.T 0 v A x = (1/0) * log (…) = 0`, whereas `parisiStep 0 v A x` is the `m → 0` limit
+`∫ A (x + √v z) dγ`.  So `parisiStep` must **not** be redefined as `Parisi.T`: the `m = 0`
+branch is precisely the outermost step `F₀ = T_{0, β²q₁} F₁` of the Parisi recursion, and
+collapsing it to `0` would break `parisiFunctional` (and with it Target 2a, which is proved
+below and does use that branch).
+-/
+theorem parisiStep_eq_T {m : ℝ} (hm : m ≠ 0) (v : ℝ≥0) {A : ℝ → ℝ} (hA : Measurable A)
+    (x : ℝ) :
+    parisiStep m (v : ℝ) A x = Parisi.T m v A x := by
+  have hf : Measurable (fun y : ℝ => Real.exp (m * A y)) :=
+    Real.continuous_exp.measurable.comp (hA.const_mul m)
+  rw [parisiStep, if_neg hm, Parisi.T,
+      integral_comp_sqrt_mul_gaussianReal v hf x]
 
 /-- Backward Parisi recursion for the SK model (`ξ(x) = x²/2`, so `ξ'(x) = x`).
 

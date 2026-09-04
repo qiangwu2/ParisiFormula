@@ -50,7 +50,14 @@ right statements: `parisiFunctional` typechecked both before and after an off-by
       `import Mathlib.MeasureTheory.Integral.Prod` (`Integral.Bochner.Basic` does not pull
       in `integral_prod`).  `Measure.conv`, the `∗` notation and
       `gaussianReal_conv_gaussianReal` all survive unchanged.
-- [ ] Reconcile `Targets.parisiStep` with `Parisi.T` (probably: define `parisiStep` via `T`). (S)
+- [x] Reconcile `Targets.parisiStep` with `Parisi.T`.  **Done**, as
+      `Targets.parisiStep_eq_T`, via `integral_comp_sqrt_mul_gaussianReal` in
+      `ParisiFormula/GaussianCosh.lean`.
+      **The parenthetical suggestion here was wrong**: `parisiStep` must *not* be defined via
+      `T`.  `Parisi.T` has no `m = 0` branch, so `T 0 v A x = (1/0) * log (…) = 0`, whereas
+      `parisiStep 0 v A x = ∫ A (x + √v z) dγ` is the `m → 0` limit.  The `m = 0` branch is
+      the outermost step `F₀ = T_{0, β²q₁} F₁` of the recursion, so collapsing it to `0`
+      would break `parisiFunctional` and Target 2a.  The two agree exactly when `m ≠ 0`.
 - [x] **2a** `parisiFunctional_rsScheme` — sanity check of normalisations. **Done.**
       The definitions are correct as written: the `parisiF` off-by-one fixed in `fa63079`
       is right, and the statement holds for *all* real `β` (no `0 < β` needed), because

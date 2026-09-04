@@ -157,4 +157,34 @@ theorem integral_reflect_stdGaussian {f : ℝ → ℝ} (hf : Continuous f) (a b 
           congr 1
           ring
 
+/-! ## 5. Gaussian rescaling -/
+
+/--
+**Rescaling a standard Gaussian**: `∫ f (x + √v z) dγ_{0,1}(z) = ∫ f (x + w) dγ_{0,v}(w)`.
+
+This is the identity that reconciles `Targets.parisiStep` (which smooths against the
+*standard* Gaussian after scaling the variable by `√v`) with `SpinGlass.Parisi.T` (which
+smooths against `γ_{0,v}` directly).
+-/
+theorem integral_comp_sqrt_mul_gaussianReal (v : ℝ≥0) {f : ℝ → ℝ} (hf : Measurable f)
+    (x : ℝ) :
+    (∫ z, f (x + Real.sqrt (v : ℝ) * z) ∂(gaussianReal 0 1))
+      = ∫ w, f (x + w) ∂(gaussianReal 0 v) := by
+  have hmap : (gaussianReal (0 : ℝ) 1).map (fun z : ℝ => Real.sqrt (v : ℝ) * z)
+      = gaussianReal 0 v := by
+    have h := gaussianReal_map_const_mul (μ := (0 : ℝ)) (v := (1 : ℝ≥0))
+      (Real.sqrt (v : ℝ))
+    rw [h]
+    have hzero : Real.sqrt (v : ℝ) * (0 : ℝ) = 0 := by ring
+    have hvar : (⟨Real.sqrt (v : ℝ) ^ 2, sq_nonneg _⟩ : ℝ≥0) * 1 = v := by
+      refine NNReal.eq ?_
+      simp [Real.sq_sqrt v.coe_nonneg]
+    rw [hzero, hvar]
+  have hcomp : Measurable (fun w : ℝ => f (x + w)) := hf.comp (measurable_const_add x)
+  have h := integral_map (μ := gaussianReal (0 : ℝ) 1)
+    (φ := fun z : ℝ => Real.sqrt (v : ℝ) * z) (by fun_prop)
+    (f := fun w : ℝ => f (x + w)) hcomp.aestronglyMeasurable
+  rw [hmap] at h
+  exact h.symm
+
 end SpinGlass
