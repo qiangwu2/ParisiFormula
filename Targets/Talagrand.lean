@@ -472,6 +472,221 @@ theorem abs_guerraBaseDeriv_le (n : ℕ) (U : EnergySpace n) (h t : ℝ) (y : Fi
           ← Finset.sum_div, uAbs]
         ring
 
+/-! ## 2d. Talagrand's (3.2): the derivative through the cascade
+
+`∂_t F_{ℓ,t} = 𝔼_ℓ W_ℓ ∂_t F_{ℓ+1,t}`, iterated: the derivative of the cascade at level `j` is
+the nested tilted average `guerraD j` of the base derivative.  The induction carries, on a
+neighbourhood `talNbhd t₀` of the differentiation point, measurability in the cascade
+field, `ℓ¹` growth and `ℓ¹`-Lipschitzness of the level, and `ℓ¹` growth of its derivative —
+exactly the hypotheses of `hasDerivAt_parisiStepPi_param`.
+-/
+
+/-- Joint measurability of the shift `(x, z) ↦ x + √v z`. -/
+theorem measurable_shift_prod (n : ℕ) (v : ℝ) :
+    Measurable (fun p : (Fin n → ℝ) × (Fin n → ℝ) => fun i => p.1 i + Real.sqrt v * p.2 i) :=
+  measurable_pi_lambda _ fun i =>
+    ((measurable_pi_apply i).comp measurable_fst).add
+      (measurable_const.mul ((measurable_pi_apply i).comp measurable_snd))
+
+/-- `x ↦ parisiStepPi n m v A x` is measurable. -/
+theorem measurable_parisiStepPi {n : ℕ} {A : (Fin n → ℝ) → ℝ} (hA : Measurable A) (m v : ℝ) :
+    Measurable (fun x => parisiStepPi n m v A x) := by
+  classical
+  have hj : Measurable (fun p : (Fin n → ℝ) × (Fin n → ℝ) =>
+      A (fun i => p.1 i + Real.sqrt v * p.2 i)) := hA.comp (measurable_shift_prod n v)
+  have hint0 : Measurable (fun x : Fin n → ℝ =>
+      ∫ z, A (fun i => x i + Real.sqrt v * z i) ∂(piGauss n)) :=
+    (hj.stronglyMeasurable.integral_prod_right').measurable
+  have hint1 : Measurable (fun x : Fin n → ℝ =>
+      ∫ z, Real.exp (m * A (fun i => x i + Real.sqrt v * z i)) ∂(piGauss n)) :=
+    ((Real.measurable_exp.comp (hj.const_mul m)).stronglyMeasurable.integral_prod_right').measurable
+  by_cases hm : m = 0
+  · simp only [parisiStepPi, if_pos hm]; exact hint0
+  · simp only [parisiStepPi, if_neg hm]
+    exact (Real.measurable_log.comp hint1).const_mul _
+
+/-- The tilted average `x ↦ ∫ g(x + √v z) W(z)` is measurable. -/
+theorem measurable_tiltAvg {n : ℕ} {A g : (Fin n → ℝ) → ℝ} (hA : Measurable A) (hg : Measurable g)
+    (m v : ℝ) :
+    Measurable (fun x => ∫ z, g (fun i => x i + Real.sqrt v * z i)
+      * tiltWeightPi n m v A x z ∂(piGauss n)) := by
+  classical
+  have hjg : Measurable (fun p : (Fin n → ℝ) × (Fin n → ℝ) =>
+      g (fun i => p.1 i + Real.sqrt v * p.2 i)) := hg.comp (measurable_shift_prod n v)
+  have hjA : Measurable (fun p : (Fin n → ℝ) × (Fin n → ℝ) =>
+      A (fun i => p.1 i + Real.sqrt v * p.2 i)) := hA.comp (measurable_shift_prod n v)
+  have hI : Measurable (fun x : Fin n → ℝ =>
+      ∫ w, Real.exp (m * A (fun i => x i + Real.sqrt v * w i)) ∂(piGauss n)) :=
+    ((Real.measurable_exp.comp (hjA.const_mul m)).stronglyMeasurable.integral_prod_right').measurable
+  by_cases hm : m = 0
+  · have hfun : (fun x => ∫ z, g (fun i => x i + Real.sqrt v * z i)
+          * tiltWeightPi n m v A x z ∂(piGauss n))
+        = fun x => ∫ z, g (fun i => x i + Real.sqrt v * z i) ∂(piGauss n) := by
+      funext x
+      refine integral_congr_ae (Filter.Eventually.of_forall fun z => ?_)
+      show g (fun i => x i + Real.sqrt v * z i) * tiltWeightPi n m v A x z
+          = g (fun i => x i + Real.sqrt v * z i)
+      rw [tiltWeightPi, if_pos hm, mul_one]
+    rw [hfun]
+    exact (hjg.stronglyMeasurable.integral_prod_right').measurable
+  · have hfun : (fun x => ∫ z, g (fun i => x i + Real.sqrt v * z i)
+          * tiltWeightPi n m v A x z ∂(piGauss n))
+        = fun x => ∫ z, (g (fun i => x i + Real.sqrt v * z i)
+            * Real.exp (m * A (fun i => x i + Real.sqrt v * z i)))
+            / (∫ w, Real.exp (m * A (fun i => x i + Real.sqrt v * w i)) ∂(piGauss n))
+            ∂(piGauss n) := by
+      funext x
+      refine integral_congr_ae (Filter.Eventually.of_forall fun z => ?_)
+      show g (fun i => x i + Real.sqrt v * z i) * tiltWeightPi n m v A x z
+          = (g (fun i => x i + Real.sqrt v * z i)
+              * Real.exp (m * A (fun i => x i + Real.sqrt v * z i)))
+            / (∫ w, Real.exp (m * A (fun i => x i + Real.sqrt v * w i)) ∂(piGauss n))
+      rw [tiltWeightPi, if_neg hm, mul_div_assoc]
+    rw [hfun]
+    have hjoint : Measurable (fun p : (Fin n → ℝ) × (Fin n → ℝ) =>
+        (g (fun i => p.1 i + Real.sqrt v * p.2 i)
+          * Real.exp (m * A (fun i => p.1 i + Real.sqrt v * p.2 i)))
+          / (∫ w, Real.exp (m * A (fun i => p.1 i + Real.sqrt v * w i)) ∂(piGauss n))) :=
+      (hjg.mul (Real.measurable_exp.comp (hjA.const_mul m))).div (hI.comp measurable_fst)
+    exact (hjoint.stronglyMeasurable.integral_prod_right').measurable
+
+/-- The neighbourhood of `t₀ ∈ (0,1)` on which the induction runs. -/
+def talNbhd (t₀ : ℝ) : Set ℝ := Set.Ioo (t₀ / 2) ((1 + t₀) / 2)
+
+theorem talNbhd_mem_nhds {t₀ t : ℝ} (ht₀ : t₀ ∈ Set.Ioo (0 : ℝ) 1) (ht : t ∈ talNbhd t₀) :
+    talNbhd t₀ ∈ 𝓝 t :=
+  isOpen_Ioo.mem_nhds ht
+
+theorem self_mem_talNbhd {t₀ : ℝ} (ht₀ : t₀ ∈ Set.Ioo (0 : ℝ) 1) : t₀ ∈ talNbhd t₀ :=
+  ⟨by linarith [ht₀.1], by linarith [ht₀.2]⟩
+
+theorem talNbhd_subset_Ioo {t₀ : ℝ} (ht₀ : t₀ ∈ Set.Ioo (0 : ℝ) 1) :
+    talNbhd t₀ ⊆ Set.Ioo (0 : ℝ) 1 := fun t ht =>
+  ⟨by linarith [ht.1, ht₀.1], by linarith [ht.2, ht₀.2]⟩
+
+/-- Talagrand's `∂_t F_{ℓ,t}`, defined top-down from the base derivative by tilted
+averaging at each level — the right-hand side of (3.2) written level by level. -/
+noncomputable def guerraD {k : ℕ} (n : ℕ) (s : RSBScheme k) (β : ℝ) (U : EnergySpace n) (h : ℝ) :
+    ℕ → ℝ → (Fin n → ℝ) → ℝ
+  | 0 => fun t => guerraBaseDeriv n U h t
+  | j + 1 => fun t x => ∫ z,
+      guerraD n s β U h j t
+          (fun i => x i + Real.sqrt (1 * (β ^ 2 * (s.q (k + 2 - j) - s.q (k + 1 - j)))) * z i)
+        * tiltWeightPi n (s.m (k + 1 - j)) (1 * (β ^ 2 * (s.q (k + 2 - j) - s.q (k + 1 - j))))
+            (cascadeT n s β 1 (guerraBase n U h t) j) x z ∂(piGauss n)
+
+/-- The level variance is non-negative. -/
+theorem levelVar_nonneg {k : ℕ} (s : RSBScheme k) (β : ℝ) (j : ℕ) :
+    0 ≤ 1 * (β ^ 2 * (s.q (k + 2 - j) - s.q (k + 1 - j))) := by
+  rw [one_mul]
+  refine mul_nonneg (sq_nonneg β) ?_
+  rcases le_or_gt j (k + 1) with hj | hj
+  · have hidx : k + 2 - j = (k + 1 - j) + 1 := by omega
+    rw [hidx]
+    linarith [s.q_mono (k + 1 - j) (by omega)]
+  · have h1 : k + 2 - j = 0 := by omega
+    have h2 : k + 1 - j = 0 := by omega
+    rw [h1, h2]; simp
+
+/--
+**Talagrand's (3.2), level by level.**  On `talNbhd t₀`, level `j` of the cascade is
+measurable, of `ℓ¹` growth, `ℓ¹`-Lipschitz, differentiable in `t` with derivative
+`guerraD j`, and `guerraD j` is measurable and of `ℓ¹` growth — all with constants uniform
+on the neighbourhood.
+-/
+theorem guerra_cascade_hasDerivAt {k : ℕ} (n : ℕ) (s : RSBScheme k) (β : ℝ)
+    (U : EnergySpace n) (h : ℝ) {t₀ : ℝ} (ht₀ : t₀ ∈ Set.Ioo (0 : ℝ) 1) (j : ℕ) :
+    (∀ t ∈ talNbhd t₀, Measurable (cascadeT n s β 1 (guerraBase n U h t) j)) ∧
+    (∀ t ∈ talNbhd t₀, Measurable (guerraD n s β U h j t)) ∧
+    (∃ C D : ℝ, 0 ≤ D ∧ ∀ t ∈ talNbhd t₀, ∀ y,
+        |cascadeT n s β 1 (guerraBase n U h t) j y| ≤ C + D * l1 y) ∧
+    (∃ L : ℝ, 0 ≤ L ∧ ∀ t ∈ talNbhd t₀, ∀ y y',
+        |cascadeT n s β 1 (guerraBase n U h t) j y - cascadeT n s β 1 (guerraBase n U h t) j y'|
+          ≤ L * l1 (y - y')) ∧
+    (∃ C' D' : ℝ, 0 ≤ D' ∧ ∀ t ∈ talNbhd t₀, ∀ y, |guerraD n s β U h j t y| ≤ C' + D' * l1 y) ∧
+    (∀ t ∈ talNbhd t₀, ∀ x, HasDerivAt (fun t => cascadeT n s β 1 (guerraBase n U h t) j x)
+        (guerraD n s β U h j t x) t) := by
+  classical
+  have hsub := talNbhd_subset_Ioo ht₀
+  induction j with
+  | zero =>
+      have ht₀2 : 0 < t₀ / 2 := by linarith [ht₀.1]
+      have h1t₀2 : 0 < (1 - t₀) / 2 := by linarith [ht₀.2]
+      refine ⟨fun t _ => measurable_guerraBase n U h t, fun t _ => measurable_guerraBaseDeriv n U h t,
+        ⟨Real.log (Fintype.card (Config n)) + uAbs n U + Fintype.card (Config n) * (n * |h|),
+          Fintype.card (Config n), by positivity, fun t ht y => ?_⟩,
+        ⟨1, zero_le_one, fun t ht y y' => ?_⟩,
+        ⟨uAbs n U / (2 * Real.sqrt (t₀ / 2)),
+          Fintype.card (Config n) / (2 * Real.sqrt ((1 - t₀) / 2)), by positivity,
+          fun t ht y => ?_⟩,
+        fun t ht x => ?_⟩
+      · exact abs_guerraBase_le n U h (hsub ht).1.le (hsub ht).2.le y
+      · exact guerraBase_lipschitz n U h (hsub ht).1.le (hsub ht).2.le y y'
+      · -- the derivative bound, with `1/(2√t)` monotone on the neighbourhood
+        have hb := abs_guerraBaseDeriv_le n U h t y
+        have hs1 : 2 * Real.sqrt (t₀ / 2) ≤ 2 * Real.sqrt t :=
+          mul_le_mul_of_nonneg_left (Real.sqrt_le_sqrt ht.1.le) (by norm_num)
+        have hs2 : 2 * Real.sqrt ((1 - t₀) / 2) ≤ 2 * Real.sqrt (1 - t) :=
+          mul_le_mul_of_nonneg_left (Real.sqrt_le_sqrt (by linarith [ht.2])) (by norm_num)
+        have hp1 : 0 < 2 * Real.sqrt (t₀ / 2) := by positivity
+        have hp2 : 0 < 2 * Real.sqrt ((1 - t₀) / 2) := by positivity
+        have hA : uAbs n U / (2 * Real.sqrt t) ≤ uAbs n U / (2 * Real.sqrt (t₀ / 2)) :=
+          div_le_div_of_nonneg_left (uAbs_nonneg n U) hp1 hs1
+        have hB : (Fintype.card (Config n) : ℝ) / (2 * Real.sqrt (1 - t))
+            ≤ Fintype.card (Config n) / (2 * Real.sqrt ((1 - t₀) / 2)) :=
+          div_le_div_of_nonneg_left (by positivity) hp2 hs2
+        have hB' := mul_le_mul_of_nonneg_right hB (l1_nonneg y)
+        show |guerraBaseDeriv n U h t y| ≤ _
+        linarith
+      · exact hasDerivAt_guerraBase n U h x (hsub ht)
+  | succ j ih =>
+      obtain ⟨hFm, hDm, ⟨C, D, hD, hF⟩, ⟨L, hL, hLip⟩, ⟨C', D', hD', hD'b⟩, hderiv⟩ := ih
+      set m : ℝ := s.m (k + 1 - j) with hm_def
+      set v : ℝ := 1 * (β ^ 2 * (s.q (k + 2 - j) - s.q (k + 1 - j))) with hv_def
+      have hm : 0 ≤ m := s.m_nonneg (by omega)
+      have hv : 0 ≤ v := levelVar_nonneg s β j
+      -- level `j+1` is one `N`-site step applied to level `j`
+      have hstep : ∀ t, cascadeT n s β 1 (guerraBase n U h t) (j + 1)
+          = fun x => parisiStepPi n m v (cascadeT n s β 1 (guerraBase n U h t) j) x := by
+        intro t; rfl
+      have hDstep : ∀ t, guerraD n s β U h (j + 1) t
+          = fun x => ∫ z, guerraD n s β U h j t (fun i => x i + Real.sqrt v * z i)
+              * tiltWeightPi n m v (cascadeT n s β 1 (guerraBase n U h t) j) x z ∂(piGauss n) := by
+        intro t; rfl
+      refine ⟨fun t ht => ?_, fun t ht => ?_,
+        ⟨C + stepK n m v D, D, hD, fun t ht y => ?_⟩,
+        ⟨L, hL, fun t ht y y' => ?_⟩,
+        ⟨C' + (D' * Real.sqrt v)
+            * (Real.exp ((|m| * L * Real.sqrt v) * l1Moment n)
+                * ∫ z, l1 z * Real.exp ((|m| * L * Real.sqrt v) * l1 z) ∂(piGauss n)),
+          D', hD', fun t ht y => ?_⟩,
+        fun t ht x => ?_⟩
+      · rw [hstep]; exact measurable_parisiStepPi (hFm t ht) m v
+      · rw [hDstep]; exact measurable_tiltAvg (hFm t ht) (hDm t ht) m v
+      · rw [hstep]
+        exact parisiStepPi_abs_le hm hv hD (hF t ht) (hFm t ht) y
+      · rw [hstep]
+        exact parisiStepPi_lipschitz hD hL (hF t ht) (hFm t ht) (hLip t ht) y y'
+      · rw [hDstep]
+        have := abs_integral_mul_tiltWeightPi_le (m := m) (v := v) hL hD (hLip t ht) (hF t ht)
+          (hFm t ht) (hDm t ht) hD' (hD'b t ht) y
+        linarith
+      · have hN := talNbhd_mem_nhds ht₀ ht
+        show HasDerivAt (fun t => parisiStepPi n m v (cascadeT n s β 1 (guerraBase n U h t) j) x)
+          (∫ z, guerraD n s β U h j t (fun i => x i + Real.sqrt v * z i)
+            * tiltWeightPi n m v (cascadeT n s β 1 (guerraBase n U h t) j) x z ∂(piGauss n)) t
+        exact hasDerivAt_parisiStepPi_param (A := fun t => cascadeT n s β 1 (guerraBase n U h t) j)
+          (A' := fun t => guerraD n s β U h j t) (m := m) (v := v)
+          (C := C) (D := D) (C' := C') (D' := D') x hN hD hD'
+          (fun u hu y => hderiv u hu y) hFm hDm hF hD'b
+
+/-- **(3.2) at the top of the cascade**: `d/dt F_{1,t}(0) = guerraD (k+2) t 0`. -/
+theorem hasDerivAt_cascade_top {k : ℕ} (n : ℕ) (s : RSBScheme k) (β : ℝ) (U : EnergySpace n)
+    (h : ℝ) {t : ℝ} (ht : t ∈ Set.Ioo (0 : ℝ) 1) :
+    HasDerivAt (fun t => cascadeT n s β 1 (guerraBase n U h t) (k + 2) 0)
+      (guerraD n s β U h (k + 2) t 0) t :=
+  (guerra_cascade_hasDerivAt n s β U h ht (k + 2)).2.2.2.2.2 t (self_mem_talNbhd ht) 0
+
 /-! ## 3. The two analytic cores of the paper -/
 
 /--

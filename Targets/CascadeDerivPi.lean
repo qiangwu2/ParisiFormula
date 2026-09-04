@@ -693,10 +693,16 @@ end TiltPi
 
 /-! ## 6. `ℓ¹` growth of an `N`-site level, for `0 ≤ m` -/
 
-/-- A level of the cascade keeps `ℓ¹` growth, with a new constant independent of `x`. -/
+/-- The constant by which one level of the cascade enlarges the `ℓ¹` growth bound.  Depends
+only on `m`, `v`, `D` (and `n`); for `m = 0` the first term vanishes since `1/0 = 0`. -/
+noncomputable def stepK (n : ℕ) (m v D : ℝ) : ℝ :=
+  (1 / m) * Real.log (∫ z, Real.exp (m * (D * Real.sqrt v) * l1 z) ∂(piGauss n))
+    + (D * Real.sqrt v) * l1Moment n
+
+/-- A level of the cascade keeps `ℓ¹` growth, with the explicit new constant `stepK`. -/
 theorem parisiStepPi_abs_le {m v C D : ℝ} {A : (Fin n → ℝ) → ℝ} (hm : 0 ≤ m) (hv : 0 ≤ v)
     (hD : 0 ≤ D) (hA : ∀ y, |A y| ≤ C + D * l1 y) (hmeas : Measurable A) :
-    ∃ K : ℝ, 0 ≤ K ∧ ∀ x, |parisiStepPi n m v A x| ≤ (C + K) + D * l1 x := by
+    ∀ x, |parisiStepPi n m v A x| ≤ (C + stepK n m v D) + D * l1 x := by
   classical
   have hC : 0 ≤ C := by
     have h0 := hA 0
@@ -718,7 +724,10 @@ theorem parisiStepPi_abs_le {m v C D : ℝ} {A : (Fin n → ℝ) → ℝ} (hm : 
           rw [integral_add (integrable_const _) (integrable_l1.const_mul _), integral_const,
             probReal_univ, one_smul, integral_const_mul, l1Moment]
   by_cases hm0 : m = 0
-  · refine ⟨(D * Real.sqrt v) * l1Moment n, by positivity, fun x => ?_⟩
+  · intro x
+    have hK : stepK n m v D = (D * Real.sqrt v) * l1Moment n := by
+      rw [stepK, hm0, div_zero, zero_mul, zero_add]
+    rw [hK]
     simp only [parisiStepPi, if_pos hm0]
     have := hmean x
     linarith
@@ -738,8 +747,10 @@ theorem parisiStepPi_abs_le {m v C D : ℝ} {A : (Fin n → ℝ) → ℝ} (hm : 
     have hK1 : 0 ≤ (1 / m) * Real.log J := mul_nonneg (by positivity) hlogJ
     have hK2 : 0 ≤ (D * Real.sqrt v) * l1Moment n :=
       mul_nonneg (mul_nonneg hD (Real.sqrt_nonneg v)) hM
-    refine ⟨(1 / m) * Real.log J + (D * Real.sqrt v) * l1Moment n, add_nonneg hK1 hK2,
-      fun x => ?_⟩
+    intro x
+    have hK : stepK n m v D = (1 / m) * Real.log J + (D * Real.sqrt v) * l1Moment n := by
+      rw [stepK, hJ]
+    rw [hK]
     simp only [parisiStepPi, if_neg hm0]
     have hint := integrable_exp_shift_pi (m := m) (v := v) hD hA hmeas x
     have hIpos := integral_exp_shift_pi_pos (m := m) (v := v) hD hA hmeas x
