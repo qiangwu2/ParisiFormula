@@ -335,4 +335,56 @@ theorem log_cosh_dist_le (a b : ℝ) :
   rw [abs_sub_comm] at h
   linarith
 
+/-! ## 8. Shifting a Lipschitz function by a Gaussian
+
+The remaining quantitative input for Target 2b is a bound on `|T_{m,w} A - A|` for small
+variance `w`, which via the semigroup law `Parisi.T_add` controls a change of the scheme
+parameter `q_p`.
+
+This section proves the `m = 0` case, which is also the *mean* term of the general case:
+writing `g z = A (x + √w z) - A x`, the general bound is `|𝔼 g| + |m| L² w / 2`, with the
+second term coming from the Herbst bound of §`GaussianConcentration1D` and the first from
+the estimate here.
+-/
+
+/--
+**Shifting a Lipschitz function by a centred Gaussian moves its mean by at most
+`L √w 𝔼|Z|`.**
+
+This is exactly the `m = 0` branch of `parisiStep`, and simultaneously the mean term of the
+`m ≠ 0` branch.
+-/
+theorem abs_integral_shift_sub_le {A : ℝ → ℝ} {L : ℝ} (hL : 0 ≤ L)
+    (hLip : ∀ y y', |A y - A y'| ≤ L * |y - y'|)
+    (hA : HasLinearGrowth A) (hmeas : Measurable A) (x w : ℝ) :
+    |(∫ z, A (x + Real.sqrt w * z) ∂(gaussianReal 0 1)) - A x|
+      ≤ L * Real.sqrt w * ∫ z, |z| ∂(gaussianReal 0 1) := by
+  classical
+  have hint : Integrable (fun z : ℝ => A (x + Real.sqrt w * z)) (gaussianReal 0 1) :=
+    integrable_of_hasLinearGrowth hA hmeas x w
+  have hdom : Integrable
+      (fun z : ℝ => L * Real.sqrt w * |z|) (gaussianReal 0 1) :=
+    (integrable_id_stdGaussian.abs).const_mul _
+  have hpt : ∀ z : ℝ, |A (x + Real.sqrt w * z) - A x| ≤ L * Real.sqrt w * |z| := by
+    intro z
+    have h := hLip (x + Real.sqrt w * z) x
+    have hrw : |x + Real.sqrt w * z - x| = Real.sqrt w * |z| := by
+      rw [show x + Real.sqrt w * z - x = Real.sqrt w * z by ring, abs_mul,
+        abs_of_nonneg (Real.sqrt_nonneg w)]
+    rw [hrw] at h
+    calc |A (x + Real.sqrt w * z) - A x| ≤ L * (Real.sqrt w * |z|) := h
+      _ = L * Real.sqrt w * |z| := by ring
+  calc |(∫ z, A (x + Real.sqrt w * z) ∂(gaussianReal 0 1)) - A x|
+      = |∫ z, (A (x + Real.sqrt w * z) - A x) ∂(gaussianReal 0 1)| := by
+        rw [integral_sub hint (integrable_const _)]
+        simp [probReal_univ]
+    _ ≤ ∫ z, |A (x + Real.sqrt w * z) - A x| ∂(gaussianReal 0 1) := by
+        simpa [Real.norm_eq_abs] using
+          norm_integral_le_integral_norm (μ := (gaussianReal 0 1))
+            (f := fun z => A (x + Real.sqrt w * z) - A x)
+    _ ≤ ∫ z, L * Real.sqrt w * |z| ∂(gaussianReal 0 1) :=
+        integral_mono (hint.sub (integrable_const _)).abs hdom hpt
+    _ = L * Real.sqrt w * ∫ z, |z| ∂(gaussianReal 0 1) := integral_const_mul _ _
+
+
 end SpinGlass
