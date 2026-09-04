@@ -46,9 +46,15 @@ right statements: `parisiFunctional` typechecked both before and after an off-by
 
 - [ ] Port `port/ParisiOperator.lean` (operator `T_{m,v}`, semigroup law) to Lean 4.32. (S–M)
 - [ ] Reconcile `Targets.parisiStep` with `Parisi.T` (probably: define `parisiStep` via `T`). (S)
-- [ ] **2a** `parisiFunctional_rsScheme` — sanity check of normalisations. Do this early;
-      if it fails, the *definitions* are wrong. (M)
+- [x] **2a** `parisiFunctional_rsScheme` — sanity check of normalisations. **Done.**
+      The definitions are correct as written: the `parisiF` off-by-one fixed in `fa63079`
+      is right, and the statement holds for *all* real `β` (no `0 < β` needed), because
+      `√(β² q) = |β| √q` agrees with `β √q` under the symmetric Gaussian
+      (`integral_reflect_stdGaussian`).  Supporting lemmas are in
+      `ParisiFormula/GaussianCosh.lean`.
 - [ ] Moderate-growth / integrability lemmas for `parisiF` at every level. (M)
+      Partially available for the `log cosh` layer: `integrable_log_cosh_stdGaussian`
+      in `ParisiFormula/GaussianCosh.lean`, via `0 ≤ log cosh y ≤ |y|`.
 - [ ] **2b** Lipschitz continuity in `(m, q)`. (L)
 
 ## Phase 3 — Milestone 3: Guerra's RSB bound  (L–XL)
