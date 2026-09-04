@@ -50,6 +50,55 @@ theorem ae_eq_zero_of_map_eq_dirac {X : Ω → ℝ} (hX : Measurable X)
   rw [h, hlaw, Measure.dirac_apply' _ (measurableSet_singleton (0 : ℝ)).compl]
   simp
 
+omit [CompleteSpace H] in
+/-- A measurable function of a finite-dimensional Gaussian vector is integrable when it has
+affine growth in the norm. -/
+theorem integrable_comp_of_affine_norm_bound {g : Ω → H} (hg : IsGaussianHilbert g)
+    {Φ : H → ℝ} (hΦm : Measurable Φ) {C D : ℝ} (hC : 0 ≤ C) (hD : 0 ≤ D)
+    (hΦ : ∀ z : H, |Φ z| ≤ C + D * ‖z‖) :
+    Integrable (fun ω => Φ (g ω)) (ℙ : Measure Ω) := by
+  have hdom : Integrable (fun ω => C + D * ‖g ω‖) (ℙ : Measure Ω) :=
+    (integrable_const (c := C)).add ((integrable_norm_of_gaussian hg).const_mul D)
+  refine hdom.mono' (hΦm.comp hg.repr_measurable).aestronglyMeasurable ?_
+  filter_upwards with ω
+  have hdom_nonneg : 0 ≤ C + D * ‖g ω‖ :=
+    add_nonneg hC (mul_nonneg hD (norm_nonneg _))
+  simpa only [Real.norm_eq_abs, abs_of_nonneg hdom_nonneg] using hΦ (g ω)
+
+omit [CompleteSpace H] in
+/-- Under the same affine-growth assumption, multiplying by any Gaussian coordinate still
+gives an integrable random variable. -/
+theorem integrable_coord_mul_comp_of_affine_norm_bound {g : Ω → H}
+    (hg : IsGaussianHilbert g) (i : hg.ι) {Φ : H → ℝ} (hΦm : Measurable Φ)
+    {C D : ℝ} (hC : 0 ≤ C) (hD : 0 ≤ D)
+    (hΦ : ∀ z : H, |Φ z| ≤ C + D * ‖z‖) :
+    Integrable (fun ω => hg.c i ω * Φ (g ω)) (ℙ : Measure Ω) := by
+  have hdom : Integrable (fun ω => C * ‖g ω‖ + D * ‖g ω‖ ^ 2) (ℙ : Measure Ω) :=
+    ((integrable_norm_of_gaussian hg).const_mul C).add
+      ((integrable_norm_pow_nat_of_gaussian hg 2).const_mul D)
+  have hmeas : Measurable (fun ω => hg.c i ω * Φ (g ω)) :=
+    (hg.c_meas i).mul (hΦm.comp hg.repr_measurable)
+  refine hdom.mono' hmeas.aestronglyMeasurable ?_
+  filter_upwards with ω
+  have hcoord : |hg.c i ω| ≤ ‖g ω‖ := by
+    have hci : ⟪g ω, hg.w i⟫_ℝ = hg.c i ω :=
+      congrFun (congrFun (coord_eq_c (g := g) hg) i) ω
+    rw [← hci]
+    simpa using abs_real_inner_le_norm (g ω) (hg.w i)
+  have hright_nonneg : 0 ≤ C + D * ‖g ω‖ :=
+    add_nonneg hC (mul_nonneg hD (norm_nonneg _))
+  have hprod : |hg.c i ω| * |Φ (g ω)| ≤ ‖g ω‖ * (C + D * ‖g ω‖) := by
+    calc
+      |hg.c i ω| * |Φ (g ω)| ≤ |hg.c i ω| * (C + D * ‖g ω‖) :=
+        mul_le_mul_of_nonneg_left (hΦ (g ω)) (abs_nonneg _)
+      _ ≤ ‖g ω‖ * (C + D * ‖g ω‖) :=
+        mul_le_mul_of_nonneg_right hcoord hright_nonneg
+  calc
+    ‖hg.c i ω * Φ (g ω)‖ = |hg.c i ω| * |Φ (g ω)| := by
+      simp only [Real.norm_eq_abs, abs_mul]
+    _ ≤ ‖g ω‖ * (C + D * ‖g ω‖) := hprod
+    _ = C * ‖g ω‖ + D * ‖g ω‖ ^ 2 := by ring
+
 /--
 **Coordinate Stein identity from line derivatives.**  For `g` Gaussian-Hilbert with basis `w`,
 coordinates `c` and variances `τ`, and `Φ, Φ'` with `Φ'` the derivative of `Φ` along every
@@ -152,5 +201,71 @@ theorem stein_coord_of_hasDerivAt {g : Ω → H} (hg : IsGaussianHilbert g) [Dec
           simpa [hφdef, hψ₀def] using hstein
       _ = (hg.τ i : ℝ) * ∫ ω, ψ (Y ω, X ω) ∂ℙ := by rw [hchgψ]
       _ = (hg.τ i : ℝ) * ∫ ω, Φ' (g ω) ∂ℙ := by rw [hψΩ]
+
+/--
+**Finite-dimensional covariant Stein identity from line derivatives.**  If `D i` is the
+derivative of `Φ` along the basis direction `hg.w i`, then
+
+  `E[⟪g,h⟫ Φ(g)] = ∑ i, τᵢ ⟪h,wᵢ⟫ E[Dᵢ(g)]`.
+
+Unlike the existing Fréchet-derivative version, this only assumes the separate line
+derivatives needed for each summand.  The coordinate-product integrability assumptions are
+also stated separately, so the finite interchange of sum and integral is explicit.
+-/
+theorem stein_inner_of_hasDerivAt {g : Ω → H} (hg : IsGaussianHilbert g) (h : H)
+    {Φ : H → ℝ} {D : hg.ι → H → ℝ}
+    (hline : ∀ i : hg.ι, ∀ z : H, ∀ x : ℝ,
+      HasDerivAt (fun t => Φ (z + t • hg.w i)) (D i (z + x • hg.w i)) x)
+    (hΦm : Measurable Φ) (hDm : ∀ i : hg.ι, Measurable (D i))
+    (hint_coord : ∀ i : hg.ι,
+      Integrable (fun ω => hg.c i ω * Φ (g ω)) (ℙ : Measure Ω))
+    (hintΦ : Integrable (fun ω => Φ (g ω)) (ℙ : Measure Ω))
+    (hintD : ∀ i : hg.ι, Integrable (fun ω => D i (g ω)) (ℙ : Measure Ω)) :
+    ∫ ω, ⟪g ω, h⟫_ℝ * Φ (g ω) ∂ℙ =
+      ∑ i : hg.ι, (hg.τ i : ℝ) * ⟪h, hg.w i⟫_ℝ * ∫ ω, D i (g ω) ∂ℙ := by
+  classical
+  have hcoord (i : hg.ι) (ω : Ω) : ⟪g ω, hg.w i⟫_ℝ = hg.c i ω := by
+    exact congrFun (congrFun (coord_eq_c (g := g) hg) i) ω
+  have hexpand :
+      (fun ω => ⟪g ω, h⟫_ℝ * Φ (g ω)) =
+        fun ω => ∑ i : hg.ι, ⟪h, hg.w i⟫_ℝ * (hg.c i ω * Φ (g ω)) := by
+    funext ω
+    rw [Aux.inner_decomp (w := hg.w) (x := g ω) (y := h), Finset.sum_mul]
+    apply Finset.sum_congr rfl
+    intro i _
+    rw [hcoord i ω]
+    ring
+  rw [hexpand, integral_finsetSum _
+    (fun i _ => (hint_coord i).const_mul ⟪h, hg.w i⟫_ℝ)]
+  apply Finset.sum_congr rfl
+  intro i _
+  rw [integral_const_mul]
+  have hi := stein_coord_of_hasDerivAt (g := g) hg i (hline i) hΦm (hDm i)
+    (hint_coord i) hintΦ (hintD i)
+  rw [hi]
+  ring
+
+/-- **Coordinate-summed Stein identity for a family of test functions.**
+
+This is the form used for radial disorder derivatives: the `i`-th Gaussian coordinate is
+multiplied by its own test function `Φ i`, whose derivative is only required along the
+matching basis direction `hg.w i`.
+-/
+theorem stein_sum_of_hasDerivAt {g : Ω → H} (hg : IsGaussianHilbert g)
+    {Φ D : hg.ι → H → ℝ}
+    (hline : ∀ i : hg.ι, ∀ z : H, ∀ x : ℝ,
+      HasDerivAt (fun t => Φ i (z + t • hg.w i)) (D i (z + x • hg.w i)) x)
+    (hΦm : ∀ i : hg.ι, Measurable (Φ i)) (hDm : ∀ i : hg.ι, Measurable (D i))
+    (hint_coord : ∀ i : hg.ι,
+      Integrable (fun ω => hg.c i ω * Φ i (g ω)) (ℙ : Measure Ω))
+    (hintΦ : ∀ i : hg.ι, Integrable (fun ω => Φ i (g ω)) (ℙ : Measure Ω))
+    (hintD : ∀ i : hg.ι, Integrable (fun ω => D i (g ω)) (ℙ : Measure Ω)) :
+    ∫ ω, ∑ i : hg.ι, hg.c i ω * Φ i (g ω) ∂ℙ =
+      ∑ i : hg.ι, (hg.τ i : ℝ) * ∫ ω, D i (g ω) ∂ℙ := by
+  classical
+  rw [integral_finsetSum _ (fun i _ => hint_coord i)]
+  refine Finset.sum_congr rfl (fun i _ => ?_)
+  exact stein_coord_of_hasDerivAt (g := g) hg i (hline i) (hΦm i) (hDm i)
+    (hint_coord i) (hintΦ i) (hintD i)
 
 end SpinGlass

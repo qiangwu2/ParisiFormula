@@ -432,13 +432,24 @@ arbitrary; the upper half is Target 3′.
   `abs_integral_mul_tiltWeight_le` — which required identifying Lipschitzness as the
   load-bearing hypothesis (without it the tilted moment is not bounded uniformly in `x`).
 
-Remaining: (a) the induction chaining the rule over the `k+2` levels — mechanical; (b) the
-derivative of `guerraBase` in `t` — Gaussian IBP in the disorder, where the SK covariance
-`(Nβ²/2)R²` enters, plus the `1-t` scaling of the level variances; (c) the algebra
-identifying the result with `-corr - (β²/4)∑(m_ℓ - m_{ℓ-1})μ_ℓ((R-q_ℓ)²)`.  For (b) RSAT's
-`gaussian_integration_by_parts_hilbert_cov` and `trace_formula` are the tools; the disorder
-must be packaged as an `IsGaussianHilbert` vector, the same `isGaussianHilbert_prod` task
-recorded for Target 1b.
+**Recovery checkpoint (2026-09-04, after Claude step 8).**  The parameter chain is now
+implemented through all `k+2` levels, including differentiation under the outer disorder
+expectation (`hasDerivAt_guerraPhi`).  The line-derivative form of Gaussian IBP is also wired
+to the cascade:
+
+* `stein_coord_of_hasDerivAt` and `stein_inner_of_hasDerivAt` need only one-dimensional line
+  derivatives, not a Fréchet-`C¹` cascade functional;
+* `guerraBaseUDeriv`, `guerraUD`, and `hasDerivAt_cascade_Uline` propagate a disorder
+  direction through every level, with a depth-uniform bound and joint measurability;
+* `guerra_cascade_stein` is the first end-to-end covariant Stein identity for the top
+  cascade, with all integrability obligations discharged from affine Gaussian growth.
+
+Remaining for Theorem 2.1: apply the coordinate identity to the *first disorder derivative*
+(so build the corresponding second line derivatives), perform the analogous Gaussian IBP
+in each cascade field `y_p`, define the two-replica measures `μ_ℓ`, and carry out the algebra
+identifying the result with
+`-corr - (β²/4)∑(m_ℓ - m_{ℓ-1})μ_ℓ((R-q_ℓ)²)`.  The old product-Gaussian packaging
+blocker is no longer relevant to this route.
 
 #### Core 2 — `talagrand_theorem_2_2` (Theorem 2.2)
 

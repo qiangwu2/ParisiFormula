@@ -43,6 +43,7 @@ paper, and the deduction of the Parisi formula from those theorems is machine-ch
   `φ_N(1) ≥ φ_N(t₀) - L(1-t₀)`, Theorem 2.2 gives `φ_N(t₀) → ψ(t₀) ≥ 𝒫`, and `t₀ < 1` is
   arbitrary.  The upper half is Target 3'.
 -/
+import ParisiFormula.CoordStein
 import Targets.CascadeDerivPi
 
 open MeasureTheory ProbabilityTheory Real Filter Topology
@@ -232,6 +233,62 @@ theorem hasDerivAt_guerraBase (n : ℕ) (U : EnergySpace n) (h : ℝ) (y : Fin n
     Finset.sum_pos (fun σ _ => Real.exp_pos _) Finset.univ_nonempty
   exact hsum.log hpos.ne'
 
+/-! ## 2b-i. Differentiating the base along the disorder
+
+The disorder part of Gaussian integration by parts varies `U` along one basis direction.
+This is the base case for pushing that line derivative through the cascade, just as
+`hasDerivAt_guerraBase` is the base case for pushing the `t`-derivative through it.
+-/
+
+/-- The derivative of the base along the affine disorder line `U + u • V`.
+
+The direction enters `guerraH` with coefficient `√t`, so the answer is `√t` times the
+finite Gibbs average of `V` at the perturbed disorder.  No assumption on `t` is needed.
+-/
+noncomputable def guerraBaseUDeriv (n : ℕ) (U V : EnergySpace n) (h t : ℝ)
+    (y : Fin n → ℝ) : ℝ :=
+  Real.sqrt t * gibbsAvg (guerraH n U h t y) V
+
+theorem hasDerivAt_guerraBase_Uline (n : ℕ) (U V : EnergySpace n) (h t : ℝ)
+    (y : Fin n → ℝ) (r : ℝ) :
+    HasDerivAt (fun u => guerraBase n (U + u • V) h t y)
+      (guerraBaseUDeriv n (U + r • V) V h t y) r := by
+  have hH : ∀ σ : Config n,
+      HasDerivAt (fun u => guerraH n (U + u • V) h t y σ) (Real.sqrt t * V σ) r := by
+    intro σ
+    have heq : (fun u => guerraH n (U + u • V) h t y σ) =
+        fun u => Real.sqrt t * U σ
+          + u * (Real.sqrt t * V σ)
+          + ∑ i, spin n σ i * (Real.sqrt (1 - t) * y i + h) := by
+      funext u
+      simp only [guerraH, PiLp.add_apply, PiLp.smul_apply, smul_eq_mul]
+      congr 1
+      ring
+    rw [heq]
+    simpa using (((hasDerivAt_const r (Real.sqrt t * U σ)).add
+      ((hasDerivAt_id r).mul_const (Real.sqrt t * V σ))).add_const
+        (∑ i, spin n σ i * (Real.sqrt (1 - t) * y i + h)))
+  have hsum : HasDerivAt
+      (fun u => ∑ σ : Config n, Real.exp (guerraH n (U + u • V) h t y σ))
+      (∑ σ : Config n,
+        Real.exp (guerraH n (U + r • V) h t y σ) * (Real.sqrt t * V σ)) r :=
+    HasDerivAt.fun_sum (fun σ _ => (hH σ).exp)
+  have hpos : 0 < ∑ σ : Config n, Real.exp (guerraH n (U + r • V) h t y σ) :=
+    Finset.sum_pos (fun σ _ => Real.exp_pos _) Finset.univ_nonempty
+  refine (hsum.log hpos.ne').congr_deriv ?_
+  unfold guerraBaseUDeriv
+  unfold gibbsAvg
+  have hnum :
+      (∑ σ : Config n,
+        Real.exp (guerraH n (U + r • V) h t y σ) * (Real.sqrt t * V σ)) =
+        Real.sqrt t *
+          ∑ σ : Config n, Real.exp (guerraH n (U + r • V) h t y σ) * V σ := by
+    rw [Finset.mul_sum]
+    refine Finset.sum_congr rfl (fun σ _ => ?_)
+    ring
+  rw [hnum]
+  ring
+
 /-! ## 2c. Bounds on the base and its derivative
 
 What the level induction needs of `F_{k+1,t}`: measurability in `y`, `ℓ¹` growth with
@@ -334,6 +391,16 @@ theorem abs_gibbsAvg_le {n : ℕ} (E f : Config n → ℝ) : |gibbsAvg E f| ≤ 
           (Real.exp_pos _).le
     _ = (∑ τ, |f τ|) * ∑ σ, Real.exp (E σ) := by rw [← Finset.sum_mul, mul_comm]
 
+/-- The disorder-direction derivative has a bound independent of the cascade field. -/
+theorem abs_guerraBaseUDeriv_le (n : ℕ) (U V : EnergySpace n) (h t : ℝ)
+    (y : Fin n → ℝ) :
+    |guerraBaseUDeriv n U V h t y| ≤ Real.sqrt t * uAbs n V := by
+  unfold guerraBaseUDeriv
+  rw [abs_mul, abs_of_nonneg (Real.sqrt_nonneg t)]
+  exact mul_le_mul_of_nonneg_left
+    (by simpa [uAbs] using abs_gibbsAvg_le (guerraH n U h t y) V)
+    (Real.sqrt_nonneg t)
+
 /-- `|H_t(σ)| ≤ |U σ| + ∑ᵢ|yᵢ| + n|h|` for `0 ≤ t ≤ 1`. -/
 theorem abs_guerraH_le (n : ℕ) (U : EnergySpace n) (h : ℝ) {t : ℝ} (ht0 : 0 ≤ t) (ht1 : t ≤ 1)
     (y : Fin n → ℝ) (σ : Config n) :
@@ -423,6 +490,16 @@ theorem measurable_guerraBaseDeriv (n : ℕ) (U : EnergySpace n) (h t : ℝ) :
   · exact Finset.measurable_sum _ fun σ _ =>
       (Real.measurable_exp.comp (measurable_guerraH n U h t σ)).mul (measurable_guerraHDeriv n U t σ)
   · exact Finset.measurable_sum _ fun σ _ => Real.measurable_exp.comp (measurable_guerraH n U h t σ)
+
+/-- The disorder-direction derivative is measurable in the cascade field. -/
+theorem measurable_guerraBaseUDeriv (n : ℕ) (U V : EnergySpace n) (h t : ℝ) :
+    Measurable (guerraBaseUDeriv n U V h t) := by
+  unfold guerraBaseUDeriv gibbsAvg
+  refine measurable_const.mul (Measurable.div ?_ ?_)
+  · exact Finset.measurable_sum _ fun σ _ =>
+      (Real.measurable_exp.comp (measurable_guerraH n U h t σ)).mul measurable_const
+  · exact Finset.measurable_sum _ fun σ _ =>
+      Real.measurable_exp.comp (measurable_guerraH n U h t σ)
 
 /-! The three bounds the induction consumes. -/
 
@@ -952,6 +1029,243 @@ theorem hasDerivAt_guerraPhi {N : ℕ} (β h : ℝ) (sk : SKDisorder (Ω := Ω) 
   show HasDerivAt (fun t => (1 / (N : ℝ))
       * ∫ ω, cascadeT N s β 1 (guerraBase N (sk.U ω) h t) (k + 2) 0 ∂ℙ) _ t₀
   exact hmain.const_mul (1 / (N : ℝ))
+
+/-! ## 2f. Differentiating the cascade along the disorder
+
+The coordinate Stein identity needs derivatives along the affine lines `U + u • V` in the
+disorder space.  The base derivative is `guerraBaseUDeriv`; `guerraUD` pushes it through the
+same normalized tilted averages as `guerraD`.  Since the base derivative is bounded
+independently of the cascade field and every tilted weight integrates to one, this bound is
+preserved exactly at every level.
+-/
+
+/-- The disorder-direction derivative propagated through `j` cascade levels. -/
+noncomputable def guerraUD {k : ℕ} (n : ℕ) (s : RSBScheme k) (β : ℝ)
+    (U V : EnergySpace n) (h t : ℝ) : ℕ → (Fin n → ℝ) → ℝ
+  | 0 => guerraBaseUDeriv n U V h t
+  | j + 1 => fun x => ∫ z,
+      guerraUD n s β U V h t j
+          (fun i => x i + Real.sqrt
+            (1 * (β ^ 2 * (s.q (k + 2 - j) - s.q (k + 1 - j)))) * z i)
+        * tiltWeightPi n (s.m (k + 1 - j))
+            (1 * (β ^ 2 * (s.q (k + 2 - j) - s.q (k + 1 - j))))
+            (cascadeT n s β 1 (guerraBase n U h t) j) x z ∂(piGauss n)
+
+/-- The crude disorder size is subadditive along affine lines. -/
+theorem uAbs_add_smul_le (n : ℕ) (U V : EnergySpace n) (u : ℝ) :
+    uAbs n (U + u • V) ≤ uAbs n U + |u| * uAbs n V := by
+  unfold uAbs
+  calc
+    (∑ σ : Config n, |(U + u • V) σ|)
+        ≤ ∑ σ : Config n, (|U σ| + |u| * |V σ|) := by
+          refine Finset.sum_le_sum (fun σ _ => ?_)
+          simpa [PiLp.add_apply, PiLp.smul_apply, smul_eq_mul, abs_mul]
+            using abs_add_le (U σ) (u * V σ)
+    _ = (∑ σ : Config n, |U σ|) + |u| * ∑ σ : Config n, |V σ| := by
+          rw [Finset.sum_add_distrib, Finset.mul_sum]
+
+/-- A fixed open neighborhood of a point on a disorder-coordinate line. -/
+def guerraLineNbhd (r : ℝ) : Set ℝ := Set.Ioo (r - 1) (r + 1)
+
+theorem guerraLineNbhd_mem_nhds (r : ℝ) : guerraLineNbhd r ∈ 𝓝 r :=
+  isOpen_Ioo.mem_nhds ⟨by linarith, by linarith⟩
+
+theorem abs_le_abs_add_one_of_mem_guerraLineNbhd {r u : ℝ} (hu : u ∈ guerraLineNbhd r) :
+    |u| ≤ |r| + 1 := by
+  rw [abs_le]
+  constructor
+  · have hr := neg_abs_le r
+    exact le_of_lt (by dsimp [guerraLineNbhd] at hu; linarith [hu.1])
+  · have hr := le_abs_self r
+    exact le_of_lt (by dsimp [guerraLineNbhd] at hu; linarith [hu.2])
+
+/-- `guerraUD` is measurable in the cascade field, and its base bound is preserved at every
+level because the tilted weights are normalized probability densities. -/
+theorem guerraUD_measurable_and_bound {k : ℕ} (n : ℕ) (s : RSBScheme k) (β : ℝ)
+    (U V : EnergySpace n) (h : ℝ) {t : ℝ} (ht : t ∈ Set.Ioo (0 : ℝ) 1) :
+    ∀ j : ℕ, Measurable (guerraUD n s β U V h t j) ∧
+      ∀ x, |guerraUD n s β U V h t j x| ≤ Real.sqrt t * uAbs n V := by
+  intro j
+  induction j with
+  | zero =>
+      exact ⟨measurable_guerraBaseUDeriv n U V h t,
+        abs_guerraBaseUDeriv_le n U V h t⟩
+  | succ j ih =>
+      obtain ⟨a, b, D, L, a', b', D', hb, hD, hL, hb', hD', hprops⟩ :=
+        guerra_cascade_hasDerivAt n s β h ht j
+      obtain ⟨hAmeas, -, hAbound, hAlip, -, -⟩ := hprops U
+      have htt : t ∈ talNbhd t := self_mem_talNbhd ht
+      set m : ℝ := s.m (k + 1 - j) with hm
+      set v : ℝ := 1 * (β ^ 2 * (s.q (k + 2 - j) - s.q (k + 1 - j))) with hv
+      have hmeas : Measurable (guerraUD n s β U V h t (j + 1)) := by
+        change Measurable (fun x => ∫ z,
+          guerraUD n s β U V h t j (fun i => x i + Real.sqrt v * z i)
+            * tiltWeightPi n m v (cascadeT n s β 1 (guerraBase n U h t) j) x z
+          ∂(piGauss n))
+        exact measurable_tiltAvg (hAmeas t htt) ih.1 m v
+      refine ⟨hmeas, fun x => ?_⟩
+      change |∫ z, guerraUD n s β U V h t j (fun i => x i + Real.sqrt v * z i)
+          * tiltWeightPi n m v (cascadeT n s β 1 (guerraBase n U h t) j) x z
+        ∂(piGauss n)| ≤ Real.sqrt t * uAbs n V
+      have hbound := abs_integral_mul_tiltWeightPi_le
+        (m := m) (v := v) (C := a + b * uAbs n U) (D := D) (L := L)
+        hL hD (hAlip t htt) (hAbound t htt) (hAmeas t htt) ih.1
+        (C' := Real.sqrt t * uAbs n V) (D' := 0) le_rfl
+        (fun y => by simpa using ih.2 y) x
+      simpa using hbound
+
+/-- The full cascade has derivative `guerraUD` along every affine disorder line. -/
+theorem hasDerivAt_cascade_Uline {k : ℕ} (n : ℕ) (s : RSBScheme k) (β : ℝ)
+    (U V : EnergySpace n) (h : ℝ) {t : ℝ} (ht : t ∈ Set.Ioo (0 : ℝ) 1)
+    (j : ℕ) (x : Fin n → ℝ) (r : ℝ) :
+    HasDerivAt
+      (fun u => cascadeT n s β 1 (guerraBase n (U + u • V) h t) j x)
+      (guerraUD n s β (U + r • V) V h t j x) r := by
+  induction j generalizing U x r with
+  | zero => exact hasDerivAt_guerraBase_Uline n U V h t x r
+  | succ j ih =>
+      obtain ⟨a, b, D, L, a', b', D', hb, hD, hL, hb', hD', hprops⟩ :=
+        guerra_cascade_hasDerivAt n s β h ht j
+      have htt : t ∈ talNbhd t := self_mem_talNbhd ht
+      set m : ℝ := s.m (k + 1 - j) with hm
+      set v : ℝ := 1 * (β ^ 2 * (s.q (k + 2 - j) - s.q (k + 1 - j))) with hv
+      have hs : guerraLineNbhd r ∈ 𝓝 r := guerraLineNbhd_mem_nhds r
+      have hlinebound : ∀ u ∈ guerraLineNbhd r,
+          uAbs n (U + u • V) ≤ uAbs n U + (|r| + 1) * uAbs n V := by
+        intro u hu
+        refine (uAbs_add_smul_le n U V u).trans ?_
+        exact add_le_add le_rfl
+          (mul_le_mul_of_nonneg_right
+            (abs_le_abs_add_one_of_mem_guerraLineNbhd hu) (uAbs_nonneg n V))
+      change HasDerivAt
+        (fun u => parisiStepPi n m v
+          (cascadeT n s β 1 (guerraBase n (U + u • V) h t) j) x)
+        (∫ z, guerraUD n s β (U + r • V) V h t j
+            (fun i => x i + Real.sqrt v * z i)
+          * tiltWeightPi n m v
+              (cascadeT n s β 1 (guerraBase n (U + r • V) h t) j) x z
+          ∂(piGauss n)) r
+      exact hasDerivAt_parisiStepPi_param
+        (A := fun u => cascadeT n s β 1 (guerraBase n (U + u • V) h t) j)
+        (A' := fun u => guerraUD n s β (U + u • V) V h t j)
+        (m := m) (v := v)
+        (C := (a + b * (uAbs n U + (|r| + 1) * uAbs n V))) (D := D)
+        (C' := Real.sqrt t * uAbs n V) (D' := 0) x hs hD le_rfl
+        (fun u _ y => ih (U := U) (x := y) (r := u))
+        (fun u _ => (hprops (U + u • V)).1 t htt)
+        (fun u _ => (guerraUD_measurable_and_bound n s β (U + u • V) V h ht j).1)
+        (fun u hu y => by
+          have hbu := (hprops (U + u • V)).2.2.1 t htt y
+          have hmul := mul_le_mul_of_nonneg_left (hlinebound u hu) hb
+          linarith)
+        (fun u _ y => by
+          have hbu := (guerraUD_measurable_and_bound n s β (U + u • V) V h ht j).2 y
+          simpa using hbu)
+
+/-- For a fixed disorder direction `V`, the base directional derivative is jointly
+measurable in the current disorder and the cascade field. -/
+theorem measurable_guerraBaseUDeriv_joint {n : ℕ} (V : EnergySpace n) (h t : ℝ) :
+    Measurable (fun p : EnergySpace n × (Fin n → ℝ) =>
+      guerraBaseUDeriv n p.1 V h t p.2) := by
+  unfold guerraBaseUDeriv gibbsAvg
+  refine measurable_const.mul (Measurable.div ?_ ?_)
+  · exact Finset.measurable_sum _ fun σ _ =>
+      (Real.measurable_exp.comp (measurable_guerraH_joint h t σ)).mul measurable_const
+  · exact Finset.measurable_sum _ fun σ _ =>
+      Real.measurable_exp.comp (measurable_guerraH_joint h t σ)
+
+/-- For fixed direction `V`, every propagated disorder derivative is jointly measurable
+in the current disorder `U` and the cascade field `x`. -/
+theorem measurable_guerraUD_joint {n k : ℕ} (s : RSBScheme k) (β : ℝ)
+    (V : EnergySpace n) (h t : ℝ) (j : ℕ) :
+    Measurable (fun p : EnergySpace n × (Fin n → ℝ) =>
+      guerraUD n s β p.1 V h t j p.2) := by
+  induction j with
+  | zero => exact measurable_guerraBaseUDeriv_joint V h t
+  | succ j ih =>
+      have hF := (measurable_cascade_joint (n := n) s β h t j).1
+      have hfun : (fun p : EnergySpace n × (Fin n → ℝ) =>
+          guerraUD n s β p.1 V h t (j + 1) p.2) =
+          fun p => ∫ z,
+            guerraUD n s β p.1 V h t j
+                (fun i => p.2 i + Real.sqrt
+                  (1 * (β ^ 2 * (s.q (k + 2 - j) - s.q (k + 1 - j)))) * z i)
+              * tiltWeightPi n (s.m (k + 1 - j))
+                  (1 * (β ^ 2 * (s.q (k + 2 - j) - s.q (k + 1 - j))))
+                  (cascadeT n s β 1 (guerraBase n p.1 h t) j) p.2 z ∂(piGauss n) := by
+        funext p
+        rfl
+      rw [hfun]
+      exact measurable_tiltAvg_joint
+        (F := fun U => cascadeT n s β 1 (guerraBase n U h t) j)
+        (G := fun U => guerraUD n s β U V h t j) hF ih _ _
+
+/-- The top-level disorder-direction derivative is measurable as a function of the current
+disorder. -/
+theorem measurable_guerraUD_top_U {n k : ℕ} (s : RSBScheme k) (β : ℝ)
+    (V : EnergySpace n) (h t : ℝ) :
+    Measurable (fun U : EnergySpace n => guerraUD n s β U V h t (k + 2) 0) := by
+  exact (measurable_guerraUD_joint s β V h t (k + 2)).comp
+    (measurable_id.prodMk
+      (measurable_const : Measurable (fun _ : EnergySpace n => (0 : Fin n → ℝ))))
+
+/-- Gaussian integration by parts for the top cascade in a fixed disorder direction. -/
+theorem guerra_cascade_stein {N : ℕ} (β h : ℝ)
+    (sk : SKDisorder (Ω := Ω) N β h) {k : ℕ} (s : RSBScheme k)
+    {t : ℝ} (ht : t ∈ Set.Ioo (0 : ℝ) 1) (a : EnergySpace N) :
+    (∫ ω, inner ℝ (sk.U ω) a
+        * cascadeT N s β 1 (guerraBase N (sk.U ω) h t) (k + 2) 0 ∂ℙ) =
+      ∑ i : sk.hU.ι, (sk.hU.τ i : ℝ) * inner ℝ a (sk.hU.w i)
+        * ∫ ω, guerraUD N s β (sk.U ω) (sk.hU.w i) h t (k + 2) 0 ∂ℙ := by
+  classical
+  let Φ : EnergySpace N → ℝ := fun U =>
+    cascadeT N s β 1 (guerraBase N U h t) (k + 2) 0
+  let D : sk.hU.ι → EnergySpace N → ℝ := fun i U =>
+    guerraUD N s β U (sk.hU.w i) h t (k + 2) 0
+  have hΦm : Measurable Φ := measurable_cascade_top_U s β h t
+  have hDm : ∀ i : sk.hU.ι, Measurable (D i) := fun i =>
+    measurable_guerraUD_top_U s β (sk.hU.w i) h t
+  obtain ⟨A, B, E, L, A', B', E', hB, hE, hL, hB', hE', hprops⟩ :=
+    guerra_cascade_hasDerivAt N s β h ht (k + 2)
+  have hΦbound : ∀ U : EnergySpace N,
+      |Φ U| ≤ A + (B * Fintype.card (Config N)) * ‖U‖ := by
+    intro U
+    have hbase := (hprops U).2.2.1 t (self_mem_talNbhd ht) 0
+    have hu := mul_le_mul_of_nonneg_left (uAbs_le_card_mul_norm N U) hB
+    simp [l1] at hbase
+    dsimp only [Φ]
+    calc
+      |cascadeT N s β 1 (guerraBase N U h t) (k + 2) 0|
+          ≤ A + B * uAbs N U := hbase
+      _ ≤ A + B * (Fintype.card (Config N) * ‖U‖) := by linarith
+      _ = A + (B * Fintype.card (Config N)) * ‖U‖ := by ring
+  have hA : 0 ≤ A := by
+    have hz := hΦbound (0 : EnergySpace N)
+    exact le_trans (abs_nonneg (Φ 0)) (by simpa using hz)
+  have hnormSlope : 0 ≤ B * Fintype.card (Config N) := by positivity
+  have hintCoord : ∀ i : sk.hU.ι,
+      Integrable (fun ω => sk.hU.c i ω * Φ (sk.U ω)) (ℙ : Measure Ω) := fun i =>
+    integrable_coord_mul_comp_of_affine_norm_bound sk.hU i hΦm hA hnormSlope hΦbound
+  have hintΦ : Integrable (fun ω => Φ (sk.U ω)) (ℙ : Measure Ω) :=
+    integrable_comp_of_affine_norm_bound sk.hU hΦm hA hnormSlope hΦbound
+  have hintD : ∀ i : sk.hU.ι,
+      Integrable (fun ω => D i (sk.U ω)) (ℙ : Measure Ω) := by
+    intro i
+    have hC : 0 ≤ Real.sqrt t * uAbs N (sk.hU.w i) :=
+      mul_nonneg (Real.sqrt_nonneg _) (uAbs_nonneg N _)
+    refine integrable_comp_of_affine_norm_bound sk.hU (hDm i)
+      (C := Real.sqrt t * uAbs N (sk.hU.w i)) (D := 0) hC le_rfl ?_
+    intro U
+    have hb := (guerraUD_measurable_and_bound N s β U (sk.hU.w i) h ht (k + 2)).2 0
+    simpa only [D, zero_mul, add_zero] using hb
+  have hline : ∀ i : sk.hU.ι, ∀ z : EnergySpace N, ∀ x : ℝ,
+      HasDerivAt (fun r => Φ (z + r • sk.hU.w i))
+        (D i (z + x • sk.hU.w i)) x := by
+    intro i z x
+    exact hasDerivAt_cascade_Uline N s β z (sk.hU.w i) h ht (k + 2) 0 x
+  simpa only [Φ, D] using
+    (stein_inner_of_hasDerivAt (g := sk.U) sk.hU a (Φ := Φ) (D := D)
+      hline hΦm hDm hintCoord hintΦ hintD)
 
 /-! ## 3. The two analytic cores of the paper -/
 
