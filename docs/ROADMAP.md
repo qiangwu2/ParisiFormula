@@ -444,12 +444,26 @@ to the cascade:
 * `guerra_cascade_stein` is the first end-to-end covariant Stein identity for the top
   cascade, with all integrability obligations discharged from affine Gaussian growth.
 
-Remaining for Theorem 2.1: apply the coordinate identity to the *first disorder derivative*
-(so build the corresponding second line derivatives), perform the analogous Gaussian IBP
-in each cascade field `y_p`, define the two-replica measures `μ_ℓ`, and carry out the algebra
-identifying the result with
-`-corr - (β²/4)∑(m_ℓ - m_{ℓ-1})μ_ℓ((R-q_ℓ)²)`.  The old product-Gaussian packaging
-blocker is no longer relevant to this route.
+**Step 10 (2026-09-04): disorder IBP for the first derivative.**  The next part of
+Talagrand's Theorem 2.1 is implemented without new `sorry`s:
+
+* `Targets/CascadeSecondPi.lean` proves the normalized tilted-average derivative
+  `d⟨G⟩ = ⟨G' + m G A'⟩ - m⟨G⟩⟨A'⟩`, including `m = 0`, with the dominated-integral
+  argument explicit;
+* `guerraBaseUUDeriv` is the terminal Gibbs covariance. `guerraUUD` propagates mixed
+  disorder derivatives through all levels. `hasDerivAt_guerraUD_Uline`, joint
+  measurability, and the bound `2(j+1)t uAbs(V)uAbs(W)` are proved;
+* `guerra_gradient_stein` applies Gaussian IBP to a first disorder derivative;
+* linearity in the direction (`guerraUD_sum_smul`) gives `guerra_disorder_stein`:
+  `E[guerraUD(U,U)] = ∑ᵢ τᵢ E[guerraUUD(U,wᵢ,wᵢ)]`, at every cascade depth. At depth
+  `k+2`, field `0`, multiply by `1/(2Nt)` to obtain the disorder contribution to `φ'`.
+
+Remaining for Theorem 2.1: perform the analogous Gaussian IBP in each cascade field
+`y_p`, define the two-replica measures `μ_ℓ`, and identify the combined derivative with
+`-corr - (β²/4)∑(m_ℓ - m_{ℓ-1})μ_ℓ((R-q_ℓ)²)`. Continuity at the interpolation endpoints
+also remains. The old product-Gaussian packaging blocker is no longer relevant to this
+route. The scope remains Talagrand's *The Parisi formula*, Ann. of Math. 163 (2006),
+221–263; no change of proof route.
 
 #### Core 2 — `talagrand_theorem_2_2` (Theorem 2.2)
 
