@@ -168,6 +168,148 @@ noncomputable def parisiFunctional {k : ℕ} (s : RSBScheme k) (β h : ℝ) : �
   Real.log 2 + parisiF s β (k + 2) h
     - (β ^ 2 / 4) * ∑ p ∈ Finset.range (k + 1), s.m (p + 1) * (s.q (p + 2) ^ 2 - s.q (p + 1) ^ 2)
 
+/-! ### Well-definedness of the Parisi value
+
+`parisiValue` (below) is an `sInf`.  In Mathlib, `sInf` of a set that is **not bounded
+below** is the junk value `sInf ∅ = 0` (`csInf_of_not_bddBelow`).  So without a lower
+bound, Target 4 would be asserting that the free entropy converges to `0` — false.
+
+This section supplies the missing bound: `log 2 - β²/4 ≤ 𝒫_k(m,q)` for *every* scheme,
+uniformly in `k`.  Two ingredients:
+
+* `parisiF_nonneg` — the Gaussian smoothing operator preserves non-negativity (note the
+  junk values work in our favour: a non-integrable integrand gives `∫ = 0`, and
+  `log 0 = 0`), and the base case `log cosh ≥ 0`;
+* `sum_correction_le_one` — `∑_p m_p (q²_{p+1} - q²_p) ≤ 1` by telescoping, using
+  `m_p ≤ 1` and `q` non-decreasing.
+-/
+
+namespace RSBScheme
+
+variable {k : ℕ} (s : RSBScheme k)
+
+/-- `s.m` is non-decreasing on `[0, k+1]`. -/
+lemma m_mono' : ∀ b, b ≤ k + 1 → ∀ a, a ≤ b → s.m a ≤ s.m b := by
+  intro b
+  induction b with
+  | zero =>
+      intro _ a ha
+      exact le_of_eq (congrArg s.m (Nat.le_zero.mp ha))
+  | succ b ih =>
+      intro hb a ha
+      rcases Nat.lt_or_ge a (b + 1) with h | h
+      · have h1 : s.m a ≤ s.m b := ih (by omega) a (Nat.lt_succ_iff.mp h)
+        have h2 : s.m b ≤ s.m (b + 1) := s.m_mono b (by omega)
+        linarith
+      · exact le_of_eq (congrArg s.m (le_antisymm ha h))
+
+/-- `s.q` is non-decreasing on `[0, k+2]`. -/
+lemma q_mono' : ∀ b, b ≤ k + 2 → ∀ a, a ≤ b → s.q a ≤ s.q b := by
+  intro b
+  induction b with
+  | zero =>
+      intro _ a ha
+      exact le_of_eq (congrArg s.q (Nat.le_zero.mp ha))
+  | succ b ih =>
+      intro hb a ha
+      rcases Nat.lt_or_ge a (b + 1) with h | h
+      · have h1 : s.q a ≤ s.q b := ih (by omega) a (Nat.lt_succ_iff.mp h)
+        have h2 : s.q b ≤ s.q (b + 1) := s.q_mono b (by omega)
+        linarith
+      · exact le_of_eq (congrArg s.q (le_antisymm ha h))
+
+lemma m_le_one {p : ℕ} (hp : p ≤ k + 1) : s.m p ≤ 1 := by
+  have h := s.m_mono' (k + 1) le_rfl p hp
+  rwa [s.m_top] at h
+
+lemma q_nonneg {p : ℕ} (hp : p ≤ k + 2) : 0 ≤ s.q p := by
+  have h := s.q_mono' p hp 0 (Nat.zero_le p)
+  rwa [s.q_zero] at h
+
+end RSBScheme
+
+/-- The Gaussian smoothing step preserves non-negativity. -/
+lemma parisiStep_nonneg {m v : ℝ} {A : ℝ → ℝ} (hA : ∀ y, 0 ≤ A y) (x : ℝ) :
+    0 ≤ parisiStep m v A x := by
+  rw [parisiStep]
+  split_ifs with hm
+  · exact integral_nonneg (fun z => hA _)
+  · set I : ℝ := ∫ z, Real.exp (m * A (x + Real.sqrt v * z)) ∂(gaussianReal 0 1) with hIdef
+    have hI0 : 0 ≤ I := integral_nonneg (fun z => (Real.exp_pos _).le)
+    rcases lt_or_gt_of_ne hm with hneg | hpos
+    · have hIle : I ≤ 1 := by
+        by_cases hint : Integrable
+            (fun z : ℝ => Real.exp (m * A (x + Real.sqrt v * z))) (gaussianReal 0 1)
+        · have hmono : I ≤ ∫ _z : ℝ, (1 : ℝ) ∂(gaussianReal 0 1) := by
+            refine integral_mono hint (integrable_const 1) (fun z => ?_)
+            have hle : m * A (x + Real.sqrt v * z) ≤ 0 := by
+              nlinarith [hA (x + Real.sqrt v * z)]
+            calc Real.exp (m * A (x + Real.sqrt v * z)) ≤ Real.exp 0 :=
+                  Real.exp_le_exp.2 hle
+              _ = 1 := Real.exp_zero
+          simpa using hmono
+        · rw [hIdef, integral_undef hint]; norm_num
+      have hlog : Real.log I ≤ 0 := Real.log_nonpos hI0 hIle
+      have hminv : 1 / m < 0 := div_neg_of_pos_of_neg one_pos hneg
+      nlinarith
+    · have hcase : (1 : ℝ) ≤ I ∨ I = 0 := by
+        by_cases hint : Integrable
+            (fun z : ℝ => Real.exp (m * A (x + Real.sqrt v * z))) (gaussianReal 0 1)
+        · left
+          have hmono : (∫ _z : ℝ, (1 : ℝ) ∂(gaussianReal 0 1)) ≤ I := by
+            refine integral_mono (integrable_const 1) hint (fun z => ?_)
+            have hle : (0 : ℝ) ≤ m * A (x + Real.sqrt v * z) :=
+              mul_nonneg hpos.le (hA _)
+            calc (1 : ℝ) = Real.exp 0 := Real.exp_zero.symm
+              _ ≤ Real.exp (m * A (x + Real.sqrt v * z)) := Real.exp_le_exp.2 hle
+          simpa using hmono
+        · right; rw [hIdef, integral_undef hint]
+      have hminv : 0 < 1 / m := div_pos one_pos hpos
+      rcases hcase with h1 | h1
+      · exact mul_nonneg hminv.le (Real.log_nonneg h1)
+      · rw [h1, Real.log_zero, mul_zero]
+
+/-- Every level of the Parisi recursion is non-negative. -/
+lemma parisiF_nonneg {k : ℕ} (s : RSBScheme k) (β : ℝ) :
+    ∀ (j : ℕ) (x : ℝ), 0 ≤ parisiF s β j x := by
+  intro j
+  induction j with
+  | zero => intro x; exact log_cosh_nonneg x
+  | succ j ih => intro x; exact parisiStep_nonneg (fun y => ih y) x
+
+/-- The correction sum telescopes to at most `1`. -/
+lemma sum_correction_le_one {k : ℕ} (s : RSBScheme k) :
+    (∑ p ∈ Finset.range (k + 1), s.m (p + 1) * (s.q (p + 2) ^ 2 - s.q (p + 1) ^ 2)) ≤ 1 := by
+  have hterm : ∀ p ∈ Finset.range (k + 1),
+      s.m (p + 1) * (s.q (p + 2) ^ 2 - s.q (p + 1) ^ 2)
+        ≤ s.q (p + 2) ^ 2 - s.q (p + 1) ^ 2 := by
+    intro p hp
+    have hpk : p ≤ k := Nat.lt_succ_iff.mp (Finset.mem_range.mp hp)
+    have hm1 : s.m (p + 1) ≤ 1 := s.m_le_one (by omega)
+    have hq1 : 0 ≤ s.q (p + 1) := s.q_nonneg (by omega)
+    have hqle : s.q (p + 1) ≤ s.q (p + 2) := s.q_mono (p + 1) (by omega)
+    have hsq : s.q (p + 1) ^ 2 ≤ s.q (p + 2) ^ 2 := by nlinarith
+    nlinarith
+  calc
+    (∑ p ∈ Finset.range (k + 1), s.m (p + 1) * (s.q (p + 2) ^ 2 - s.q (p + 1) ^ 2))
+        ≤ ∑ p ∈ Finset.range (k + 1), (s.q (p + 2) ^ 2 - s.q (p + 1) ^ 2) :=
+          Finset.sum_le_sum hterm
+    _ = s.q (k + 2) ^ 2 - s.q 1 ^ 2 := by
+          simpa using Finset.sum_range_sub (fun i => s.q (i + 1) ^ 2) (k + 1)
+    _ ≤ 1 := by
+          rw [s.q_top]
+          nlinarith [sq_nonneg (s.q 1)]
+
+/-- **Uniform lower bound on the finite-step Parisi functional.** -/
+theorem parisiFunctional_ge {k : ℕ} (s : RSBScheme k) (β h : ℝ) :
+    Real.log 2 - β ^ 2 / 4 ≤ parisiFunctional s β h := by
+  have hF : 0 ≤ parisiF s β (k + 2) h := parisiF_nonneg s β (k + 2) h
+  have hS := sum_correction_le_one s
+  have hb : (0 : ℝ) ≤ β ^ 2 / 4 := by positivity
+  have hmul := mul_le_mul_of_nonneg_left hS hb
+  rw [parisiFunctional]
+  linarith
+
 /-- The replica-symmetric scheme with overlap `q`: `k = 0`, `m = (0, 1)`, `q = (0, q, 1)`. -/
 noncomputable def rsScheme (q : ℝ) (hq0 : 0 ≤ q) (hq1 : q ≤ 1) : RSBScheme 0 where
   m := fun p => if p = 0 then 0 else 1
@@ -296,6 +438,38 @@ theorem guerra_rsb_bound {N : ℕ} (hN : 0 < N) (β h : ℝ)
 /-- The Parisi value: infimum of the finite-step functionals over all `k` and all schemes. -/
 noncomputable def parisiValue (β h : ℝ) : ℝ :=
   sInf {x : ℝ | ∃ (k : ℕ) (s : RSBScheme k), x = parisiFunctional s β h}
+
+/-! ### `parisiValue` is a genuine infimum
+
+Consequences of `parisiFunctional_ge`: the defining set is non-empty and bounded below,
+so `sInf` is *not* the junk value and `parisiValue` means what it says.  `parisiValue_le`
+is the form Target 3' consumes.
+-/
+
+/-- The set of finite-step Parisi functionals is non-empty (take the RS scheme at `q = 0`). -/
+theorem parisiSet_nonempty (β h : ℝ) :
+    {x : ℝ | ∃ (k : ℕ) (s : RSBScheme k), x = parisiFunctional s β h}.Nonempty :=
+  ⟨parisiFunctional (rsScheme 0 le_rfl zero_le_one) β h,
+    ⟨0, rsScheme 0 le_rfl zero_le_one, rfl⟩⟩
+
+/-- **The set of finite-step Parisi functionals is bounded below**, uniformly in `k`.
+Without this, `sInf` would collapse to the junk value `0`. -/
+theorem bddBelow_parisiSet (β h : ℝ) :
+    BddBelow {x : ℝ | ∃ (k : ℕ) (s : RSBScheme k), x = parisiFunctional s β h} := by
+  refine ⟨Real.log 2 - β ^ 2 / 4, ?_⟩
+  rintro x ⟨k, s, rfl⟩
+  exact parisiFunctional_ge s β h
+
+/-- `parisiValue` really is below every finite-step functional. -/
+theorem parisiValue_le {k : ℕ} (s : RSBScheme k) (β h : ℝ) :
+    parisiValue β h ≤ parisiFunctional s β h :=
+  csInf_le (bddBelow_parisiSet β h) ⟨k, s, rfl⟩
+
+/-- `parisiValue` is bounded below by `log 2 - β²/4` (in particular it is not the junk value). -/
+theorem parisiValue_ge (β h : ℝ) : Real.log 2 - β ^ 2 / 4 ≤ parisiValue β h := by
+  refine le_csInf (parisiSet_nonempty β h) ?_
+  rintro x ⟨k, s, rfl⟩
+  exact parisiFunctional_ge s β h
 
 /-- **Target 3' (upper bound in the limit).**  Immediate from Target 3. -/
 theorem limsup_free_entropy_le_parisiValue (β h : ℝ)
