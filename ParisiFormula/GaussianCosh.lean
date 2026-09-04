@@ -438,7 +438,7 @@ theorem hasDerivAt_sinh_div_cosh (x : ℝ) :
       = 1 - (Real.sinh x / Real.cosh x) ^ 2 := by
     have hpyth : Real.cosh x ^ 2 - Real.sinh x ^ 2 = 1 := Real.cosh_sq_sub_sinh_sq x
     field_simp
-    nlinarith [hpyth]
+    try nlinarith [hpyth]
   rwa [hid] at h
 
 /-- **The base of the Parisi recursion satisfies the second-order invariant**, with
@@ -450,6 +450,8 @@ theorem hasParisiC2_log_cosh :
   refine ⟨hasDerivAt_log_cosh, hasDerivAt_sinh_div_cosh, fun x => ?_, fun x => le_rfl⟩
   have hpyth : Real.cosh x ^ 2 - Real.sinh x ^ 2 = 1 := Real.cosh_sq_sub_sinh_sq x
   have hc : (0 : ℝ) < Real.cosh x := Real.cosh_pos x
+  -- beta-reduce before rewriting: the goal arrives as `0 ≤ (fun y => …) x`
+  show (0 : ℝ) ≤ 1 - (Real.sinh x / Real.cosh x) ^ 2
   have hsq : (Real.sinh x / Real.cosh x) ^ 2 = Real.sinh x ^ 2 / Real.cosh x ^ 2 := by
     rw [div_pow]
   rw [hsq, sub_nonneg, div_le_one (by positivity)]
