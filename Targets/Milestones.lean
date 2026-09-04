@@ -640,7 +640,10 @@ theorem parisiF_props {k : ℕ} (s : RSBScheme k) (β : ℝ) : ∀ j : ℕ,
         have h := parisiStep_lipschitz (m := s.m (k + 1 - j))
           (v := β ^ 2 * (s.q (k + 2 - j) - s.q (k + 1 - j))) (L := 1)
           hlip' hgrow hmeas x x'
-        simpa using h
+        rw [one_mul] at h
+        -- `parisiF s β (j+1)` is definitionally this `parisiStep`; `exact` uses that,
+        -- whereas `simpa` normalises the two sides into different syntactic forms.
+        exact h
       have hgrow' : HasLinearGrowth (parisiF s β (j + 1)) :=
         hasLinearGrowth_parisiStep hgrow hmeas _ _
       have hmeas' : Measurable (parisiF s β (j + 1)) := by
