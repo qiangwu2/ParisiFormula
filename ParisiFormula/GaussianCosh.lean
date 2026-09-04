@@ -172,14 +172,13 @@ theorem integral_comp_sqrt_mul_gaussianReal (v : ℝ≥0) {f : ℝ → ℝ} (hf 
       = ∫ w, f (x + w) ∂(gaussianReal 0 v) := by
   have hmap : (gaussianReal (0 : ℝ) 1).map (fun z : ℝ => Real.sqrt (v : ℝ) * z)
       = gaussianReal 0 v := by
-    have h := gaussianReal_map_const_mul (μ := (0 : ℝ)) (v := (1 : ℝ≥0))
-      (Real.sqrt (v : ℝ))
-    rw [h]
-    have hzero : Real.sqrt (v : ℝ) * (0 : ℝ) = 0 := by ring
-    have hvar : (⟨Real.sqrt (v : ℝ) ^ 2, sq_nonneg _⟩ : ℝ≥0) * 1 = v := by
-      refine NNReal.eq ?_
-      simp [Real.sq_sqrt v.coe_nonneg]
-    rw [hzero, hvar]
+    rw [gaussianReal_map_const_mul]
+    -- `congr 1` splits into the mean and variance components; this avoids having to
+    -- match `NNReal.mk` syntactically (proof terms are handled by irrelevance).
+    congr 1
+    · ring
+    · rw [mul_one]
+      exact NNReal.coe_injective (by simpa using Real.sq_sqrt v.coe_nonneg)
   have hcomp : Measurable (fun w : ℝ => f (x + w)) := hf.comp (measurable_const_add x)
   have h := integral_map (μ := gaussianReal (0 : ℝ) 1)
     (φ := fun z : ℝ => Real.sqrt (v : ℝ) * z) (by fun_prop)
