@@ -187,11 +187,46 @@ in `m` needs the **tilted variance bounded uniformly for `u ∈ [0,1]`**.
 * Since `v = β²(q_{p+1} - q_p)` can be as large as `β²`, this route silently imposes
   `β² < 1`.  That is not acceptable: Target 2b must hold for all `β`.
 
-So the naive route fails at large `β`, and Talagrand's argument must avoid it.  Reconstructing
-how is guesswork without the source; this is the point at which the **Milestone 4 blueprint**
-(or Talagrand Vol. II directly) stops being optional.  Recommended next step: read out
-Talagrand's own `m`-continuity estimate and state it, rather than re-deriving.  (M–L, but
-gated on the reference rather than on Lean.)
+So the naive route fails at large `β`.  **But it should not be taken at all** — see below.
+
+### RSAT already has the right architecture (found 2026-09-04)
+
+Now that the project depends on RSAT rather than vendoring eight files out of it, the
+following is available and fully proved, in
+`Lemmas/GuerraTalagrand/Gaussian.lean`:
+
+```
+structure GoodFam (F D : P → ℝ → ℝ × ℝ → ℝ) : Prop where
+  contF     : Continuous fun w : P × ℝ × (ℝ × ℝ) => F w.1 w.2.1 w.2.2
+  contD     : Continuous fun w : P × ℝ × (ℝ × ℝ) => D w.1 w.2.1 w.2.2
+  hasDeriv  : ∀ p l x, HasDerivAt (fun l' => F p l' x) (D p l x) l
+  lipx      : ∀ p l x y, |F p l x - F p l y| ≤ |x.1 - y.1| + |x.2 - y.2|
+  bddD      : ∀ p l x, |D p l x| ≤ 1
+```
+
+with `step0 μ α β F p λ x = ∫ z, F p λ (x.1 + α p z, x.2 + β p z) ∂μ` (the `m = 0` branch)
+and `stepM μ m α β F p λ x = (1/m) log ∫ exp (m F p λ (…)) ∂μ` (the `m ≠ 0` branch, `0 < m`)
+— **exactly the two branches of `Targets.parisiStep`** — and theorems `step0_good`,
+`stepM_good` that **both steps preserve goodness**, given a probability measure with all
+exponential moments (`GTFrame.ExpMoments`).
+
+**Consequences.**
+
+1. The `m`-perturbation should be attacked as *joint continuity in a parameter space* `P`,
+   which `contF`/`contD` carry through the recursion by dominated convergence, **not** by
+   differentiating in `m` and bounding a tilted variance.  That is what removes the
+   `β² < 1` obstruction above: no tilted-variance bound is needed.
+2. Much of `ParisiFormula/GaussianCosh.lean` duplicates RSAT: `ExpMoments` is our
+   `integrable_exp_abs_mul_*`; `lipx_step0`/`lipx_stepM` are our `parisiStep_lipschitz`;
+   `bddD_*` are our `HasParisiC2.abs_*`; `fLbaseDD lam x = 1 - (fLbaseD lam x)^2` is our
+   second-order invariant, in the same form.
+3. The remaining gap is that RSAT's framework is built for a *two-replica* spatial variable
+   `ℝ × ℝ` with a distinguished λ, while `parisiF` is one-dimensional with parameters
+   `(m,q)`.  So this is an **instantiation/adaptation job**, not new mathematics.
+
+**Recommended plan for 2b:** restate it as joint continuity (and then Lipschitz) in the
+scheme parameters, and instantiate RSAT's `GoodFam` / `step0_good` / `stepM_good` rather than
+carrying our own hand-rolled invariant.  (M, and mostly bookkeeping.)
 
 ## Phase 3 — Milestone 3: Guerra's RSB bound  (L–XL)
 
