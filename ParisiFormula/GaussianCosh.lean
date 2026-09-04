@@ -573,7 +573,8 @@ theorem hasDerivAt_integral_exp_mul {A A' : ℝ → ℝ} {m v : ℝ}
     have h2 : (0 : ℝ) ≤ |m| := abs_nonneg m
     have hep : (0 : ℝ) < Real.exp (m * A (t + Real.sqrt v * z)) := Real.exp_pos _
     calc |m| * |A' (t + Real.sqrt v * z)| * Real.exp (m * A (t + Real.sqrt v * z))
-        ≤ |m| * 1 * Real.exp (m * A (t + Real.sqrt v * z)) := by nlinarith
+        ≤ |m| * 1 * Real.exp (m * A (t + Real.sqrt v * z)) := by
+          exact mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left h1 h2) hep.le
       _ = |m| * Real.exp (m * A (t + Real.sqrt v * z)) := by ring
       _ ≤ |m| * (Real.exp b * Real.exp (a * |z|)) := mul_le_mul_of_nonneg_left hexp h2
   have hdiff : ∀ᵐ z ∂(gaussianReal 0 1), ∀ t ∈ Metric.ball x 1,
@@ -581,9 +582,15 @@ theorem hasDerivAt_integral_exp_mul {A A' : ℝ → ℝ} {m v : ℝ}
     refine Filter.Eventually.of_forall (fun z t _ => ?_)
     have hshift : HasDerivAt (fun s : ℝ => s + Real.sqrt v * z) 1 t := by
       simpa using (hasDerivAt_id t).add_const (Real.sqrt v * z)
+    -- ascribe the type so elaboration resolves `A ∘ (· + √v z)` against
+    -- `fun s => A (s + √v z)` by defeq; `simpa` instead rewrites the `Module`
+    -- instances into a different but equal form and then fails to match
+    have hcomp0 : HasDerivAt (fun s : ℝ => A (s + Real.sqrt v * z))
+        (A' (t + Real.sqrt v * z) * 1) t := (hderiv (t + Real.sqrt v * z)).comp t hshift
     have hcomp : HasDerivAt (fun s : ℝ => A (s + Real.sqrt v * z))
         (A' (t + Real.sqrt v * z)) t := by
-      simpa using (hderiv (t + Real.sqrt v * z)).comp t hshift
+      rw [mul_one] at hcomp0
+      exact hcomp0
     have hmul : HasDerivAt (fun s : ℝ => m * A (s + Real.sqrt v * z))
         (m * A' (t + Real.sqrt v * z)) t := hcomp.const_mul m
     have hres := hmul.exp
