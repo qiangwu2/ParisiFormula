@@ -1214,4 +1214,45 @@ theorem smoothing_second_deriv_nonneg {A A' A'' : ℝ → ℝ} {m v : ℝ}
   have h1 : 0 ≤ tiltQ A A'' m v x / tiltE A m v x := div_nonneg hQnn hEpos.le
   nlinarith [mul_nonneg hm0 hvar]
 
+/-- The first derivative of the smoothing step, as a function: `T' = P/E`. -/
+noncomputable def stepD1 (A A' : ℝ → ℝ) (m v : ℝ) : ℝ → ℝ := fun x =>
+  tiltP A A' m v x / tiltE A m v x
+
+/-- The second derivative of the smoothing step, as a function:
+`T'' = Q/E + m (R/E - (P/E)²)`. -/
+noncomputable def stepD2 (A A' A'' : ℝ → ℝ) (m v : ℝ) : ℝ → ℝ := fun x =>
+  tiltQ A A'' m v x / tiltE A m v x
+    + m * (tiltR A A' m v x / tiltE A m v x
+      - (tiltP A A' m v x / tiltE A m v x) ^ 2)
+
+/-- `x ↦ (1/m) log (∫ exp (m A (x + √v z)))` has derivative `stepD1`. -/
+theorem hasDerivAt_stepD1 {A A' : ℝ → ℝ} {m v : ℝ} (hm : m ≠ 0)
+    (hderiv : ∀ y, HasDerivAt A (A' y) y) (hA'bd : ∀ y, |A' y| ≤ 1)
+    (hA : HasLinearGrowth A) (hmeas : Measurable A) (hmeas' : Measurable A') (x : ℝ) :
+    HasDerivAt
+      (fun t : ℝ => (1 / m)
+        * Real.log (∫ z, Real.exp (m * A (t + Real.sqrt v * z)) ∂(gaussianReal 0 1)))
+      (stepD1 A A' m v x) x := by
+  have h := hasDerivAt_smoothing_step hderiv hA'bd hA hmeas hmeas' (m := m) (v := v) x
+  rwa [smoothing_first_deriv_eq hm hA'bd hA hmeas hmeas' x] at h
+
+/-- `stepD1` has derivative `stepD2`. -/
+theorem hasDerivAt_stepD2 {A A' A'' : ℝ → ℝ} {m v : ℝ} (hm : m ≠ 0)
+    (hderiv : ∀ y, HasDerivAt A (A' y) y) (hderiv' : ∀ y, HasDerivAt A' (A'' y) y)
+    (hA'bd : ∀ y, |A' y| ≤ 1) (hA''bd : ∀ y, |A'' y| ≤ 1)
+    (hA : HasLinearGrowth A) (hmeas : Measurable A) (hmeas' : Measurable A')
+    (hmeas'' : Measurable A'') (x : ℝ) :
+    HasDerivAt (stepD1 A A' m v) (stepD2 A A' A'' m v x) x := by
+  have h := hasDerivAt_smoothing_step_deriv hderiv hderiv' hA'bd hA''bd hA
+    hmeas hmeas' hmeas'' (m := m) (v := v) x
+  have hfun : (fun t : ℝ => (1 / m)
+      * ((∫ z, m * A' (t + Real.sqrt v * z)
+            * Real.exp (m * A (t + Real.sqrt v * z)) ∂(gaussianReal 0 1))
+          / ∫ z, Real.exp (m * A (t + Real.sqrt v * z)) ∂(gaussianReal 0 1)))
+      = stepD1 A A' m v := by
+    funext t
+    exact smoothing_first_deriv_eq hm hA'bd hA hmeas hmeas' t
+  rw [hfun, smoothing_second_deriv_eq hm hA'bd hA''bd hA hmeas hmeas' hmeas'' x] at h
+  exact h
+
 end SpinGlass

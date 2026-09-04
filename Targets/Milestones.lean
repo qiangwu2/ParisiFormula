@@ -588,6 +588,40 @@ theorem abs_parisiStep_sub_self_le {A : ℝ → ℝ} {L m w : ℝ}
         linarith [hTc, hcA]
     _ = L * Real.sqrt w * (∫ z, |z| ∂(gaussianReal 0 1)) + |m| * (L ^ 2 * w) / 2 := by ring
 
+/--
+**The smoothing step preserves the second-order invariant.**
+
+If `A` satisfies `0 ≤ A'' ≤ 1 - (A')²` and `0 < m ≤ 1`, then so does `parisiStep m v A`,
+with derivatives `stepD1` and `stepD2`.
+
+The hypothesis `m ≤ 1` is essential and is exactly what an RSB scheme provides
+(`RSBScheme.m_le_one`): it is what gives the `-(1-m)·Var_tilt(A')` term in
+`(T A)'' = ⟨A''⟩ + m Var_tilt(A')` the right sign.  For `m > 1` the invariant is *not*
+preserved and the second derivative can grow with the level, which would destroy the
+uniformity in `k` that Target 2b needs.
+-/
+theorem hasParisiC2_parisiStep {A A' A'' : ℝ → ℝ} {m v : ℝ}
+    (hm : m ≠ 0) (hm0 : 0 ≤ m) (hm1 : m ≤ 1)
+    (hA : HasParisiC2 A A' A'')
+    (hgrow : HasLinearGrowth A) (hmeas : Measurable A) (hmeas' : Measurable A')
+    (hmeas'' : Measurable A'') :
+    HasParisiC2 (parisiStep m v A) (stepD1 A A' m v) (stepD2 A A' A'' m v) := by
+  have hA'bd : ∀ y, |A' y| ≤ 1 := fun y => hA.abs_first_le_one y
+  have hA''bd : ∀ y, |A'' y| ≤ 1 := fun y => hA.abs_second_le_one y
+  obtain ⟨hd1, hd2, hnn, hle⟩ := hA
+  have hstep : parisiStep m v A
+      = fun t : ℝ => (1 / m)
+        * Real.log (∫ z, Real.exp (m * A (t + Real.sqrt v * z))
+            ∂(gaussianReal 0 1)) := by
+    funext t
+    rw [parisiStep, if_neg hm]
+  refine ⟨fun x => ?_, fun x => ?_, fun x => ?_, fun x => ?_⟩
+  · rw [hstep]
+    exact hasDerivAt_stepD1 hm hd1 hA'bd hgrow hmeas hmeas' x
+  · exact hasDerivAt_stepD2 hm hd1 hd2 hA'bd hA''bd hgrow hmeas hmeas' hmeas'' x
+  · exact smoothing_second_deriv_nonneg hm0 hA'bd hA''bd hnn hgrow hmeas hmeas' hmeas'' x
+  · exact smoothing_second_deriv_le hm0 hm1 hA'bd hA''bd hle hgrow hmeas hmeas' hmeas'' x
+
 /-- Backward Parisi recursion for the SK model (`ξ(x) = x²/2`, so `ξ'(x) = x`).
 
 `parisiF s β j` is the function `F_{k+2-j}` of Talagrand's recursion:
