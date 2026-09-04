@@ -441,5 +441,346 @@ theorem parisiStepPi_lipschitz {m v L : ℝ} {A : (Fin n → ℝ) → ℝ} {C D 
 
 end ChainRule
 
+
+/-! ## 5. The tilted weight of an `N`-site level is a bounded perturbation of `piGauss`
+
+Port of `CascadeDeriv` §§4–5 to `N` sites, with `ℓ¹`-Lipschitzness in place of Lipschitzness.
+-/
+
+/-- `∫ ∑ᵢ |zᵢ| dπ`, the `ℓ¹` first moment of the `N`-site Gaussian. -/
+noncomputable def l1Moment (n : ℕ) : ℝ := ∫ z, l1 z ∂(piGauss n)
+
+theorem l1Moment_nonneg (n : ℕ) : 0 ≤ l1Moment n :=
+  integral_nonneg (fun z => l1_nonneg z)
+
+section TiltPi
+
+variable {m v L C D : ℝ} {A : (Fin n → ℝ) → ℝ}
+
+theorem measurable_tiltWeightPi (hmeas : Measurable A) (x : Fin n → ℝ) :
+    Measurable (fun z => tiltWeightPi n m v A x z) := by
+  unfold tiltWeightPi
+  split
+  · exact measurable_const
+  · exact (Real.continuous_exp.measurable.comp
+      ((hmeas.comp (measurable_shift v x)).const_mul m)).div measurable_const
+
+theorem tiltWeightPi_nonneg (hD : 0 ≤ D) (hA : ∀ y, |A y| ≤ C + D * l1 y)
+    (hmeas : Measurable A) (x z : Fin n → ℝ) : 0 ≤ tiltWeightPi n m v A x z := by
+  unfold tiltWeightPi
+  split
+  · exact zero_le_one
+  · exact div_nonneg (Real.exp_pos _).le
+      (integral_exp_shift_pi_pos (m := m) (v := v) hD hA hmeas x).le
+
+/-- The Lipschitz deviation of the shifted function. -/
+theorem shift_dev_pi (hLip : ∀ y y', |A y - A y'| ≤ L * l1 (y - y')) (x : Fin n → ℝ) (v : ℝ)
+    (z : Fin n → ℝ) :
+    |A (fun i => x i + Real.sqrt v * z i) - A x| ≤ L * (Real.sqrt v * l1 z) := by
+  refine (hLip _ _).trans ?_
+  have : (fun i => x i + Real.sqrt v * z i) - x = fun i => Real.sqrt v * z i := by
+    funext i; simp only [Pi.sub_apply]; ring
+  rw [this, l1_const_smul, abs_of_nonneg (Real.sqrt_nonneg v)]
+
+/-- For an `ℓ¹`-`L`-Lipschitz `A`, the tilted weight is dominated by
+`e^{c·l1Moment}·e^{c·l1 z}` with `c = |m|L√v` — independently of `x`. -/
+theorem tiltWeightPi_le (hL : 0 ≤ L) (hD : 0 ≤ D)
+    (hLip : ∀ y y', |A y - A y'| ≤ L * l1 (y - y'))
+    (hA : ∀ y, |A y| ≤ C + D * l1 y) (hmeas : Measurable A) (x z : Fin n → ℝ) :
+    tiltWeightPi n m v A x z
+      ≤ Real.exp ((|m| * L * Real.sqrt v) * l1Moment n)
+        * Real.exp ((|m| * L * Real.sqrt v) * l1 z) := by
+  classical
+  set c : ℝ := |m| * L * Real.sqrt v with hc
+  have hcnn : 0 ≤ c := by rw [hc]; positivity
+  have hM := l1Moment_nonneg n
+  by_cases hm : m = 0
+  · rw [tiltWeightPi, if_pos hm]
+    have h1 : (1 : ℝ) ≤ Real.exp (c * l1Moment n) := Real.one_le_exp (by positivity)
+    have h2 : (1 : ℝ) ≤ Real.exp (c * l1 z) := Real.one_le_exp (mul_nonneg hcnn (l1_nonneg z))
+    nlinarith
+  · rw [tiltWeightPi, if_neg hm]
+    have hnum : Real.exp (m * A (fun i => x i + Real.sqrt v * z i))
+        ≤ Real.exp (m * A x) * Real.exp (c * l1 z) := by
+      rw [← Real.exp_add]
+      refine Real.exp_le_exp.2 ?_
+      have h2 : m * A (fun i => x i + Real.sqrt v * z i) - m * A x
+          ≤ |m| * |A (fun i => x i + Real.sqrt v * z i) - A x| := by
+        rw [← mul_sub, ← abs_mul]; exact le_abs_self _
+      have h3 := mul_le_mul_of_nonneg_left (shift_dev_pi hLip x v z) (abs_nonneg m)
+      have h4 : |m| * (L * (Real.sqrt v * l1 z)) = c * l1 z := by rw [hc]; ring
+      linarith
+    have hAint : Integrable (fun w => m * A (fun i => x i + Real.sqrt v * w i)) (piGauss n) :=
+      (integrable_shift_pi (v := v) hD hA hmeas x).const_mul m
+    have hexpint : Integrable (fun w => Real.exp (m * A (fun i => x i + Real.sqrt v * w i)))
+        (piGauss n) := integrable_exp_shift_pi hD hA hmeas x
+    have hmean : Real.exp (m * A x) * Real.exp (-(c * l1Moment n))
+        ≤ ∫ w, Real.exp (m * A (fun i => x i + Real.sqrt v * w i)) ∂(piGauss n) := by
+      refine le_trans ?_ (exp_integral_le_integral_exp_pi hAint hexpint)
+      rw [← Real.exp_add]
+      refine Real.exp_le_exp.2 ?_
+      have hlow : (∫ w, (m * A x - c * l1 w) ∂(piGauss n))
+          ≤ ∫ w, m * A (fun i => x i + Real.sqrt v * w i) ∂(piGauss n) := by
+        refine integral_mono ((integrable_const _).sub (integrable_l1.const_mul c)) hAint ?_
+        intro w
+        have h2 : |m * A (fun i => x i + Real.sqrt v * w i) - m * A x|
+            ≤ |m| * (L * (Real.sqrt v * l1 w)) := by
+          rw [← mul_sub, abs_mul]
+          exact mul_le_mul_of_nonneg_left (shift_dev_pi hLip x v w) (abs_nonneg m)
+        have h3 := (abs_le.1 h2).1
+        have h4 : |m| * (L * (Real.sqrt v * l1 w)) = c * l1 w := by rw [hc]; ring
+        show m * A x - c * l1 w ≤ m * A (fun i => x i + Real.sqrt v * w i)
+        linarith
+      have hcalc : (∫ w, (m * A x - c * l1 w) ∂(piGauss n)) = m * A x - c * l1Moment n := by
+        rw [integral_sub (integrable_const _) (integrable_l1.const_mul c), integral_const,
+          probReal_univ, one_smul, integral_const_mul, l1Moment]
+      rw [hcalc] at hlow
+      linarith
+    have hIpos := integral_exp_shift_pi_pos (m := m) (v := v) hD hA hmeas x
+    rw [div_le_iff₀ hIpos]
+    calc Real.exp (m * A (fun i => x i + Real.sqrt v * z i))
+        ≤ Real.exp (m * A x) * Real.exp (c * l1 z) := hnum
+      _ = (Real.exp (c * l1Moment n) * Real.exp (c * l1 z))
+            * (Real.exp (m * A x) * Real.exp (-(c * l1Moment n))) := by
+          rw [← Real.exp_add, ← Real.exp_add, ← Real.exp_add, ← Real.exp_add]
+          ring_nf
+      _ ≤ (Real.exp (c * l1Moment n) * Real.exp (c * l1 z))
+            * (∫ w, Real.exp (m * A (fun i => x i + Real.sqrt v * w i)) ∂(piGauss n)) :=
+          mul_le_mul_of_nonneg_left hmean (by positivity)
+
+/-- Anything of `ℓ¹` growth is integrable against the tilted weight. -/
+theorem integrable_mul_tiltWeightPi_of_bound (hL : 0 ≤ L) (hD : 0 ≤ D)
+    (hLip : ∀ y y', |A y - A y'| ≤ L * l1 (y - y'))
+    (hA : ∀ y, |A y| ≤ C + D * l1 y) (hmeas : Measurable A) (x : Fin n → ℝ)
+    {f : (Fin n → ℝ) → ℝ} (hfmeas : Measurable f) {a b : ℝ} (hb : 0 ≤ b)
+    (hf : ∀ z, |f z| ≤ a + b * l1 z) :
+    Integrable (fun z => f z * tiltWeightPi n m v A x z) (piGauss n) := by
+  classical
+  have ha : 0 ≤ a := by
+    have h0 := hf 0
+    simp only [l1, Pi.zero_apply, abs_zero, Finset.sum_const_zero, mul_zero, add_zero] at h0
+    exact le_trans (abs_nonneg _) h0
+  set c : ℝ := |m| * L * Real.sqrt v with hc
+  have hcnn : 0 ≤ c := by rw [hc]; positivity
+  set K : ℝ := Real.exp (c * l1Moment n) with hK
+  have hKpos : 0 < K := Real.exp_pos _
+  have hdom : Integrable (fun z : Fin n → ℝ => (a * K + (b * K) * l1 z) * Real.exp (c * l1 z))
+      (piGauss n) :=
+    integrable_poly_mul_exp_l1 (mul_nonneg ha hKpos.le) (mul_nonneg hb hKpos.le) hcnn
+  refine Integrable.mono hdom (hfmeas.mul (measurable_tiltWeightPi hmeas x)).aestronglyMeasurable ?_
+  filter_upwards with z
+  have hW := tiltWeightPi_le (m := m) (v := v) hL hD hLip hA hmeas x z
+  have hWnn := tiltWeightPi_nonneg (m := m) (v := v) hD hA hmeas x z
+  have hane : 0 ≤ a + b * l1 z := le_trans (abs_nonneg _) (hf z)
+  have hnn : (0 : ℝ) ≤ (a * K + (b * K) * l1 z) * Real.exp (c * l1 z) := by
+    have h1 : 0 ≤ a * K := mul_nonneg ha hKpos.le
+    have h2 : 0 ≤ (b * K) * l1 z := mul_nonneg (mul_nonneg hb hKpos.le) (l1_nonneg z)
+    have h3 : 0 ≤ Real.exp (c * l1 z) := (Real.exp_pos _).le
+    nlinarith
+  rw [Real.norm_eq_abs, Real.norm_eq_abs, abs_mul, abs_of_nonneg hnn]
+  calc |f z| * |tiltWeightPi n m v A x z|
+      = |f z| * tiltWeightPi n m v A x z := by rw [abs_of_nonneg hWnn]
+    _ ≤ (a + b * l1 z) * (K * Real.exp (c * l1 z)) := mul_le_mul (hf z) hW hWnn hane
+    _ = (a * K + (b * K) * l1 z) * Real.exp (c * l1 z) := by ring
+
+/-- The tilted weight is a probability density. -/
+theorem tiltWeightPi_integral_one (hD : 0 ≤ D) (hA : ∀ y, |A y| ≤ C + D * l1 y)
+    (hmeas : Measurable A) (x : Fin n → ℝ) :
+    (∫ z, tiltWeightPi n m v A x z ∂(piGauss n)) = 1 := by
+  classical
+  by_cases hm : m = 0
+  · have hfun : (fun z : Fin n → ℝ => tiltWeightPi n m v A x z) = fun _ => (1 : ℝ) := by
+      funext z; rw [tiltWeightPi, if_pos hm]
+    rw [hfun, integral_const, probReal_univ, one_smul]
+  · have hIpos := integral_exp_shift_pi_pos (m := m) (v := v) hD hA hmeas x
+    have hfun : (fun z : Fin n → ℝ => tiltWeightPi n m v A x z)
+        = fun z => Real.exp (m * A (fun i => x i + Real.sqrt v * z i))
+            / (∫ w, Real.exp (m * A (fun i => x i + Real.sqrt v * w i)) ∂(piGauss n)) := by
+      funext z; rw [tiltWeightPi, if_neg hm]
+    rw [hfun, integral_div, div_self hIpos.ne']
+
+/-- Hence the tilted `ℓ¹` first moment is bounded independently of `x`. -/
+theorem integral_l1_mul_tiltWeightPi_le (hL : 0 ≤ L) (hD : 0 ≤ D)
+    (hLip : ∀ y y', |A y - A y'| ≤ L * l1 (y - y'))
+    (hA : ∀ y, |A y| ≤ C + D * l1 y) (hmeas : Measurable A) (x : Fin n → ℝ) :
+    (∫ z, l1 z * tiltWeightPi n m v A x z ∂(piGauss n))
+      ≤ Real.exp ((|m| * L * Real.sqrt v) * l1Moment n)
+        * ∫ z, l1 z * Real.exp ((|m| * L * Real.sqrt v) * l1 z) ∂(piGauss n) := by
+  classical
+  set c : ℝ := |m| * L * Real.sqrt v with hc
+  have hcnn : 0 ≤ c := by rw [hc]; positivity
+  have hint : Integrable (fun z => l1 z * tiltWeightPi n m v A x z) (piGauss n) :=
+    integrable_mul_tiltWeightPi_of_bound (m := m) (v := v) hL hD hLip hA hmeas x measurable_l1
+      (a := 0) (b := 1) zero_le_one (fun z => by rw [abs_of_nonneg (l1_nonneg z)]; linarith)
+  have hdom : Integrable (fun z : Fin n → ℝ =>
+      Real.exp (c * l1Moment n) * (l1 z * Real.exp (c * l1 z))) (piGauss n) := by
+    have := integrable_poly_mul_exp_l1 (n := n) (a := 0) (b := 1) (c := c) le_rfl zero_le_one hcnn
+    refine (this.const_mul (Real.exp (c * l1Moment n))).congr ?_
+    filter_upwards with z
+    show Real.exp (c * l1Moment n) * ((0 + 1 * l1 z) * Real.exp (c * l1 z))
+        = Real.exp (c * l1Moment n) * (l1 z * Real.exp (c * l1 z))
+    ring
+  calc (∫ z, l1 z * tiltWeightPi n m v A x z ∂(piGauss n))
+      ≤ ∫ z, Real.exp (c * l1Moment n) * (l1 z * Real.exp (c * l1 z)) ∂(piGauss n) := by
+        refine integral_mono hint hdom (fun z => ?_)
+        have hW := tiltWeightPi_le (m := m) (v := v) hL hD hLip hA hmeas x z
+        have hz := l1_nonneg z
+        nlinarith [Real.exp_pos (c * l1Moment n), Real.exp_pos (c * l1 z)]
+    _ = _ := by rw [integral_const_mul]
+
+/-- **One level preserves `ℓ¹` growth of the derivative.** -/
+theorem abs_integral_mul_tiltWeightPi_le (hL : 0 ≤ L) (hD : 0 ≤ D)
+    (hLip : ∀ y y', |A y - A y'| ≤ L * l1 (y - y'))
+    (hA : ∀ y, |A y| ≤ C + D * l1 y) (hmeas : Measurable A)
+    {g : (Fin n → ℝ) → ℝ} (hgmeas : Measurable g) {C' D' : ℝ} (hD' : 0 ≤ D')
+    (hg : ∀ y, |g y| ≤ C' + D' * l1 y) (x : Fin n → ℝ) :
+    |∫ z, g (fun i => x i + Real.sqrt v * z i) * tiltWeightPi n m v A x z ∂(piGauss n)|
+      ≤ (C' + D' * l1 x)
+        + (D' * Real.sqrt v)
+          * (Real.exp ((|m| * L * Real.sqrt v) * l1Moment n)
+              * ∫ z, l1 z * Real.exp ((|m| * L * Real.sqrt v) * l1 z) ∂(piGauss n)) := by
+  classical
+  have hDv : 0 ≤ D' * Real.sqrt v := mul_nonneg hD' (Real.sqrt_nonneg v)
+  have hshift : ∀ z : Fin n → ℝ, |g (fun i => x i + Real.sqrt v * z i)|
+      ≤ (C' + D' * l1 x) + (D' * Real.sqrt v) * l1 z := fun z => shift_bound_pi hD' hg x v z
+  have hbnn : ∀ z : Fin n → ℝ, 0 ≤ (C' + D' * l1 x) + (D' * Real.sqrt v) * l1 z :=
+    fun z => le_trans (abs_nonneg _) (hshift z)
+  have hWnn : ∀ z, 0 ≤ tiltWeightPi n m v A x z :=
+    fun z => tiltWeightPi_nonneg (m := m) (v := v) hD hA hmeas x z
+  have hgW : Integrable
+      (fun z => g (fun i => x i + Real.sqrt v * z i) * tiltWeightPi n m v A x z) (piGauss n) :=
+    integrable_mul_tiltWeightPi_of_bound hL hD hLip hA hmeas x
+      (hgmeas.comp (measurable_shift v x)) hDv hshift
+  have hbW : Integrable
+      (fun z => ((C' + D' * l1 x) + (D' * Real.sqrt v) * l1 z) * tiltWeightPi n m v A x z)
+      (piGauss n) :=
+    integrable_mul_tiltWeightPi_of_bound hL hD hLip hA hmeas x
+      (measurable_const.add (measurable_l1.const_mul _)) hDv
+      (fun z => le_of_eq (abs_of_nonneg (hbnn z)))
+  have hzW : Integrable (fun z => l1 z * tiltWeightPi n m v A x z) (piGauss n) :=
+    integrable_mul_tiltWeightPi_of_bound (m := m) (v := v) hL hD hLip hA hmeas x measurable_l1
+      (a := 0) (b := 1) zero_le_one (fun z => by rw [abs_of_nonneg (l1_nonneg z)]; linarith)
+  have hWint : Integrable (fun z => tiltWeightPi n m v A x z) (piGauss n) := by
+    have h := integrable_mul_tiltWeightPi_of_bound (m := m) (v := v) hL hD hLip hA hmeas x
+      (measurable_const : Measurable (fun _ : Fin n → ℝ => (1 : ℝ)))
+      (a := 1) (b := 0) (le_refl (0 : ℝ))
+      (fun z => by rw [abs_one]; linarith [l1_nonneg z])
+    simpa using h
+  calc |∫ z, g (fun i => x i + Real.sqrt v * z i) * tiltWeightPi n m v A x z ∂(piGauss n)|
+      ≤ ∫ z, |g (fun i => x i + Real.sqrt v * z i) * tiltWeightPi n m v A x z| ∂(piGauss n) :=
+        abs_integral_le_integral_abs
+    _ ≤ ∫ z, ((C' + D' * l1 x) + (D' * Real.sqrt v) * l1 z) * tiltWeightPi n m v A x z
+          ∂(piGauss n) := by
+        refine integral_mono hgW.abs hbW (fun z => ?_)
+        rw [abs_mul, abs_of_nonneg (hWnn z)]
+        exact mul_le_mul_of_nonneg_right (hshift z) (hWnn z)
+    _ = (C' + D' * l1 x) * (∫ z, tiltWeightPi n m v A x z ∂(piGauss n))
+          + (D' * Real.sqrt v) * ∫ z, l1 z * tiltWeightPi n m v A x z ∂(piGauss n) := by
+        rw [show (fun z : Fin n → ℝ =>
+              ((C' + D' * l1 x) + (D' * Real.sqrt v) * l1 z) * tiltWeightPi n m v A x z)
+            = fun z => (C' + D' * l1 x) * tiltWeightPi n m v A x z
+              + (D' * Real.sqrt v) * (l1 z * tiltWeightPi n m v A x z) from
+          funext (fun z => by ring)]
+        rw [integral_add (hWint.const_mul _) (hzW.const_mul _), integral_const_mul,
+          integral_const_mul]
+    _ ≤ _ := by
+        rw [tiltWeightPi_integral_one (m := m) (v := v) hD hA hmeas, mul_one]
+        have hmom := integral_l1_mul_tiltWeightPi_le (m := m) (v := v) hL hD hLip hA hmeas x
+        have := mul_le_mul_of_nonneg_left hmom hDv
+        linarith
+
+end TiltPi
+
+/-! ## 6. `ℓ¹` growth of an `N`-site level, for `0 ≤ m` -/
+
+/-- A level of the cascade keeps `ℓ¹` growth, with a new constant independent of `x`. -/
+theorem parisiStepPi_abs_le {m v C D : ℝ} {A : (Fin n → ℝ) → ℝ} (hm : 0 ≤ m) (hv : 0 ≤ v)
+    (hD : 0 ≤ D) (hA : ∀ y, |A y| ≤ C + D * l1 y) (hmeas : Measurable A) :
+    ∃ K : ℝ, 0 ≤ K ∧ ∀ x, |parisiStepPi n m v A x| ≤ (C + K) + D * l1 x := by
+  classical
+  have hC : 0 ≤ C := by
+    have h0 := hA 0
+    simp only [l1, Pi.zero_apply, abs_zero, Finset.sum_const_zero, mul_zero, add_zero] at h0
+    exact le_trans (abs_nonneg _) h0
+  have hM := l1Moment_nonneg n
+  -- the plain average is controlled by the `ℓ¹` moment
+  have hmean : ∀ x : Fin n → ℝ,
+      |∫ z, A (fun i => x i + Real.sqrt v * z i) ∂(piGauss n)|
+        ≤ (C + D * l1 x) + (D * Real.sqrt v) * l1Moment n := by
+    intro x
+    have hint := integrable_shift_pi (v := v) hD hA hmeas x
+    calc |∫ z, A (fun i => x i + Real.sqrt v * z i) ∂(piGauss n)|
+        ≤ ∫ z, |A (fun i => x i + Real.sqrt v * z i)| ∂(piGauss n) := abs_integral_le_integral_abs
+      _ ≤ ∫ z, ((C + D * l1 x) + (D * Real.sqrt v) * l1 z) ∂(piGauss n) :=
+          integral_mono hint.abs ((integrable_const _).add (integrable_l1.const_mul _))
+            (fun z => shift_bound_pi hD hA x v z)
+      _ = (C + D * l1 x) + (D * Real.sqrt v) * l1Moment n := by
+          rw [integral_add (integrable_const _) (integrable_l1.const_mul _), integral_const,
+            probReal_univ, one_smul, integral_const_mul, l1Moment]
+  by_cases hm0 : m = 0
+  · refine ⟨(D * Real.sqrt v) * l1Moment n, by positivity, fun x => ?_⟩
+    simp only [parisiStepPi, if_pos hm0]
+    have := hmean x
+    linarith
+  · have hmpos : 0 < m := lt_of_le_of_ne hm (Ne.symm hm0)
+    set J : ℝ := ∫ z, Real.exp (m * (D * Real.sqrt v) * l1 z) ∂(piGauss n) with hJ
+    have hJint : Integrable (fun z : Fin n → ℝ => Real.exp (m * (D * Real.sqrt v) * l1 z))
+        (piGauss n) := integrable_exp_l1 _
+    have hJge : 1 ≤ J := by
+      have h1 : Real.exp (∫ z, m * (D * Real.sqrt v) * l1 z ∂(piGauss n)) ≤ J :=
+        exp_integral_le_integral_exp_pi (integrable_l1.const_mul _) hJint
+      have h2 : (1 : ℝ) ≤ Real.exp (∫ z, m * (D * Real.sqrt v) * l1 z ∂(piGauss n)) := by
+        refine Real.one_le_exp ?_
+        rw [integral_const_mul]
+        exact mul_nonneg (by positivity) hM
+      exact h2.trans h1
+    have hlogJ : 0 ≤ Real.log J := Real.log_nonneg hJge
+    have hK1 : 0 ≤ (1 / m) * Real.log J := mul_nonneg (by positivity) hlogJ
+    have hK2 : 0 ≤ (D * Real.sqrt v) * l1Moment n :=
+      mul_nonneg (mul_nonneg hD (Real.sqrt_nonneg v)) hM
+    refine ⟨(1 / m) * Real.log J + (D * Real.sqrt v) * l1Moment n, add_nonneg hK1 hK2,
+      fun x => ?_⟩
+    simp only [parisiStepPi, if_neg hm0]
+    have hint := integrable_exp_shift_pi (m := m) (v := v) hD hA hmeas x
+    have hIpos := integral_exp_shift_pi_pos (m := m) (v := v) hD hA hmeas x
+    -- upper bound
+    have hup : (∫ z, Real.exp (m * A (fun i => x i + Real.sqrt v * z i)) ∂(piGauss n))
+        ≤ Real.exp (m * (C + D * l1 x)) * J := by
+      rw [hJ, ← integral_const_mul]
+      refine integral_mono hint (hJint.const_mul _) (fun z => ?_)
+      rw [← Real.exp_add]
+      refine Real.exp_le_exp.2 ?_
+      have h1 : m * A (fun i => x i + Real.sqrt v * z i)
+          ≤ m * ((C + D * l1 x) + (D * Real.sqrt v) * l1 z) :=
+        mul_le_mul_of_nonneg_left ((le_abs_self _).trans (shift_bound_pi hD hA x v z)) hm
+      linarith
+    have hup' : (1 / m) * Real.log (∫ z, Real.exp (m * A (fun i => x i + Real.sqrt v * z i))
+          ∂(piGauss n)) ≤ (C + D * l1 x) + (1 / m) * Real.log J := by
+      have := Real.log_le_log hIpos hup
+      rw [Real.log_mul (Real.exp_pos _).ne' (by linarith), Real.log_exp] at this
+      have hm1 : 0 < 1 / m := by positivity
+      calc (1 / m) * Real.log (∫ z, Real.exp (m * A (fun i => x i + Real.sqrt v * z i))
+              ∂(piGauss n))
+          ≤ (1 / m) * (m * (C + D * l1 x) + Real.log J) := mul_le_mul_of_nonneg_left this hm1.le
+        _ = (C + D * l1 x) + (1 / m) * Real.log J := by field_simp
+    -- lower bound (Jensen)
+    have hlow : ∫ z, A (fun i => x i + Real.sqrt v * z i) ∂(piGauss n)
+        ≤ (1 / m) * Real.log (∫ z, Real.exp (m * A (fun i => x i + Real.sqrt v * z i))
+          ∂(piGauss n)) := by
+      have hAint := integrable_shift_pi (v := v) hD hA hmeas x
+      have h := exp_integral_le_integral_exp_pi (hAint.const_mul m) hint
+      have h2 := Real.log_le_log (Real.exp_pos _) h
+      rw [Real.log_exp, integral_const_mul] at h2
+      have hm1 : 0 < 1 / m := by positivity
+      calc ∫ z, A (fun i => x i + Real.sqrt v * z i) ∂(piGauss n)
+          = (1 / m) * (m * ∫ z, A (fun i => x i + Real.sqrt v * z i) ∂(piGauss n)) := by
+            field_simp
+        _ ≤ _ := mul_le_mul_of_nonneg_left h2 hm1.le
+    have hmx := hmean x
+    rw [abs_le] at hmx ⊢
+    constructor
+    · linarith [hmx.1, hlow, hK1]
+    · linarith [hup', hK2]
+
 end Targets
 end SpinGlass
