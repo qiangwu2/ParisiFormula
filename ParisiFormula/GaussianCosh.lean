@@ -871,9 +871,14 @@ theorem sq_integral_mul_le {A A' : ℝ → ℝ} {m v : ℝ}
     have hpt : ∀ z, (g z - c) ^ 2 * e z
         = g z ^ 2 * e z - 2 * c * (g z * e z) + c ^ 2 * e z := by
       intro z; ring
-    rw [integral_congr_ae (Filter.Eventually.of_forall hpt)]
-    rw [integral_add ((hg2e_int.sub (hge_int.const_mul (2 * c)))) (heint.const_mul (c ^ 2)),
-      integral_sub hg2e_int (hge_int.const_mul (2 * c)),
+    -- ascribe the integrability facts as explicit lambdas: otherwise `.sub` yields a
+    -- `Pi.sub` term and `integral_add`'s pattern does not match the pointwise goal
+    have hcm : Integrable (fun z => 2 * c * (g z * e z)) μ := hge_int.const_mul (2 * c)
+    have h1 : Integrable (fun z => g z ^ 2 * e z - 2 * c * (g z * e z)) μ :=
+      hg2e_int.sub hcm
+    have h2 : Integrable (fun z => c ^ 2 * e z) μ := heint.const_mul (c ^ 2)
+    rw [integral_congr_ae (Filter.Eventually.of_forall hpt),
+      integral_add h1 h2, integral_sub hg2e_int hcm,
       integral_const_mul, integral_const_mul]
   have hEpos : 0 < ∫ z, e z ∂μ := integral_exp_pos heint
   set S : ℝ := ∫ z, g z ^ 2 * e z ∂μ with hS
