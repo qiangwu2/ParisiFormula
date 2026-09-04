@@ -1892,21 +1892,6 @@ theorem guerra_rs_bound {N : ℕ} [NeZero N] (hN : 0 < N) (β h q : ℝ)
   rw [← rsPressure_eq_parisiFunctional β h q hq0 hq1]
   nlinarith [heq, hnn, sq_nonneg β]
 
-/-- **Target 3 (Guerra 2003).**  For every `N`, every `(β, h)` and every finite-step scheme,
-`(1/N) E log Z_N ≤ 𝒫_k(m,q)`.
-
-Because the vendored covariance kernel is exactly `(Nβ²/2) R²` (no diagonal correction), the
-bound holds with no `O(1/N)` error term.
-
-Proof plan (blueprint, Chapter 3): interpolate between the SK Hamiltonian and a hierarchical
-Gaussian field `∑ᵢ σᵢ ∑_p z_p^i √(β²(q_{p+1} - q_p))` organised along a `k+2`-level tree;
-define `φ(t)` through iterated `(1/m_p) log E_p exp(m_p ·)`; compute `φ'(t)` via Gaussian
-IBP; the remainder is a sum of terms `-(β²/4)(m_{p+1} - m_p) E⟨(R - q_p)²⟩ ≤ 0`. -/
-theorem guerra_rsb_bound {N : ℕ} (hN : 0 < N) (β h : ℝ)
-    (sk : SKDisorder (Ω := Ω) N β h) {k : ℕ} (s : RSBScheme k) :
-    free_entropy (Ω := Ω) (N := N) (β := β) (h := h) sk.U ≤ parisiFunctional s β h := by
-  sorry
-
 /-- The Parisi value: infimum of the finite-step functionals over all `k` and all schemes. -/
 noncomputable def parisiValue (β h : ℝ) : ℝ :=
   sInf {x : ℝ | ∃ (k : ℕ) (s : RSBScheme k), x = parisiFunctional s β h}
@@ -1942,40 +1927,6 @@ theorem parisiValue_ge (β h : ℝ) : Real.log 2 - β ^ 2 / 4 ≤ parisiValue β
   refine le_csInf (parisiSet_nonempty β h) ?_
   rintro x ⟨k, s, rfl⟩
   exact parisiFunctional_ge s β h
-
-/-- **Target 3' (upper bound in the limit).**  Immediate from Target 3, and now *derived*
-from it rather than assumed separately: Target 3 bounds the free entropy by `𝒫_k(m,q)` for
-**every** scheme, so the free entropy is a lower bound for the whole defining set of
-`parisiValue`, hence at most its infimum (`le_csInf`, legitimate because
-`parisiSet_nonempty` supplies non-emptiness).  The `ε` and the `∀ᶠ` are then slack. -/
-theorem limsup_free_entropy_le_parisiValue (β h : ℝ)
-    (sk : ∀ N : ℕ, SKDisorder (Ω := Ω) N β h) :
-    ∀ ε > 0, ∀ᶠ N in atTop,
-      free_entropy (Ω := Ω) (N := N) (β := β) (h := h) (sk N).U ≤ parisiValue β h + ε := by
-  intro ε hε
-  filter_upwards [eventually_gt_atTop 0] with N hN
-  have hle : free_entropy (Ω := Ω) (N := N) (β := β) (h := h) (sk N).U ≤ parisiValue β h := by
-    refine le_csInf (parisiSet_nonempty β h) ?_
-    rintro x ⟨k, s, rfl⟩
-    exact guerra_rsb_bound hN β h (sk N) s
-  linarith
-
-/-! ## Milestone 4 — the Parisi formula (Talagrand 2006) -/
-
-/-- **Target 4 (the Parisi formula).**  `lim_N (1/N) E log Z_N = inf_k inf_{(m,q)} 𝒫_k(m,q)`.
-
-The upper bound is Target 3.  The lower bound is Talagrand's coupled-replica argument
-(Annals 2006), whose replica-symmetric ancestor is formalised in RSAT as
-`SpinGlass.AT.twoReplica_GT_bound`.  This is the long-term goal of the project; the
-statement is recorded so the finish line is unambiguous.
-
-Note that no independence assumption across sizes is needed: `free_entropy` depends only on
-the law of `sk N`. -/
-theorem parisi_formula (β h : ℝ) (hβ : 0 < β)
-    (sk : ∀ N : ℕ, SKDisorder (Ω := Ω) N β h) :
-    Tendsto (fun N => free_entropy (Ω := Ω) (N := N) (β := β) (h := h) (sk N).U)
-      atTop (𝓝 (parisiValue β h)) := by
-  sorry
 
 end Targets
 end SpinGlass
