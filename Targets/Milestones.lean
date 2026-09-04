@@ -481,6 +481,7 @@ theorem abs_inv_mul_sub_le_of_bounds {X c mm B : ℝ} (hmm : mm ≠ 0) (hB : 0 �
     _ ≤ B * mm ^ 2 / 2 := hb
     _ = |mm| * (|mm| * B / 2) := by
         rw [show |mm| * (|mm| * B / 2) = |mm| * |mm| * B / 2 by ring, hsq]
+        ring
 
 /--
 **The variance-perturbation estimate.**
