@@ -476,7 +476,7 @@ theorem abs_inv_mul_sub_le_of_bounds {X c mm B : ℝ} (hmm : mm ≠ 0) (hB : 0 �
     constructor <;> nlinarith
   have hsq : |mm| * |mm| = mm ^ 2 := by
     rw [abs_mul_abs_self]; ring
-  rw [← mul_le_mul_left hmpos]
+  refine le_of_mul_le_mul_left ?_ hmpos
   calc |mm| * |1 / mm * X - c| = |X - mm * c| := habs
     _ ≤ B * mm ^ 2 / 2 := hb
     _ = |mm| * (|mm| * B / 2) := by
