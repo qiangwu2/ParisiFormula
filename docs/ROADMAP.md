@@ -34,7 +34,20 @@ right statements: `parisiFunctional` typechecked both before and after an off-by
   - [ ] dominated differentiation of `Φ` (adapt `hasDerivAt_guerraPhi` from
         `port/GuerraInterpolation.lean` — port needed, or reuse `hasDerivAt_nu` from
         `Lemmas/SpinGlass/Replicas.lean`); (M)
-  - [ ] Gaussian IBP rewrite of `Φ'` (adapt `port/GuerraIBP.lean`); (M)
+  - [ ] Gaussian IBP rewrite of `Φ'` (`port/GuerraIBP.lean` is *not* adaptable — fork
+        mismatch, see `port/README.md`); (M, but see the blocker below)
+  - [ ] **BLOCKER, newly identified:** `IsGaussianHilbert (K_block …)`.  The IBP lemma needs
+        `(skL.U, K_block)` packaged as one Gaussian-Hilbert vector (RSAT has `UV` /
+        `isGaussianHilbert_UV` for an independent *pair*, which is what `IndepTriple` is for),
+        and that first needs `K_block` itself to be `IsGaussianHilbert`.  It is never shown
+        Gaussian anywhere in the project, and `IsGaussianHilbert` is a concrete
+        ONB-plus-independent-coordinates *structure*, not a property, so it is not closed
+        under linear images and no closure lemma exists in `Lemmas/SpinGlass/`.
+        Concatenating the transported bases does not work: with `(A u)(γ) = u(α)` and
+        `(B v)(γ) = v(σ)` one gets `⟪A u, B v⟫ = (∑_α u α)(∑_σ v σ) ≠ 0`.
+        Workable route: `HasGaussianLaw.map_fun` to push the law forward, then
+        `HasGaussianLaw.iIndepFun_of_covariance_inner` on an eigenbasis of the covariance
+        operator — which needs the finite-dimensional spectral theorem.  (L)
   - [ ] trace reduction and sign argument (adapt `port/GuerraTrace.lean` +
         `cov_deriv_*` + `hessian_free_energy_std_basis_offdiag_nonpos`). (M)
 - [ ] **1c** `free_entropy_tendsto`: plug 1a, 1b into `free_entropy_tendsto_of_bddAbove`. (S)

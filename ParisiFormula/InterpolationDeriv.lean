@@ -253,6 +253,35 @@ Only step 2, in two halves:
   `PhysLean.Probability.GaussianIBP.gaussian_integration_by_parts_hilbert_cov_op`
   together with `SpinGlass.trace_formula`.
 
+  **Obstacle (not recorded in the roadmap).**  That IBP lemma needs the *pair*
+  `(skL.U, K_block)` packaged as one `IsGaussianHilbert` vector — RSAT does this for a pair
+  of independent Gaussian-Hilbert vectors in `Lemmas/SpinGlass/Replicas.lean`
+  (`UV`, `isGaussianHilbert_UV`), which is what Target 1b's `IndepTriple` hypothesis is for.
+  But it first requires
+
+      `IsGaussianHilbert (K_block …)`,
+
+  and **that is not available**: `K_block` is never shown to be Gaussian anywhere in the
+  project, and `IsGaussianHilbert` is a *concrete* structure (an orthonormal basis together
+  with independent Gaussian coordinates), not a propositional property, so it is **not
+  closed under linear images** in any immediate way — there is no such closure lemma in
+  `Lemmas/SpinGlass/`.
+
+  `K_block ω : γ ↦ U_N(α) + U_M(σ)` is the image of the independent pair `(skN.U, skM.U)`
+  under a linear map, so it *is* Gaussian; the difficulty is exhibiting an orthonormal basis
+  diagonalising its covariance.  Note the naive attempt fails: writing `K_block = A(U_N) + B(U_M)`
+  with `(A u)(γ) = u(α)`, `(B v)(γ) = v(σ)`, one has `⟪A u, A u'⟫ = 2^M ⟪u,u'⟫` (so `A` is a
+  rescaled isometry, fine) but `⟪A u, B v⟫ = (∑_α u α)(∑_σ v σ) ≠ 0` in general, so the two
+  transported bases are *not* mutually orthogonal and cannot simply be concatenated.
+
+  The workable route is via Mathlib's `HasGaussianLaw`: push the law forward along the
+  continuous linear map (`HasGaussianLaw.map_fun`), then use
+  `HasGaussianLaw.iIndepFun_of_covariance_inner` (uncorrelated + jointly Gaussian ⟹
+  independent) on an eigenbasis of the covariance operator to assemble the
+  `IsGaussianHilbert` data.  This needs the finite-dimensional spectral theorem and is a
+  substantial piece of work in its own right — plausibly the single largest remaining item
+  in Milestone 1.
+
 Then `Φ' ≥ 0` on `Ioo 0 1` by `covDiff_hessian_sum_nonneg`, and `MonotoneOn Φ (Icc 0 1)`
 follows from continuity of `Φ` on `Icc 0 1` plus the derivative sign on the interior.
 Note that Mathlib has no Gaussian comparison theorem (no Slepian, no Sudakov–Fernique, no
