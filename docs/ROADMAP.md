@@ -112,9 +112,25 @@ right statements: `parisiFunctional` typechecked both before and after an off-by
       `√(β² q) = |β| √q` agrees with `β √q` under the symmetric Gaussian
       (`integral_reflect_stdGaussian`).  Supporting lemmas are in
       `ParisiFormula/GaussianCosh.lean`.
-- [ ] Moderate-growth / integrability lemmas for `parisiF` at every level. (M)
-      Partially available for the `log cosh` layer: `integrable_log_cosh_stdGaussian`
-      in `ParisiFormula/GaussianCosh.lean`, via `0 ≤ log cosh y ≤ |y|`.
+- [x] Moderate-growth / integrability lemmas for `parisiF` at every level. **Done.**
+      `HasLinearGrowth` (`ParisiFormula/GaussianCosh.lean`) is the right invariant:
+      `hasLinearGrowth_log_cosh` for the base, `Targets.hasLinearGrowth_parisiStep` for the
+      step, and `integrable_of_hasLinearGrowth` / `integrable_exp_mul_of_hasLinearGrowth` for
+      the two integrability side conditions.  `Targets.parisiF_props` packages these with
+      measurability and 1-Lipschitzness as a simultaneous induction over levels.
+
+- [ ] **BLOCKER for the variance-change assembly: `Parisi.T_add` is unusable as ported.**
+      It assumes `HasUniformBound A := ∃ C, ∀ x, |A x| ≤ C`, but the Parisi recursion is
+      *not* uniformly bounded — its base `log cosh y` grows like `|y|`, and every level
+      inherits linear growth, not boundedness.  So the semigroup law, which is the natural
+      route for factoring a change of `q_p` as an extra smoothing step
+      (`T_{m,v'} = T_{m,v} ∘ T_{m,v'-v}`), does not apply.
+      **Fix:** re-prove `T_add` under `HasLinearGrowth` instead.  The proof structure
+      (Gaussian convolution + Fubini) should carry; the two appeals to
+      `integrable_exp_mul_of_measurable_of_hasUniformBound` become
+      `integrable_exp_mul_of_hasLinearGrowth`, and the Fubini step needs product-measure
+      integrability, which follows from `exp (a|p₁ + p₂|) ≤ exp(a|p₁|) exp(a|p₂|)` and
+      `integrable_exp_abs_mul_stdGaussian` on each factor.  (M)
 - [ ] **2b** Lipschitz continuity in `(m, q)`. (L) — **statement corrected, still unproved.**
       It previously read `∀ k, ∃ C, ∀ s s'`, allowing the constant to depend on `k`, which
       cannot control `parisiValue = inf_k inf_{(m,q)} 𝒫_k`: nothing survives the infimum over
