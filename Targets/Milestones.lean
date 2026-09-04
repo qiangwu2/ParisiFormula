@@ -166,6 +166,112 @@ theorem parisiStep_eq_T {m : ℝ} (hm : m ≠ 0) (v : ℝ≥0) {A : ℝ → ℝ}
   rw [parisiStep, if_neg hm, Parisi.T,
       integral_comp_sqrt_mul_gaussianReal v hf x]
 
+/--
+**The smoothing step is non-expansive in the sup-norm of its argument.**
+
+If `|A - A'| ≤ ε` pointwise then `|T_{m,v} A - T_{m,v} A'| ≤ ε`, *uniformly in `m` and `v`*.
+
+This is the inductive engine for **Target 2b**: a perturbation of the scheme parameters
+`(m,q)` changes each level of the backward recursion by a controlled amount, and this lemma
+carries that change through the remaining levels without amplification.  The uniformity in
+`m` is what makes the resulting Lipschitz constant independent of `k`, which is exactly the
+property Target 2b needs (see the note there on quantifier order).
+
+For `m ≠ 0` the proof is the standard one: `|m(A - A')| ≤ |m| ε` gives `I ≤ e^{|m|ε} I'` for
+the two exponential integrals, hence `|log I - log I'| ≤ |m| ε`, and the prefactor `1/m`
+cancels the `|m|`.
+
+The integrability hypotheses are not removable: the `m = 0` branch needs `A`, `A'`
+integrable, and the `m ≠ 0` branch needs the exponentials integrable, else Lean's junk value
+`∫ = 0` breaks the comparison.  Discharging them for `parisiF` at every level is the
+"moderate-growth" item of Phase 2 in `docs/ROADMAP.md`.
+-/
+theorem parisiStep_dist_le {m v ε x : ℝ} {A A' : ℝ → ℝ}
+    (hε : ∀ y, |A y - A' y| ≤ ε)
+    (hA : Integrable (fun z => A (x + Real.sqrt v * z)) (gaussianReal 0 1))
+    (hA' : Integrable (fun z => A' (x + Real.sqrt v * z)) (gaussianReal 0 1))
+    (hEA : Integrable (fun z => Real.exp (m * A (x + Real.sqrt v * z))) (gaussianReal 0 1))
+    (hEA' : Integrable (fun z => Real.exp (m * A' (x + Real.sqrt v * z))) (gaussianReal 0 1)) :
+    |parisiStep m v A x - parisiStep m v A' x| ≤ ε := by
+  classical
+  by_cases hm : m = 0
+  · simp only [parisiStep, if_pos hm]
+    rw [← integral_sub hA hA']
+    calc |∫ z, (A (x + Real.sqrt v * z) - A' (x + Real.sqrt v * z)) ∂(gaussianReal 0 1)|
+        ≤ ∫ z, |A (x + Real.sqrt v * z) - A' (x + Real.sqrt v * z)| ∂(gaussianReal 0 1) := by
+          simpa [Real.norm_eq_abs] using
+            norm_integral_le_integral_norm
+              (μ := (gaussianReal 0 1))
+              (f := fun z => A (x + Real.sqrt v * z) - A' (x + Real.sqrt v * z))
+      _ ≤ ∫ _z : ℝ, ε ∂(gaussianReal 0 1) :=
+          integral_mono (hA.sub hA').abs (integrable_const ε)
+            (fun z => hε (x + Real.sqrt v * z))
+      _ = ε := by simp
+  · have hmabs : (0 : ℝ) < |m| := abs_pos.2 hm
+    have hIpos : 0 < ∫ z, Real.exp (m * A (x + Real.sqrt v * z)) ∂(gaussianReal 0 1) :=
+      integral_exp_pos hEA
+    have hI'pos : 0 < ∫ z, Real.exp (m * A' (x + Real.sqrt v * z)) ∂(gaussianReal 0 1) :=
+      integral_exp_pos hEA'
+    have key : ∀ B B' : ℝ → ℝ,
+        (∀ y, |B y - B' y| ≤ ε) →
+        Integrable (fun z => Real.exp (m * B (x + Real.sqrt v * z))) (gaussianReal 0 1) →
+        Integrable (fun z => Real.exp (m * B' (x + Real.sqrt v * z))) (gaussianReal 0 1) →
+        (∫ z, Real.exp (m * B (x + Real.sqrt v * z)) ∂(gaussianReal 0 1))
+          ≤ Real.exp (|m| * ε)
+            * ∫ z, Real.exp (m * B' (x + Real.sqrt v * z)) ∂(gaussianReal 0 1) := by
+      intro B B' hBB hEB hEB'
+      have hpt : ∀ z : ℝ,
+          Real.exp (m * B (x + Real.sqrt v * z))
+            ≤ Real.exp (|m| * ε) * Real.exp (m * B' (x + Real.sqrt v * z)) := by
+        intro z
+        rw [← Real.exp_add]
+        refine Real.exp_le_exp.2 ?_
+        have h1 : m * (B (x + Real.sqrt v * z) - B' (x + Real.sqrt v * z)) ≤ |m| * ε := by
+          calc m * (B (x + Real.sqrt v * z) - B' (x + Real.sqrt v * z))
+              ≤ |m * (B (x + Real.sqrt v * z) - B' (x + Real.sqrt v * z))| := le_abs_self _
+            _ = |m| * |B (x + Real.sqrt v * z) - B' (x + Real.sqrt v * z)| := abs_mul _ _
+            _ ≤ |m| * ε :=
+                mul_le_mul_of_nonneg_left (hBB (x + Real.sqrt v * z)) (abs_nonneg m)
+        linarith
+      calc (∫ z, Real.exp (m * B (x + Real.sqrt v * z)) ∂(gaussianReal 0 1))
+          ≤ ∫ z, Real.exp (|m| * ε) * Real.exp (m * B' (x + Real.sqrt v * z))
+              ∂(gaussianReal 0 1) :=
+            integral_mono hEB (hEB'.const_mul _) hpt
+        _ = Real.exp (|m| * ε)
+              * ∫ z, Real.exp (m * B' (x + Real.sqrt v * z)) ∂(gaussianReal 0 1) :=
+            integral_const_mul _ _
+    have hεsymm : ∀ y, |A' y - A y| ≤ ε := by
+      intro y
+      rw [abs_sub_comm]
+      exact hε y
+    have h1 := key A A' hε hEA hEA'
+    have h2 := key A' A hεsymm hEA' hEA
+    have hlog1 :
+        Real.log (∫ z, Real.exp (m * A (x + Real.sqrt v * z)) ∂(gaussianReal 0 1))
+          - Real.log (∫ z, Real.exp (m * A' (x + Real.sqrt v * z)) ∂(gaussianReal 0 1))
+          ≤ |m| * ε := by
+      have h := Real.log_le_log hIpos h1
+      rwa [Real.log_mul (Real.exp_ne_zero _) (ne_of_gt hI'pos), Real.log_exp,
+        ← sub_le_iff_le_add'] at h
+    have hlog2 :
+        Real.log (∫ z, Real.exp (m * A' (x + Real.sqrt v * z)) ∂(gaussianReal 0 1))
+          - Real.log (∫ z, Real.exp (m * A (x + Real.sqrt v * z)) ∂(gaussianReal 0 1))
+          ≤ |m| * ε := by
+      have h := Real.log_le_log hI'pos h2
+      rwa [Real.log_mul (Real.exp_ne_zero _) (ne_of_gt hIpos), Real.log_exp,
+        ← sub_le_iff_le_add'] at h
+    have habs :
+        |Real.log (∫ z, Real.exp (m * A (x + Real.sqrt v * z)) ∂(gaussianReal 0 1))
+          - Real.log (∫ z, Real.exp (m * A' (x + Real.sqrt v * z)) ∂(gaussianReal 0 1))|
+          ≤ |m| * ε := abs_le.2 ⟨by linarith, hlog1⟩
+    simp only [parisiStep, if_neg hm]
+    rw [← mul_sub, abs_mul, abs_one_div]
+    calc 1 / |m|
+          * |Real.log (∫ z, Real.exp (m * A (x + Real.sqrt v * z)) ∂(gaussianReal 0 1))
+              - Real.log (∫ z, Real.exp (m * A' (x + Real.sqrt v * z)) ∂(gaussianReal 0 1))|
+        ≤ 1 / |m| * (|m| * ε) := mul_le_mul_of_nonneg_left habs (by positivity)
+      _ = ε := by field_simp
+
 /-- Backward Parisi recursion for the SK model (`ξ(x) = x²/2`, so `ξ'(x) = x`).
 
 `parisiF s β j` is the function `F_{k+2-j}` of Talagrand's recursion:

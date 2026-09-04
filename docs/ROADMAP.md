@@ -1,5 +1,31 @@
 # Roadmap
 
+## Critical path to the goal
+
+**Goal: Talagrand's proof of the Parisi formula (Ann. of Math. 163 (2006)) — Target 4.**
+
+Target 4 is `Tendsto (fun N => s_N) atTop (𝓝 (parisiValue β h))`, which follows from
+
+* **limsup ≤** — Target 3' , itself immediate from Target 3 (Guerra's RSB bound) via
+  `parisiValue_le`; and
+* **liminf ≥** — Talagrand's coupled-replica lower bound (Milestone 4), whose induction on
+  the number of RSB levels needs **Target 2b** (regularity of `𝒫_k` in the parameters).
+
+So the critical path is: **3 → 3'** and **2b → 4**, with `parisiValue` well-definedness
+(done: `bddBelow_parisiSet`) underneath both.
+
+**Milestone 1 (Targets 1b, 1c) is *not* on this critical path.**  Target 4 is strictly
+stronger than 1c — convergence to `parisiValue` subsumes existence of a limit — and deriving
+4 from 3' plus the lower bound never invokes 1c.  Milestone 1 is the classical
+Guerra–Toninelli (2002) result and a useful warm-up that exercises the same interpolation +
+Gaussian-IBP machinery Milestone 3 needs, but work there should not be mistaken for progress
+toward Target 4.  (Caveat: Talagrand's own exposition sometimes uses existence of the limit
+as a convenience; if the Milestone 4 blueprint turns out to need it, 1c moves onto the path.)
+
+Infrastructure that serves *both* (and so is never wasted): the generalisation of
+`isGaussianHilbert_UV` to independent `IsGaussianHilbert` vectors, needed for Gaussian IBP in
+Milestone 3 as well as in Target 1b.
+
 Concrete, ordered work items. Each maps to a statement in `Targets/Milestones.lean` and a
 numbered result in `blueprint/blueprint.tex`. Items are sized roughly
 (S = hours, M = days, L = weeks, XL = months).
