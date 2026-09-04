@@ -161,11 +161,37 @@ right statements: `parisiFunctional` typechecked both before and after an off-by
       recursion as an extra invariant alongside
       `Targets.parisiF_props` — which has not been built.
 
-      So before proving 2b, decide: either (i) weaken the target to 1/2-Hölder in `q`
-      (reachable with the current toolkit), or (ii) add the second-derivative invariant and
-      keep the Lipschitz form.  This should be settled against Talagrand when the Milestone 4
-      blueprint is written, since what matters is only that the modulus be strong enough for
-      the induction there.
+      **Decision taken: (ii), keep Talagrand's Lipschitz form.**  The second-derivative
+      invariant is now built and verified — see `ParisiFormula/GaussianCosh.lean` §§9–15:
+      `HasParisiC2` (`0 ≤ A'' ≤ 1 - (A')²`), preserved by the smoothing step
+      (`Targets.hasParisiC2_parisiStep`), giving `|A''| ≤ 1` uniformly in the level and in
+      `k`, and hence the improved estimate
+      `abs_integral_shift_sub_le_second : |∫ A (x + √w z) dγ - A x| ≤ w` — order `w`, not
+      `√w`.  The **`q`-perturbation half of 2b is therefore unblocked.**
+
+### Open obstruction: the `m`-perturbation
+
+The `q` half is settled but the `m` half is not, and the difficulty is *not* just volume of
+work.  Writing `ψ(m) = T_{m,v} A (x) = (1/m) log 𝔼[e^{mY}]` with `Y = A(x + √v Z)`,
+
+  `dψ/dm = (⟨Y⟩_m - ψ(m)) / m`,   hence   `|dψ/dm| ≤ ½ · sup_{u ∈ [0,m]} Var_u(Y)`,
+
+where `⟨·⟩_u`, `Var_u` are taken in the tilted measure `∝ e^{uY} dγ`.  So a Lipschitz bound
+in `m` needs the **tilted variance bounded uniformly for `u ∈ [0,1]`**.
+
+* At `u = 0` the Gaussian Poincaré inequality gives `Var ≤ v · sup|A'|² ≤ v`.
+* For `u > 0` the tilted log-density is `u A(x + √v z) - z²/2 + const`.  Our own invariant
+  gives `A'' ≥ 0`, i.e. `A` is **convex**, so this is concave only while
+  `u v · sup A'' < 1`, i.e. `u v < 1`.  Brascamp–Lieb then yields `Var_u ≤ v/(1 - uv)`,
+  which **degenerates as `uv → 1`**.
+* Since `v = β²(q_{p+1} - q_p)` can be as large as `β²`, this route silently imposes
+  `β² < 1`.  That is not acceptable: Target 2b must hold for all `β`.
+
+So the naive route fails at large `β`, and Talagrand's argument must avoid it.  Reconstructing
+how is guesswork without the source; this is the point at which the **Milestone 4 blueprint**
+(or Talagrand Vol. II directly) stops being optional.  Recommended next step: read out
+Talagrand's own `m`-continuity estimate and state it, rather than re-deriving.  (M–L, but
+gated on the reference rather than on Lean.)
 
 ## Phase 3 — Milestone 3: Guerra's RSB bound  (L–XL)
 
