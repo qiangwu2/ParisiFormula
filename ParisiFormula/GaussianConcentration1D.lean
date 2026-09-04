@@ -44,6 +44,14 @@ theorem measurePreserving_funUnique_gaussian :
       (Measure.pi fun _ : Unit => gaussianReal 0 1) (gaussianReal 0 1) :=
   measurePreserving_funUnique (gaussianReal 0 1) Unit
 
+/-- `WithLp.toLp 2` is measurable: it is the inverse of a continuous linear equivalence.
+(RSAT uses the same identification, e.g. in `gaussian_concentration.lean`.) -/
+theorem measurable_toLp_unit :
+    Measurable (WithLp.toLp 2 : (Unit → ℝ) → EuclideanSpace ℝ Unit) := by
+  rw [show (WithLp.toLp 2 : (Unit → ℝ) → EuclideanSpace ℝ Unit)
+        = (PiLp.continuousLinearEquiv 2 ℝ (fun _ : Unit => ℝ)).symm from rfl]
+  exact (PiLp.continuousLinearEquiv 2 ℝ (fun _ : Unit => ℝ)).symm.continuous.measurable
+
 /--
 Integrals against the one-dimensional Euclidean Gaussian are integrals against
 `gaussianReal 0 1`.
@@ -70,8 +78,9 @@ theorem integral_standardGaussianOnEuclidean_unit (G : EuclideanSpace ℝ Unit �
             ∂(Measure.pi fun _ : Unit => gaussianReal 0 1) := by
           exact integral_congr_ae (Filter.Eventually.of_forall hfun)
       _ = ∫ z : ℝ, G (WithLp.toLp 2 (fun _ : Unit => z)) ∂(gaussianReal 0 1) :=
-          measurePreserving_funUnique_gaussian.integral_comp' _
-  · exact (WithLp.measurableEquiv 2 _).measurable.aemeasurable
+          measurePreserving_funUnique_gaussian.integral_comp'
+            (fun z : ℝ => G (WithLp.toLp 2 (fun _ : Unit => z)))
+  · exact measurable_toLp_unit.aemeasurable
   · exact hG.aestronglyMeasurable
 
 /-! ## 2. Lipschitz functions on the one-dimensional Euclidean space -/
@@ -111,16 +120,16 @@ theorem gaussianReal_mgf_le_of_lipschitz (f : ℝ → ℝ) (L : ℝ) (hL : 0 < L
   have hmean : (∫ x, F x ∂(standardGaussianMeasureOnEuclidean Unit))
       = ∫ y : ℝ, f y ∂(gaussianReal 0 1) := by
     rw [integral_standardGaussianOnEuclidean_unit F hFmeas]
-    simp [hFdef]
   -- and so do the two mgfs
   have hmgf : mgf (fun x => F x - ∫ y, F y ∂(standardGaussianMeasureOnEuclidean Unit))
       (standardGaussianMeasureOnEuclidean Unit) t
       = mgf (fun z : ℝ => f z - ∫ y : ℝ, f y ∂(gaussianReal 0 1)) (gaussianReal 0 1) t := by
     simp only [mgf]
-    rw [integral_standardGaussianOnEuclidean_unit
-      (fun x => Real.exp (t * (F x - ∫ y, F y ∂(standardGaussianMeasureOnEuclidean Unit))))
-      (by fun_prop)]
-    simp [hFdef, hmean]
+    have hmeasG : Measurable
+        (fun x : EuclideanSpace ℝ Unit =>
+          Real.exp (t * (F x - ∫ y, F y ∂(standardGaussianMeasureOnEuclidean Unit)))) :=
+      Real.continuous_exp.measurable.comp ((hFmeas.sub measurable_const).const_mul t)
+    rw [integral_standardGaussianOnEuclidean_unit _ hmeasG, hmean]
   rw [← hmgf]
   exact product_standardGaussian_mgf_le F L hL hFlip t
 
