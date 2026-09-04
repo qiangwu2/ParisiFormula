@@ -279,4 +279,54 @@ theorem integrable_exp_mul_of_hasLinearGrowth {A : ℝ → ℝ}
     rw [ha, hb]; ring
   linarith
 
+/-! ## 7. `log cosh` is 1-Lipschitz
+
+Linear growth (§6) buys integrability.  For Target 2b one also needs *Lipschitz* control:
+when the scheme parameter `q_p` moves, the variance of the smoothing step moves, and the
+argument `x + √v z` moves by `(√v - √v') z` — which is not uniformly small, so
+`parisiStep_dist_le` cannot be applied to it unless the function being smoothed is Lipschitz.
+
+The base of the Parisi recursion is 1-Lipschitz, and (via `parisiStep_dist_le`, applied after
+translating the argument) the smoothing step does not increase the Lipschitz constant.  So
+every level `F_p` of the recursion is 1-Lipschitz.
+-/
+
+/-- `cosh a ≤ cosh b · exp |a - b|`. -/
+theorem cosh_le_cosh_mul_exp_abs (a b : ℝ) :
+    Real.cosh a ≤ Real.cosh b * Real.exp |a - b| := by
+  rw [Real.cosh_eq, Real.cosh_eq]
+  rcases le_or_gt b a with hab | hab
+  · rw [abs_of_nonneg (by linarith : (0:ℝ) ≤ a - b)]
+    have hexp : (Real.exp b + Real.exp (-b)) / 2 * Real.exp (a - b)
+        = (Real.exp a + Real.exp (a - 2 * b)) / 2 := by
+      rw [add_mul, ← Real.exp_add, ← Real.exp_add]
+      ring_nf
+    rw [hexp]
+    have h : Real.exp (-a) ≤ Real.exp (a - 2 * b) :=
+      Real.exp_le_exp.2 (by linarith)
+    linarith
+  · rw [abs_of_neg (by linarith : a - b < 0)]
+    have hexp : (Real.exp b + Real.exp (-b)) / 2 * Real.exp (-(a - b))
+        = (Real.exp (2 * b - a) + Real.exp (-a)) / 2 := by
+      rw [add_mul, ← Real.exp_add, ← Real.exp_add]
+      ring_nf
+    rw [hexp]
+    have h : Real.exp a ≤ Real.exp (2 * b - a) :=
+      Real.exp_le_exp.2 (by linarith)
+    linarith
+
+/-- **`log cosh` is 1-Lipschitz.**  This is the base case of the Lipschitz induction. -/
+theorem log_cosh_dist_le (a b : ℝ) :
+    |Real.log (Real.cosh a) - Real.log (Real.cosh b)| ≤ |a - b| := by
+  have hone : ∀ u w : ℝ,
+      Real.log (Real.cosh u) - Real.log (Real.cosh w) ≤ |u - w| := by
+    intro u w
+    have h := Real.log_le_log (Real.cosh_pos u) (cosh_le_cosh_mul_exp_abs u w)
+    rw [Real.log_mul (ne_of_gt (Real.cosh_pos w)) (Real.exp_ne_zero _), Real.log_exp] at h
+    linarith
+  refine abs_le.2 ⟨?_, hone a b⟩
+  have h := hone b a
+  rw [abs_sub_comm] at h
+  linarith
+
 end SpinGlass
