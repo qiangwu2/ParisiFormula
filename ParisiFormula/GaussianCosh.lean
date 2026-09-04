@@ -297,19 +297,25 @@ theorem cosh_le_cosh_mul_exp_abs (a b : ℝ) :
   rw [Real.cosh_eq, Real.cosh_eq]
   rcases le_or_gt b a with hab | hab
   · rw [abs_of_nonneg (by linarith : (0:ℝ) ≤ a - b)]
+    have e1 : Real.exp b * Real.exp (a - b) = Real.exp a := by
+      rw [← Real.exp_add]; congr 1; ring
+    have e2 : Real.exp (-b) * Real.exp (a - b) = Real.exp (a - 2 * b) := by
+      rw [← Real.exp_add]; congr 1; ring
     have hexp : (Real.exp b + Real.exp (-b)) / 2 * Real.exp (a - b)
         = (Real.exp a + Real.exp (a - 2 * b)) / 2 := by
-      rw [add_mul, ← Real.exp_add, ← Real.exp_add]
-      ring_nf
+      rw [div_mul_eq_mul_div, add_mul, e1, e2]
     rw [hexp]
     have h : Real.exp (-a) ≤ Real.exp (a - 2 * b) :=
       Real.exp_le_exp.2 (by linarith)
     linarith
   · rw [abs_of_neg (by linarith : a - b < 0)]
+    have e1 : Real.exp b * Real.exp (-(a - b)) = Real.exp (2 * b - a) := by
+      rw [← Real.exp_add]; congr 1; ring
+    have e2 : Real.exp (-b) * Real.exp (-(a - b)) = Real.exp (-a) := by
+      rw [← Real.exp_add]; congr 1; ring
     have hexp : (Real.exp b + Real.exp (-b)) / 2 * Real.exp (-(a - b))
         = (Real.exp (2 * b - a) + Real.exp (-a)) / 2 := by
-      rw [add_mul, ← Real.exp_add, ← Real.exp_add]
-      ring_nf
+      rw [div_mul_eq_mul_div, add_mul, e1, e2]
     rw [hexp]
     have h : Real.exp a ≤ Real.exp (2 * b - a) :=
       Real.exp_le_exp.2 (by linarith)
