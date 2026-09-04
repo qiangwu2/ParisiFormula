@@ -1855,12 +1855,22 @@ theorem parisiValue_ge (β h : ℝ) : Real.log 2 - β ^ 2 / 4 ≤ parisiValue β
   rintro x ⟨k, s, rfl⟩
   exact parisiFunctional_ge s β h
 
-/-- **Target 3' (upper bound in the limit).**  Immediate from Target 3. -/
+/-- **Target 3' (upper bound in the limit).**  Immediate from Target 3, and now *derived*
+from it rather than assumed separately: Target 3 bounds the free entropy by `𝒫_k(m,q)` for
+**every** scheme, so the free entropy is a lower bound for the whole defining set of
+`parisiValue`, hence at most its infimum (`le_csInf`, legitimate because
+`parisiSet_nonempty` supplies non-emptiness).  The `ε` and the `∀ᶠ` are then slack. -/
 theorem limsup_free_entropy_le_parisiValue (β h : ℝ)
     (sk : ∀ N : ℕ, SKDisorder (Ω := Ω) N β h) :
     ∀ ε > 0, ∀ᶠ N in atTop,
       free_entropy (Ω := Ω) (N := N) (β := β) (h := h) (sk N).U ≤ parisiValue β h + ε := by
-  sorry
+  intro ε hε
+  filter_upwards [eventually_gt_atTop 0] with N hN
+  have hle : free_entropy (Ω := Ω) (N := N) (β := β) (h := h) (sk N).U ≤ parisiValue β h := by
+    refine le_csInf (parisiSet_nonempty β h) ?_
+    rintro x ⟨k, s, rfl⟩
+    exact guerra_rsb_bound hN β h (sk N) s
+  linarith
 
 /-! ## Milestone 4 — the Parisi formula (Talagrand 2006) -/
 
