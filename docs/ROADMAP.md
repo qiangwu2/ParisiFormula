@@ -396,62 +396,55 @@ The two closed forms match exactly (`rsPressure_eq_parisiFunctional`).
 *This supersedes the previous "the engine is missing" note for the `k = 0` case.*  The engine
 is still missing for the cascade, and for the Guerra–Toninelli path of Target 1b.
 
-### What remains: general `k` (the cascade)
+### The proof structure is now in Lean (2026-09-04) — `Targets/Talagrand.lean`
 
-RSAT's comparison field is a *single* Gaussian (`SimpleDisorder`, covariance `Nβ²q·R`) — the
-`k = 0` cascade.  For `k ≥ 1` the comparison field is the `(k+2)`-level cascade and the free
-energy is computed through the iterated `(1/m_p) log 𝔼_p exp(m_p ·)`, i.e. through
-`parisiStep`.  A search confirms RSAT has **no** cascade/Ruelle machinery, so this must be
-built.  Two halves:
+A re-evaluation: building the cascade derivative bottom-up, lemma by lemma, without the
+proof structure in Lean was the wrong order.  Talagrand's §2 is now formalised top-down, and
+**Targets 3 and 4 are derived — machine-checked — from the paper's two analytic cores**:
 
-1. **Endpoint (`t = 0`) — DONE (2026-09-04).**  `Targets/CascadeEndpoint.lean`, no `sorry`,
-   all results axiom-clean.  The comparison Hamiltonian is `∑_i σ_i (∑_p z_p^i) + h ∑_i σ_i`,
-   a sum over sites of independent terms, so the whole `k+2`-fold recursion **factorises over
-   sites** and the surviving one-dimensional recursion is exactly `parisiF`:
+| item | Lean | status |
+|---|---|---|
+| (2.1)–(2.4) `φ(t)` | `guerraPhi` (base `guerraBase` pushed through `cascadeT`) | defined |
+| (2.18) `ψ(t)` | `guerraPsi`; `ψ(1) = 𝒫_k` on the nose | proved |
+| (2.14) `φ(0) = log 2 + X_0` | `guerraPhi_zero` | proved, axiom-clean |
+| `φ(1) =` free entropy | `guerraPhi_one` | proved, axiom-clean |
+| **Theorem 2.1** Guerra's identity | `guerra_identity` | **`sorry`** — core 1 |
+| **Theorem 2.2** | `talagrand_theorem_2_2` | **`sorry`** — core 2 |
+| (2.12)–(2.15) Target 3 | `guerra_rsb_bound` | derived from core 1 |
+| Target 3′ | `limsup_free_entropy_le_parisiValue` | derived |
+| **Theorem 1.1 = Target 4** | `parisi_formula` | **derived from cores 1 + 2 + 2b-i** |
 
-   * `parisiStepPi_sum` — one `N`-site level applied to `y ↦ ∑_i a (y i)` is
-     `∑_i parisiStep m v a (x i)`.  For `m ≠ 0` this is Fubini for products
-     (`integral_fintype_prod_eq_prod`) plus `log (∏ …) = ∑ log …`; for `m = 0` it is
-     linearity plus the coordinate marginal of `Measure.pi` (`piGauss_map_eval`).
-   * `spinSum_exp` / `log_spinSum_exp` — the innermost level, `∑_σ exp (∑_i σ_i c_i)
-     = ∏_i 2 cosh (c_i)`.
-   * `parisiStep_const_add` — `T (c + A) = c + T A`, so the `log 2` passes through.
-   * `parisiFPi_eq` — every level is `∑_i (log 2 + parisiF s β j (y_i))`.
-   * `parisiFPi_top` / `parisiFPi_top_eq_parisiFunctional` — at the constant configuration
-     `h`, `(1/N)` times the top of the cascade is `𝒫_k(m,q)` **plus exactly the correction
-     term** `(β²/4) ∑_p m_{p+1}(q_{p+2}² - q_{p+1}²)` that the derivative half supplies.
+`#print axioms` confirms `parisi_formula` depends on `sorryAx` only through the two cores.
+The deduction of Theorem 1.1 is exactly the paper's (pp. 229–230): `|φ'| ≤ L` from core 1
+gives `φ_N(1) ≥ φ_N(t₀) - L(1-t₀)`, core 2 gives `φ_N(t₀) → ψ(t₀) ≥ 𝒫`, and `t₀ < 1` is
+arbitrary; the upper half is Target 3′.
 
-2. **Derivative (`φ'(t) ≤ 0`) — the large piece.**  Gaussian integration by parts applied
-   *through* the nested exponential averages, producing
-   `-(β²/4) ∑_p (m_{p+1} - m_p) 𝔼⟨(R_{1,2} - q_p)²⟩_t ≤ 0`.  This is where the tree Gibbs
-   measure appears and is the genuine infrastructure cost.  Estimated 1500–3000 lines.
+**So the Parisi formula is now formalised modulo exactly two named theorems of the paper.**
 
-**Next milestone: half 2**, the only remaining piece of Target 3.  It needs the Gaussian
-interpolation derivative *through the nested exponential averages* — the tree Gibbs measure.
-This is the same engine that Target 1b needs for the Guerra–Toninelli path, in a harder
-setting; RSAT supplies it only for the single-Gaussian comparison field (which is how the
-`k = 0` case was closed).
+#### Core 1 — `guerra_identity` (Theorem 2.1)
 
+`φ'(t) = -parisiCorrection - Rem(t)` on `(0,1)` with `0 ≤ Rem ≤ β²`, plus continuity on
+`[0,1]`.  Ingredients already built in `Targets/CascadeDeriv.lean`:
 
+* the tilted (Gibbs) chain rule through one level, `hasDerivAt_parisiStep_param`, with both
+  branches of `parisiStep` unified by `tiltWeight`;
+* the growth bounds that let it chain — `tiltWeight_le`, `integral_abs_mul_tiltWeight_le`,
+  `abs_integral_mul_tiltWeight_le` — which required identifying Lipschitzness as the
+  load-bearing hypothesis (without it the tilted moment is not bounded uniformly in `x`).
 
-**Blocker found (CI run 33823189093).**  The four `port/` Guerra files cannot be compiled
-against this project: they were cut from **or4nge19/SpinGlass** `d1342fd`, whereas
-`Lemmas/SpinGlass/` is vendored from **njimaMath/research_public** (RSAT) `f3b34d2`, a
-trimmed fork.  They reference or4nge19 API that RSAT never vendored — the whole
-`FiniteGibbs` namespace, `SKDisorder.measU`/`SimpleDisorder.measV`, `disorderPair`,
-`abs_free_energy_density_le`, `integrable_norm_of_isGaussian_map`, `norm_dH_t_le_on_ball`.
-Vendoring the or4nge19 modules alongside would collide in the shared `SpinGlass` namespace.
-So Phase 3's k = 0 case must be **rebuilt on RSAT's API**, not ported.  RSAT already supplies
-`H_t`, `hasDerivAt_H_t`, `hasDerivAt_nu`, `trace_formula`, `trace_sk`, `trace_simple` and
-`guerra_derivative_bound_algebra`; the missing link is the Gaussian-IBP step from the
-derivative of `∫ free_energy_density (H_t ·)` to the trace expression.  See `port/README.md`.
+Remaining: (a) the induction chaining the rule over the `k+2` levels — mechanical; (b) the
+derivative of `guerraBase` in `t` — Gaussian IBP in the disorder, where the SK covariance
+`(Nβ²/2)R²` enters, plus the `1-t` scaling of the level variances; (c) the algebra
+identifying the result with `-corr - (β²/4)∑(m_ℓ - m_{ℓ-1})μ_ℓ((R-q_ℓ)²)`.  For (b) RSAT's
+`gaussian_integration_by_parts_hilbert_cov` and `trace_formula` are the tools; the disorder
+must be packaged as an `IsGaussianHilbert` vector, the same `isGaussianHilbert_prod` task
+recorded for Target 1b.
 
+#### Core 2 — `talagrand_theorem_2_2` (Theorem 2.2)
 
-- [ ] Finite Gaussian tree: the field `∑ᵢ σᵢ ∑_p z_p^i √(β²(q_{p+1}-q_p))` as an
-      `IsGaussianHilbert` vector in `EnergySpace N`, with its covariance kernel. (L)
-- [ ] Hierarchical expectation `Z_p = (E_p Z_{p+1}^{m_p})^{1/m_p}` and endpoint `φ(0)`. (L)
-- [ ] Derivative `φ'(t)` via Gaussian IBP and positivity of each term. (XL)
-- [ ] **3** `guerra_rsb_bound`; **3'** `limsup_free_entropy_le_parisiValue`.
+The paper's §3–§5: Proposition 2.3 (coupled-replica overlap concentration) and its
+consequences.  Untouched.  This is the bulk of the paper and the bulk of what remains.
+
 
 ## Phase 4 — Milestone 4: Talagrand's lower bound  (XL, open-ended)
 
