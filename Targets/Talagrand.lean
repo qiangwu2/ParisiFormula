@@ -44,7 +44,7 @@ paper, and the deduction of the Parisi formula from those theorems is machine-ch
   arbitrary.  The upper half is Target 3'.
 -/
 import ParisiFormula.CoordStein
-import Targets.CascadeSecondPi
+import Targets.CascadeFieldPi
 
 open MeasureTheory ProbabilityTheory Real Filter Topology
 
@@ -1685,6 +1685,283 @@ theorem guerra_disorder_stein {N : ℕ} (β h : ℝ)
       (fun i U r => hasDerivAt_guerraUD_Uline N s β U (sk.hU.w i) (sk.hU.w i) h ht j x r)
       hΦm hDm hintCoord hintΦ hintD
 
+/-! ## 2h. Cascade-field derivatives
+
+For `t > 0`, translating the field is exactly a disorder translation in the
+direction represented by the spin-field pairing.  This identifies the field
+derivatives with the already proved disorder derivatives at every depth.
+-/
+
+/-- A field direction embedded in the disorder space with the interpolation scaling. -/
+noncomputable def guerraFieldDirection (n : ℕ) (t : ℝ) (a : Fin n → ℝ) : EnergySpace n :=
+  WithLp.toLp 2 (fun σ => (Real.sqrt (1 - t) / Real.sqrt t) * ∑ i, spin n σ i * a i)
+
+theorem guerraH_field_shift (n : ℕ) (U : EnergySpace n) (h : ℝ) {t : ℝ} (ht : 0 < t)
+    (a y : Fin n → ℝ) (r : ℝ) (σ : Config n) :
+    guerraH n U h t (y + r • a) σ =
+      guerraH n (U + r • guerraFieldDirection n t a) h t y σ := by
+  have hs : Real.sqrt t ≠ 0 := (Real.sqrt_pos.mpr ht).ne'
+  have hdir : Real.sqrt t * guerraFieldDirection n t a σ =
+      Real.sqrt (1 - t) * ∑ i, spin n σ i * a i := by
+    dsimp [guerraFieldDirection]
+    field_simp
+  have hsum : (∑ i, spin n σ i * (Real.sqrt (1 - t) * (y + r • a) i + h)) =
+      (∑ i, spin n σ i * (Real.sqrt (1 - t) * y i + h)) +
+        r * (Real.sqrt t * guerraFieldDirection n t a σ) := by
+    rw [hdir, Finset.mul_sum, Finset.mul_sum, ← Finset.sum_add_distrib]
+    refine Finset.sum_congr rfl (fun i _ => ?_)
+    simp only [Pi.add_apply, Pi.smul_apply, smul_eq_mul]
+    ring
+  simp only [guerraH, PiLp.add_apply, PiLp.smul_apply, smul_eq_mul]
+  rw [hsum]
+  ring
+
+theorem guerraBase_field_shift (n : ℕ) (U : EnergySpace n) (h : ℝ) {t : ℝ} (ht : 0 < t)
+    (a y : Fin n → ℝ) (r : ℝ) :
+    guerraBase n U h t (y + r • a) =
+      guerraBase n (U + r • guerraFieldDirection n t a) h t y := by
+  simp only [guerraBase, guerraH_field_shift n U h ht a y r]
+
+/-- Translating the free field commutes with all cascade integrations. -/
+theorem guerraCascade_field_shift {k : ℕ} (n : ℕ) (s : RSBScheme k) (β : ℝ)
+    (U : EnergySpace n) (h : ℝ) {t : ℝ} (ht : 0 < t)
+    (a x : Fin n → ℝ) (r : ℝ) (j : ℕ) :
+    cascadeT n s β 1 (guerraBase n U h t) j (x + r • a) =
+      cascadeT n s β 1 (guerraBase n (U + r • guerraFieldDirection n t a) h t) j x := by
+  rw [← cascadeT_shift n s β 1 (guerraBase n U h t) (r • a) j x]
+  have hbase : (fun y => guerraBase n U h t (y + r • a)) =
+      guerraBase n (U + r • guerraFieldDirection n t a) h t :=
+    funext (fun y => guerraBase_field_shift n U h ht a y r)
+  rw [hbase]
+
+theorem guerraUD_field_shift {k : ℕ} (n : ℕ) (s : RSBScheme k) (β : ℝ)
+    (U V : EnergySpace n) (h : ℝ) {t : ℝ} (ht : t ∈ Set.Ioo (0 : ℝ) 1)
+    (a x : Fin n → ℝ) (r : ℝ) (j : ℕ) :
+    guerraUD n s β U V h t j (x + r • a) =
+      guerraUD n s β (U + r • guerraFieldDirection n t a) V h t j x := by
+  have hleft := hasDerivAt_cascade_Uline n s β U V h ht j (x + r • a) 0
+  have hright := hasDerivAt_cascade_Uline n s β (U + r • guerraFieldDirection n t a) V h ht j x 0
+  have hfun : (fun u : ℝ => cascadeT n s β 1 (guerraBase n (U + u • V) h t) j (x + r • a)) =
+      fun u : ℝ => cascadeT n s β 1 (guerraBase n (U + r • guerraFieldDirection n t a + u • V) h t) j x := by
+    funext u
+    rw [guerraCascade_field_shift n s β (U + u • V) h ht.1 a x r j]
+    rw [show U + u • V + r • guerraFieldDirection n t a =
+      U + r • guerraFieldDirection n t a + u • V by abel]
+  rw [hfun] at hleft
+  simpa only [zero_smul, add_zero] using hleft.unique hright
+
+theorem guerraUUD_field_shift {k : ℕ} (n : ℕ) (s : RSBScheme k) (β : ℝ)
+    (U V W : EnergySpace n) (h : ℝ) {t : ℝ} (ht : t ∈ Set.Ioo (0 : ℝ) 1)
+    (a x : Fin n → ℝ) (r : ℝ) (j : ℕ) :
+    guerraUUD n s β U V W h t j (x + r • a) =
+      guerraUUD n s β (U + r • guerraFieldDirection n t a) V W h t j x := by
+  have hleft := hasDerivAt_guerraUD_Uline n s β U V W h ht j (x + r • a) 0
+  have hright := hasDerivAt_guerraUD_Uline n s β (U + r • guerraFieldDirection n t a) V W h ht j x 0
+  have hfun : (fun u : ℝ => guerraUD n s β (U + u • W) V h t j (x + r • a)) =
+      fun u : ℝ => guerraUD n s β (U + r • guerraFieldDirection n t a + u • W) V h t j x := by
+    funext u
+    rw [guerraUD_field_shift n s β (U + u • W) V h ht a x r j]
+    rw [show U + u • W + r • guerraFieldDirection n t a =
+      U + r • guerraFieldDirection n t a + u • W by abel]
+  rw [hfun] at hleft
+  simpa only [zero_smul, add_zero] using hleft.unique hright
+
+/-- First field derivative in direction `a`. -/
+noncomputable def guerraYD {k : ℕ} (n : ℕ) (s : RSBScheme k) (β : ℝ)
+    (U : EnergySpace n) (a : Fin n → ℝ) (h t : ℝ) (j : ℕ) (x : Fin n → ℝ) : ℝ :=
+  guerraUD n s β U (guerraFieldDirection n t a) h t j x
+
+/-- Mixed field derivative in directions `a,b`. -/
+noncomputable def guerraYYD {k : ℕ} (n : ℕ) (s : RSBScheme k) (β : ℝ)
+    (U : EnergySpace n) (a b : Fin n → ℝ) (h t : ℝ) (j : ℕ) (x : Fin n → ℝ) : ℝ :=
+  guerraUUD n s β U (guerraFieldDirection n t a) (guerraFieldDirection n t b) h t j x
+
+theorem hasDerivAt_guerraCascade_Yline {k : ℕ} (n : ℕ) (s : RSBScheme k) (β : ℝ)
+    (U : EnergySpace n) (h : ℝ) {t : ℝ} (ht : t ∈ Set.Ioo (0 : ℝ) 1)
+    (a x : Fin n → ℝ) (r : ℝ) (j : ℕ) :
+    HasDerivAt (fun u => cascadeT n s β 1 (guerraBase n U h t) j (x + u • a))
+      (guerraYD n s β U a h t j (x + r • a)) r := by
+  simp only [guerraYD, guerraCascade_field_shift n s β U h ht.1 a x,
+    guerraUD_field_shift n s β U (guerraFieldDirection n t a) h ht a x r j]
+  exact hasDerivAt_cascade_Uline n s β U (guerraFieldDirection n t a) h ht j x r
+
+theorem hasDerivAt_guerraYD_Yline {k : ℕ} (n : ℕ) (s : RSBScheme k) (β : ℝ)
+    (U : EnergySpace n) (h : ℝ) {t : ℝ} (ht : t ∈ Set.Ioo (0 : ℝ) 1)
+    (a b x : Fin n → ℝ) (r : ℝ) (j : ℕ) :
+    HasDerivAt (fun u => guerraYD n s β U a h t j (x + u • b))
+      (guerraYYD n s β U a b h t j (x + r • b)) r := by
+  simp only [guerraYD, guerraYYD,
+    guerraUD_field_shift n s β U (guerraFieldDirection n t a) h ht b x,
+    guerraUUD_field_shift n s β U (guerraFieldDirection n t a) (guerraFieldDirection n t b) h ht b x r j]
+  exact hasDerivAt_guerraUD_Uline n s β U (guerraFieldDirection n t a)
+    (guerraFieldDirection n t b) h ht j x r
+
+/-- A single-site field direction is the corresponding spin observable. -/
+theorem guerraFieldDirection_single (n : ℕ) (t : ℝ) (i : Fin n) (σ : Config n) :
+    guerraFieldDirection n t (Pi.single i 1) σ =
+      (Real.sqrt (1 - t) / Real.sqrt t) * spin n σ i := by
+  simp [guerraFieldDirection, Pi.single_apply]
+
+theorem guerraFieldDirection_eq_sum (n : ℕ) (t : ℝ) (a : Fin n → ℝ) :
+    guerraFieldDirection n t a = ∑ i, a i • guerraFieldDirection n t (Pi.single i 1) := by
+  ext σ
+  change (Real.sqrt (1 - t) / Real.sqrt t) * (∑ i, spin n σ i * a i) =
+    (WithLp.ofLp (∑ i, a i • guerraFieldDirection n t (Pi.single i 1))) σ
+  rw [WithLp.ofLp_sum, Finset.sum_apply]
+  simp only [WithLp.ofLp_smul, Pi.smul_apply, smul_eq_mul]
+  change (Real.sqrt (1 - t) / Real.sqrt t) * (∑ i, spin n σ i * a i) =
+    ∑ i, a i * guerraFieldDirection n t (Pi.single i 1) σ
+  simp_rw [guerraFieldDirection_single]
+  rw [Finset.mul_sum]
+  exact Finset.sum_congr rfl (fun i _ => by ring)
+
+/-- Expand a directional field derivative into its site-coordinate derivatives. -/
+theorem guerraYD_eq_sum {k : ℕ} (n : ℕ) (s : RSBScheme k) (β : ℝ)
+    (U : EnergySpace n) (h : ℝ) {t : ℝ} (ht : t ∈ Set.Ioo (0 : ℝ) 1)
+    (a x : Fin n → ℝ) (j : ℕ) :
+    guerraYD n s β U a h t j x = ∑ i, a i * guerraYD n s β U (Pi.single i 1) h t j x := by
+  unfold guerraYD
+  rw [guerraFieldDirection_eq_sum, guerraUD_sum_smul n s β U h ht]
+
+theorem measurable_guerraYD {k : ℕ} (n : ℕ) (s : RSBScheme k) (β : ℝ)
+    (U : EnergySpace n) (h : ℝ) {t : ℝ} (ht : t ∈ Set.Ioo (0 : ℝ) 1)
+    (a : Fin n → ℝ) (j : ℕ) : Measurable (guerraYD n s β U a h t j) :=
+  (guerraUD_measurable_and_bound n s β U (guerraFieldDirection n t a) h ht j).1
+
+theorem measurable_guerraYYD {k : ℕ} (n : ℕ) (s : RSBScheme k) (β : ℝ)
+    (U : EnergySpace n) (h t : ℝ) (a b : Fin n → ℝ) (j : ℕ) :
+    Measurable (guerraYYD n s β U a b h t j) :=
+  measurable_guerraUUD s β U (guerraFieldDirection n t a) (guerraFieldDirection n t b) h t j
+
+/-- The conditional field integration-by-parts identity at every cascade level.
+Both the Hessian term and the derivative of the tilted weight are retained. -/
+theorem guerra_field_stein {k : ℕ} (n : ℕ) (s : RSBScheme k) (β : ℝ)
+    (U : EnergySpace n) (h : ℝ) {t : ℝ} (ht : t ∈ Set.Ioo (0 : ℝ) 1)
+    (j : ℕ) (i : Fin n) (x : Fin n → ℝ) :
+    let m := s.m (k + 1 - j)
+    let v := 1 * (β ^ 2 * (s.q (k + 2 - j) - s.q (k + 1 - j)))
+    (∫ z, z i * (guerraYD n s β U (Pi.single i 1) h t j
+        (fun l => x l + Real.sqrt v * z l) *
+      tiltWeightPi n m v (cascadeT n s β 1 (guerraBase n U h t) j) x z) ∂piGauss n) =
+      Real.sqrt v * ∫ z, (guerraYYD n s β U (Pi.single i 1) (Pi.single i 1) h t j
+          (fun l => x l + Real.sqrt v * z l) +
+        m * (guerraYD n s β U (Pi.single i 1) h t j (fun l => x l + Real.sqrt v * z l)) ^ 2) *
+        tiltWeightPi n m v (cascadeT n s β 1 (guerraBase n U h t) j) x z ∂piGauss n := by
+  dsimp only
+  set m := s.m (k + 1 - j)
+  set v := 1 * (β ^ 2 * (s.q (k + 2 - j) - s.q (k + 1 - j)))
+  obtain ⟨a, b, D, L, a', b', D', hb, hD, hL, hb', hD', hprops⟩ :=
+    guerra_cascade_hasDerivAt n s β h ht j
+  obtain ⟨hAm, -, hAb, hAlip, -, -⟩ := hprops U
+  have htt : t ∈ talNbhd t := self_mem_talNbhd ht
+  have hGm := measurable_guerraYD n s β U h ht (Pi.single i 1) j
+  have hG'm := measurable_guerraYYD n s β U h t (Pi.single i 1) (Pi.single i 1) j
+  have hG := (guerraUD_measurable_and_bound n s β U
+    (guerraFieldDirection n t (Pi.single i 1)) h ht j).2
+  have hG' := abs_guerraUUD_le n s β U (guerraFieldDirection n t (Pi.single i 1))
+    (guerraFieldDirection n t (Pi.single i 1)) h ht j
+  have hs := stein_tiltWeightPi (m := m) (v := v) i x hD hL
+    (hAm t htt) hGm hGm hG'm (hAb t htt) (hAlip t htt) hG hG hG'
+    (fun y r => hasDerivAt_guerraCascade_Yline n s β U h ht (Pi.single i 1) y r j)
+    (fun y r => hasDerivAt_guerraYD_Yline n s β U h ht (Pi.single i 1) (Pi.single i 1) y r j)
+  simpa only [pow_two, mul_assoc] using hs
+
+/-- Multiplying by the increment scale turns the two square roots into its
+variance.  This also covers a zero-variance cascade level. -/
+theorem guerra_field_increment_stein {k : ℕ} (n : ℕ) (s : RSBScheme k) (β : ℝ)
+    (U : EnergySpace n) (h : ℝ) {t : ℝ} (ht : t ∈ Set.Ioo (0 : ℝ) 1)
+    (j : ℕ) (i : Fin n) (x : Fin n → ℝ) :
+    let m := s.m (k + 1 - j)
+    let v := 1 * (β ^ 2 * (s.q (k + 2 - j) - s.q (k + 1 - j)))
+    Real.sqrt v * (∫ z, z i * (guerraYD n s β U (Pi.single i 1) h t j
+        (fun l => x l + Real.sqrt v * z l) *
+      tiltWeightPi n m v (cascadeT n s β 1 (guerraBase n U h t) j) x z) ∂piGauss n) =
+      v * ∫ z, (guerraYYD n s β U (Pi.single i 1) (Pi.single i 1) h t j
+          (fun l => x l + Real.sqrt v * z l) +
+        m * (guerraYD n s β U (Pi.single i 1) h t j (fun l => x l + Real.sqrt v * z l)) ^ 2) *
+        tiltWeightPi n m v (cascadeT n s β 1 (guerraBase n U h t) j) x z ∂piGauss n := by
+  dsimp only
+  rw [guerra_field_stein n s β U h ht j i x, ← mul_assoc,
+    Real.mul_self_sqrt (levelVar_nonneg s β j)]
+
+/-- The radial field derivative after one tilted integration equals the radial
+derivative at the next level plus the full Gaussian-increment correction.
+This sums the coordinate IBP identities with all integral interchanges justified. -/
+theorem guerra_field_radial_step {k : ℕ} (n : ℕ) (s : RSBScheme k) (β : ℝ)
+    (U : EnergySpace n) (h : ℝ) {t : ℝ} (ht : t ∈ Set.Ioo (0 : ℝ) 1)
+    (j : ℕ) (x : Fin n → ℝ) :
+    let m := s.m (k + 1 - j)
+    let v := 1 * (β ^ 2 * (s.q (k + 2 - j) - s.q (k + 1 - j)))
+    let S := fun z : Fin n → ℝ => fun l => x l + Real.sqrt v * z l
+    (∫ z, guerraYD n s β U (S z) h t j (S z) *
+      tiltWeightPi n m v (cascadeT n s β 1 (guerraBase n U h t) j) x z ∂piGauss n) =
+      guerraYD n s β U x h t (j + 1) x +
+        v * ∑ i, ∫ z, (guerraYYD n s β U (Pi.single i 1) (Pi.single i 1) h t j (S z) +
+          m * (guerraYD n s β U (Pi.single i 1) h t j (S z)) ^ 2) *
+          tiltWeightPi n m v (cascadeT n s β 1 (guerraBase n U h t) j) x z ∂piGauss n := by
+  dsimp only
+  set m := s.m (k + 1 - j)
+  set v := 1 * (β ^ 2 * (s.q (k + 2 - j) - s.q (k + 1 - j)))
+  let S := fun z : Fin n → ℝ => fun l => x l + Real.sqrt v * z l
+  let K := fun z => tiltWeightPi n m v (cascadeT n s β 1 (guerraBase n U h t) j) x z
+  let B := fun (i : Fin n) z => guerraYD n s β U (Pi.single i 1) h t j (S z) * K z
+  let J := fun i : Fin n => ∫ z,
+    (guerraYYD n s β U (Pi.single i 1) (Pi.single i 1) h t j (S z) +
+      m * (guerraYD n s β U (Pi.single i 1) h t j (S z)) ^ 2) * K z ∂piGauss n
+  obtain ⟨a, b, D, L, a', b', D', hb, hD, hL, hb', hD', hprops⟩ :=
+    guerra_cascade_hasDerivAt n s β h ht j
+  obtain ⟨hAm, -, hAb, hAlip, -, -⟩ := hprops U
+  have htt : t ∈ talNbhd t := self_mem_talNbhd ht
+  have hint : ∀ i, Integrable (B i) (piGauss n) := by
+    intro i
+    have hGi := guerraUD_measurable_and_bound n s β U
+      (guerraFieldDirection n t (Pi.single i 1)) h ht j
+    exact integrable_mul_tiltWeightPi_of_bound hL hD (hAlip t htt) (hAb t htt) (hAm t htt) x
+      (hGi.1.comp (measurable_shift v x)) (b := 0) le_rfl
+      (fun z => by simpa only [guerraYD, zero_mul, add_zero] using hGi.2 (S z))
+  have hzint : ∀ i, Integrable (fun z => z i * B i z) (piGauss n) := by
+    intro i
+    have hGi := guerraUD_measurable_and_bound n s β U
+      (guerraFieldDirection n t (Pi.single i 1)) h ht j
+    exact integrable_coord_mul_tiltWeightPi i x hD hL (hAm t htt) hGi.1
+      (hAb t htt) (hAlip t htt) hGi.2
+  have hexpand : ∀ z, guerraYD n s β U (S z) h t j (S z) * K z =
+      ∑ i, (x i * B i z + Real.sqrt v * (z i * B i z)) := by
+    intro z
+    rw [guerraYD_eq_sum n s β U h ht (S z) (S z) j, Finset.sum_mul]
+    refine Finset.sum_congr rfl (fun i _ => ?_)
+    dsimp [B, S]
+    ring
+  have hterm : ∀ i, x i * (∫ z, B i z ∂piGauss n) +
+      Real.sqrt v * (∫ z, z i * B i z ∂piGauss n) =
+      x i * guerraYD n s β U (Pi.single i 1) h t (j + 1) x + v * J i := by
+    intro i
+    have hi := guerra_field_increment_stein n s β U h ht j i x
+    change Real.sqrt v * (∫ z, z i * B i z ∂piGauss n) = v * J i at hi
+    rw [hi]
+    rfl
+  change (∫ z, guerraYD n s β U (S z) h t j (S z) * K z ∂piGauss n) =
+    guerraYD n s β U x h t (j + 1) x + v * ∑ i, J i
+  have hxi : ∀ i, Integrable (fun z => x i * B i z) (piGauss n) :=
+    fun i => (hint i).const_mul (x i)
+  have hzi : ∀ i, Integrable (fun z => Real.sqrt v * (z i * B i z)) (piGauss n) :=
+    fun i => (hzint i).const_mul (Real.sqrt v)
+  have hsumint : ∀ i, Integrable (fun z => x i * B i z + Real.sqrt v * (z i * B i z)) (piGauss n) :=
+    fun i => (hxi i).add (hzi i)
+  calc
+    _ = ∫ z, ∑ i, (x i * B i z + Real.sqrt v * (z i * B i z)) ∂piGauss n :=
+      integral_congr_ae (Filter.Eventually.of_forall hexpand)
+    _ = ∑ i, (x i * (∫ z, B i z ∂piGauss n) +
+        Real.sqrt v * (∫ z, z i * B i z ∂piGauss n)) := by
+      rw [integral_finsetSum _ (fun i _ => hsumint i)]
+      refine Finset.sum_congr rfl (fun i _ => ?_)
+      rw [integral_add (hxi i) (hzi i),
+        integral_const_mul, integral_const_mul]
+    _ = ∑ i, (x i * guerraYD n s β U (Pi.single i 1) h t (j + 1) x + v * J i) :=
+      Finset.sum_congr rfl (fun i _ => hterm i)
+    _ = _ := by
+      rw [Finset.sum_add_distrib, ← Finset.mul_sum, ← guerraYD_eq_sum n s β U h ht x x (j + 1)]
+
 /-! ## 3. The two analytic cores of the paper -/
 
 /--
@@ -1698,10 +1975,11 @@ the SK model is `(β²/4) ∑_ℓ (m_ℓ - m_{ℓ-1}) μ_ℓ((R_{1,2} - q_ℓ)²
 and at most `β²` since `|R_{1,2} - q_ℓ| ≤ 2` and `∑_ℓ (m_ℓ - m_{ℓ-1}) = 1`.  No `c(N)`
 error term: the covariance kernel is exactly `(Nβ²/2) R²`.
 
-The parameter derivative and disorder integration by parts are proved above, through
-every cascade level (`hasDerivAt_guerraPhi`, `guerra_disorder_stein`).  Remaining are the
-cascade-field integration by parts, the two-replica overlap representation and its
-algebra, and continuity at the interpolation endpoints.
+The parameter derivative, disorder IBP, and conditional field IBP at every level are
+proved above (`hasDerivAt_guerraPhi`, `guerra_disorder_stein`, `guerra_field_radial_step`).
+Remaining are the assembly of field corrections across levels, their combination with
+the disorder term, the two-replica overlap representation and algebra, and continuity
+at the interpolation endpoints.
 -/
 theorem guerra_identity {N : ℕ} (hN : 0 < N) (β h : ℝ)
     (sk : SKDisorder (Ω := Ω) N β h) {k : ℕ} (s : RSBScheme k) :

@@ -458,12 +458,29 @@ Talagrand's Theorem 2.1 is implemented without new `sorry`s:
   `E[guerraUD(U,U)] = ∑ᵢ τᵢ E[guerraUUD(U,wᵢ,wᵢ)]`, at every cascade depth. At depth
   `k+2`, field `0`, multiply by `1/(2Nt)` to obtain the disorder contribution to `φ'`.
 
-Remaining for Theorem 2.1: perform the analogous Gaussian IBP in each cascade field
-`y_p`, define the two-replica measures `μ_ℓ`, and identify the combined derivative with
-`-corr - (β²/4)∑(m_ℓ - m_{ℓ-1})μ_ℓ((R-q_ℓ)²)`. Continuity at the interpolation endpoints
-also remains. The old product-Gaussian packaging blocker is no longer relevant to this
-route. The scope remains Talagrand's *The Parisi formula*, Ann. of Math. 163 (2006),
-221–263; no change of proof route.
+**Step 11 (2026-09-04): conditional cascade-field IBP.**
+
+* `ParisiFormula/PiStein.lean` proves the coordinate Stein identity for a finite product
+  of standard Gaussians from line derivatives and integrability;
+* `Targets/CascadeFieldPi.lean` proves
+  `E[zᵢ G(x+√v z) W] = √v E[(∂ᵢG + m G ∂ᵢA)(x+√v z) W]`, including the zero-mass
+  and zero-variance cases, and proves the required integrability;
+* `guerraFieldDirection` represents a field shift as a disorder shift for `t > 0`.
+  `hasDerivAt_guerraCascade_Yline` and `hasDerivAt_guerraYD_Yline` give the first and
+  mixed second field derivatives through every cascade level, reusing the checked
+  disorder derivatives and their bounds;
+* `guerra_field_increment_stein` specializes the field IBP to each site and level;
+* `guerra_field_radial_step` sums the site contributions with justified integral
+  interchanges. Writing `T_j` for the tilted expectation and
+  `r_j(y) = y · ∇F_j(y)`, it proves
+  `T_j[r_j](x) = r_{j+1}(x) + v_j T_j[∑ᵢ(∂ᵢᵢF_j + m_j(∂ᵢF_j)²)](x)`.
+
+Remaining for Theorem 2.1: assemble these conditional field corrections across the
+cascade levels and combine them with the disorder trace in `hasDerivAt_guerraPhi`;
+define the two-replica measures `μ_ℓ`; and identify the result with
+`-corr - (β²/4)∑(m_ℓ - m_{ℓ-1})μ_ℓ((R-q_ℓ)²)`. Continuity at the interpolation
+endpoints also remains. Both analytic-core `sorry`s are still open. The scope remains
+Talagrand's *The Parisi formula*, Ann. of Math. 163 (2006), 221–263; no change of proof route.
 
 #### Core 2 — `talagrand_theorem_2_2` (Theorem 2.2)
 
