@@ -80,7 +80,17 @@ right statements: `parisiFunctional` typechecked both before and after an off-by
 - [ ] Moderate-growth / integrability lemmas for `parisiF` at every level. (M)
       Partially available for the `log cosh` layer: `integrable_log_cosh_stdGaussian`
       in `ParisiFormula/GaussianCosh.lean`, via `0 ≤ log cosh y ≤ |y|`.
-- [ ] **2b** Lipschitz continuity in `(m, q)`. (L)
+- [ ] **2b** Lipschitz continuity in `(m, q)`. (L) — **statement corrected, still unproved.**
+      It previously read `∀ k, ∃ C, ∀ s s'`, allowing the constant to depend on `k`, which
+      cannot control `parisiValue = inf_k inf_{(m,q)} 𝒫_k`: nothing survives the infimum over
+      all `k` unless `C` is uniform in `k`.  `∃ C` is now hoisted outside `∀ k`.  Under the
+      Talagrand route this target is **load-bearing** (the induction on RSB levels needs
+      regularity of `𝒫_k` in the parameters), not optional.
+      The `ℓ¹` form of the right-hand side should still be checked against Talagrand when the
+      Milestone 4 blueprint is written; the uniformity in `k` is not negotiable.
+      Likely proof route: `parisiStep` is non-expansive in the sup-norm of its argument
+      (`|T A - T A'| ≤ ‖A - A'‖`, uniformly in `m`), which propagates a parameter
+      perturbation through the backward recursion level by level.
 
 ## Phase 3 — Milestone 3: Guerra's RSB bound  (L–XL)
 

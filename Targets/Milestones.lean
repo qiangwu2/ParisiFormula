@@ -429,13 +429,32 @@ theorem parisiFunctional_rsScheme (β h q : ℝ) (hq0 : 0 ≤ q) (hq1 : q ≤ 1)
   rw [parisiFunctional, hF0, hsum, hrefl]
   ring
 
-/-- **Target 2b (Lipschitz continuity in the scheme).**  Guerra's estimate: for two schemes
-with the same `k`, `|𝒫_k(m,q) - 𝒫_k(m',q')| ≤ C(β) · ∑_p (|m_p - m'_p| + |q_p - q'_p|)`
-(up to the precise form of the right-hand side, to be fixed in the blueprint).  This is what
-makes `inf_k inf_{(m,q)} 𝒫_k` well-behaved and lets one pass from discrete to general Parisi
-measures.  Stated here only as a placeholder shape. -/
-theorem parisiFunctional_lipschitz (β h : ℝ) (k : ℕ) :
-    ∃ C : ℝ, ∀ s s' : RSBScheme k,
+/-- **Target 2b (Lipschitz continuity in the scheme).**  Guerra's estimate:
+
+  `|𝒫_k(m,q) - 𝒫_k(m',q')| ≤ C(β,h) · ∑_p (|m_p - m'_p| + |q_p - q'_p|)`,
+
+with a constant `C` depending only on `β` and `h` — **uniformly in `k`**.
+
+*Quantifier order matters here, and the previous statement had it wrong.*  It read
+
+  `∀ k, ∃ C, ∀ s s' : RSBScheme k, …`,
+
+which permits `C` to depend on `k`.  That cannot serve the purpose stated for this target:
+controlling `parisiValue = inf_k inf_{(m,q)} 𝒫_k` requires an estimate uniform in `k`,
+otherwise nothing survives the infimum over all `k`.  So `∃ C` is now hoisted outside
+`∀ k`.  (`0 ≤ C` is added for convenience downstream; it costs nothing, since any witness
+can be replaced by its absolute value.)
+
+This is what lets one pass from discrete to general Parisi measures, and — under the
+Talagrand (2006) route fixed in `docs/ROADMAP.md` — it is **load-bearing** rather than
+optional: the induction on the number of RSB levels needs regularity of `𝒫_k` in the
+parameters.
+
+The precise form of the right-hand side (the `ℓ¹` distance between the two schemes) should
+still be confirmed against Talagrand when the Milestone 4 blueprint chapter is written; what
+is *not* negotiable is the uniformity in `k`. -/
+theorem parisiFunctional_lipschitz (β h : ℝ) :
+    ∃ C : ℝ, 0 ≤ C ∧ ∀ (k : ℕ) (s s' : RSBScheme k),
       |parisiFunctional s β h - parisiFunctional s' β h|
         ≤ C * ∑ p ∈ Finset.range (k + 3), (|s.m p - s'.m p| + |s.q p - s'.q p|) := by
   sorry
