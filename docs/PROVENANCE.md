@@ -254,6 +254,39 @@ restart. Positivity, normalization and both actual disorder/spatial product
 moment identities are checked. The full Hessian/heat telescope and the final
 Gaussian-averaged covariance identity have not been inferred from these facts.
 
+`CoupledReplicaHessian.lean` supplies the missing actual Hessian expansion.
+The two equal-mass independent tilts have cancelling intermediate covariance
+products; the resulting rule is the same single covariance increment as for
+one shared tilt at its actual mass. Existing bounded-observable transport
+linearity expands the genuine full disorder/spatial Hessians under the actual
+split weights. Adjacent-mass telescoping retains the initial `m₀−1` and final
+`−m_j` coefficients; no endpoint value is silently assumed. All fixed masses
+and variances may vanish.
+
+`CoupledReplicaAverage.lean` extends the existing parameter-integral measurability
+rules to disorder plus both fields. The proved unit bound makes every actual
+split weight integrable for any measurable random disorder on a probability
+space. Finite sum/integral interchange gives the averaged moment identities,
+normalization and nonnegative completed-square remainder.
+`CoupledReplicaTrace.lean` reuses the exact SK spectral covariance contraction
+and constrained diagonal to identify the full genuine Hessian trace and its
+outer expectation, with the exact factor `N`. This proves the disorder term,
+not yet the combined trace-plus-heat interpolation covariance identity.
+
+`CoupledReplicaHeat.lean` reuses the exact level-addition identity and bounded
+transport linearity to carry inner Hessian and heat expressions through the
+unchanged outer levels. The products remain at their original split level;
+only their remaining outer depth increases. Packed independent and nested
+equal-mass normalized means agree by uniqueness of genuine derivatives of
+bounded perturbations, reusing the checked equality of potentials. Both actual
+`constrainedLevelVarianceD` generators are identified with their coordinate
+sums of replica expressions divided by two, through all remaining outer levels.
+The algebraic identities include zero variances; they do not assert a variance
+derivative there. Coordinate contraction into overlaps, outer averaging of
+the heat terms and the full physical coefficient sum with the disorder trace
+remain to be assembled. The desired interpolation inequality is not inferred
+merely from the square completion.
+
 ### Scalar variation, baseline, and finite-overlap assembly
 
 `ParisiSlopeVariance.lean` reuses the existing Gaussian-amplitude differentiation
@@ -270,6 +303,40 @@ bound, Gaussian integrability and a common bound on `0<lo≤v≤hi`, uniform in
 `m∈[0,1]` and the actual recursion input/depth. The bound has a factor
 `1/sqrt(lo)`: it does not assert uniform endpoint differentiability or the
 Stein cancellation needed for the negative-square identity for `Q'`/`U''`.
+
+`ParisiThirdSpatial.lean` now justifies that missing derivative without assuming
+an input third derivative. Differentiate the finite spatial FTC identity in
+variance using the existing common interior bound; spatial FTC identifies the
+derivative of the heat velocity. The checked heat equation yields the actual
+third spatial derivative of the smoothed transform.
+`Section4SquaredSlopeDerivative.lean` differentiates the genuine normalized
+two-step squared-slope mean, uses the equal-mass semigroup to fix the outer
+normalization, and applies existing Gaussian Stein with proved domination.
+The result is exactly (4.16), the negative tilted square of the spatial Hessian.
+`Section4USecond.lean` propagates it through the remaining outer means. Their
+potential derivatives vanish at equal masses by the existing (4.11), so no
+unaccounted covariance terms remain. Thus actual `Q'` is the negative nested
+Hessian-square and actual `U''∈[−1,0]`, on the open physical variance interval.
+The `Q'` identity includes baseline zero/one; `U''` inherits baseline below one
+from the proved `U'=Q` identification. Endpoint second derivatives are not asserted.
+
+`ParisiMassUniform.lean` reuses Mathlib's analytic CGF/MGF derivative rules,
+the local analytic zero-mass divided difference, and tilted Gaussian moment
+bounds. Centering `A(x+√v z)` at `A(x)` makes the first three moments uniformly
+bounded independently of the field and input depth. The weighted identities
+`(m² M')'=m K''` and `(m³ M'')'=m² K'''` remove the apparent singularities at
+zero mass. This proves the actual Gaussian-input analogue of Lemma 4.4, not a
+separate theorem for arbitrary random variables. `Section4MassUniform.lean`
+uses normalized outer means and the already proved actual mass differentiation
+to give the first half of Lemma 4.5 for full `T` and inserted `Φ`, including zero
+mass and closed variance/overlap endpoints, with constants depending only on `β`.
+The full nested second mass derivative and Proposition 4.6 remain open.
+
+A concrete reuse candidate for the latter is `CoupledParamDeriv.tiltSecond`:
+it already differentiates a normalized mean with its covariance term. After
+connecting actual scalar second-mass regularity, the invariant
+`|E|+D²≤K₂+K₁²` may preserve a depth-uniform second bound for outer masses in
+`[0,1]`. This route is not yet implemented or claimed as a result.
 
 `ParisiMassDerivative.lean` differentiates one mass while its input function
 is fixed, including every actual `parisiF` input. It does not assert the nested
@@ -329,8 +396,9 @@ closed variance interval and justifies `U=2∂mT` in (4.42), including `U(0)=0`.
 (4.46) with the baseline derivative of the actual `section4Phi`.
 An independent read-only review checked the anchored theorem's hypotheses,
 zero-baseline indices, semigroup variance and normalization. The positive
-local bound is not uniform as its lower mass endpoint tends to zero. Neither
-uniform second-mass estimates nor the identities for `U′`, `U″` are claimed.
+local bound is not uniform as its lower mass endpoint tends to zero. These
+earlier modules do not claim uniform second-mass estimates or `U′`, `U″`;
+the later zero-inclusive bounds and derivative identities are recorded above.
 
 `Section4UBounds.lean` obtains the unit Lipschitz and monotonicity bounds for
 actual `U` from mass difference quotients of the already checked full `T`

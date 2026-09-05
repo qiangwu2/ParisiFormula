@@ -16,10 +16,13 @@ on the current critical path. Three older, off-path placeholders remain in
 for the current status and [`blueprint/blueprint.tex`](blueprint/blueprint.tex) for the
 mathematical outline and its formalisation status.
 
-**Latest checkpoint:** Lemma 5.8 is checked, together with actual split-replica
-weights, inward endpoint derivatives and further Section 4 derivative inputs.
-The full build and all 393 axiom guards pass. The interpolation inequality,
-`U″`/uniform optimality estimates and remaining overlap cases are still open.
+**Latest checkpoint:** the actual `U″` negative-square identity is checked,
+as are the full nested replica Hessian and disorder-averaged SK trace.
+Uniform scalar first/second mass bounds and the full nested first mass bound
+include mass zero. The interpolation inequality, full nested second mass bound,
+remaining stationarity estimates and overlap cases are still open.
+The full build and all **456 standard-axiom guards** pass; the blueprint
+compiles to 30 pages without LaTeX warnings.
 
 **Theorem 2.2 progress:** [`Targets/TalagrandConvergence.lean`](Targets/TalagrandConvergence.lean)
 proves the deduction from an explicit mass-weighted overlap-concentration bound to
@@ -101,8 +104,25 @@ constructs the actual normalized constrained Gibbs weights at every depth and
 identifies the disorder and spatial first derivatives with their moments.
 It also constructs split-level replica weights by forming the inner product
 before the outer Gaussian averages, proving normalization and product-moment
-identities. SK and independent/shared field contractions are checked. The full
-Hessian/heat telescoping and averaged covariance identity remain open.
+identities. SK and independent/shared field contractions are checked.
+[`Targets/CoupledReplicaHessian.lean`](Targets/CoupledReplicaHessian.lean)
+now identifies the genuine disorder and spatial Hessians with the full replica
+covariance telescope, including both endpoint coefficients. The independent
+level's two intermediate covariance terms cancel pointwise.
+[`Targets/CoupledReplicaAverage.lean`](Targets/CoupledReplicaAverage.lean)
+proves joint disorder/field measurability, integrability, normalization and
+finite-moment interchange for the actual disorder-averaged split law.
+[`Targets/CoupledReplicaTrace.lean`](Targets/CoupledReplicaTrace.lean)
+contracts the actual full Hessian with the SK covariance and takes its outer
+expectation, preserving the exact `N` factor. The complete trace-plus-heat
+covariance identity and its interpolation inequality are not yet assembled.
+[`Targets/CoupledReplicaHeat.lean`](Targets/CoupledReplicaHeat.lean) identifies
+each existing original-level heat generator, through all remaining outer
+levels, with its actual replica expression. Independent packed and nested
+Gaussian means are identified by uniqueness of genuine derivatives.
+These algebraic identities include zero variances; no derivative at zero
+variance is inferred. Field contraction and the combined physical coefficient
+sum with the SK trace remain to be assembled.
 
 [`Targets/CoupledCascadeDeriv.lean`](Targets/CoupledCascadeDeriv.lean) now propagates
 the actual constrained-terminal first disorder derivative through every paired
@@ -236,13 +256,30 @@ the numerical `derivWithin` identity requires a nonzero variance gap.
 [`Targets/Section4EndpointOptimality.lean`](Targets/Section4EndpointOptimality.lean)
 proves `f(q_(r−1))≥0` for `r≥2` and a strict adjacent mass gap, using an actual
 fixed-level competitor and a zero-variance deletion. The initial interval is
-not included because `m₀=0` is fixed. `U″`, uniform higher-mass estimates,
-and the remaining stationarity identities are still open.
+not included because `m₀=0` is fixed. The remaining stationarity identities
+and full nested second mass bound are still open.
 [`Targets/ParisiSlopeVariance.lean`](Targets/ParisiSlopeVariance.lean) now proves
 the actual positive-variance derivative of the inner slope, its joint field/variance
 chain rule, and the moving squared-slope derivative. A common domination bound
 is independent of the field and recursion depth, but requires variance bounded
-away from zero. This is a prerequisite for differentiating `Q`, not yet `U″`.
+away from zero.
+[`Targets/ParisiThirdSpatial.lean`](Targets/ParisiThirdSpatial.lean) derives the
+actual third spatial derivative after positive-variance smoothing from the
+checked C2 invariant and heat equation.
+[`Targets/Section4SquaredSlopeDerivative.lean`](Targets/Section4SquaredSlopeDerivative.lean)
+justifies differentiation of the normalized two-step mean and the Stein
+cancellation in **(4.16)**.
+[`Targets/Section4USecond.lean`](Targets/Section4USecond.lean) propagates it
+through every remaining outer level: the actual `Q′` is the negative nested
+Hessian-square, and **(4.45)** gives `U″ ∈ [−1,0]`. These are interior-variance
+identities; `U″` retains baseline mass below one, while `Q′` includes zero and one.
+[`Targets/ParisiMassUniform.lean`](Targets/ParisiMassUniform.lean) uses Mathlib
+cumulant derivatives and the analytic zero-mass extension to bound both actual
+scalar mass derivatives uniformly in field and input depth.
+[`Targets/Section4MassUniform.lean`](Targets/Section4MassUniform.lean) propagates
+the first bound through the actual full `T` and inserted `Φ`, with constants
+depending only on `β`. Mass zero and both variance endpoints are included.
+This proves the first-derivative part of Lemma 4.5, not its full nested second bound.
 [`Targets/RightInterpolationAlgebra.lean`](Targets/RightInterpolationAlgebra.lean)
 supplies the exact dual correction, and
 [`Targets/Section4RightVariation.lean`](Targets/Section4RightVariation.lean)
@@ -355,7 +392,10 @@ endpoint continuity, the bounds for `U` and `f`, the normalized variance factor,
 and the full dual variance derivative. It also checks the averaged trace-plus-heat
 formulas, actual normalized split-replica weights and contractions, inward endpoint
 derivatives, noninitial endpoint optimality, slope-derivative domination and
-Lemma 5.8 with the identified `Q` gain. There are 393 completed-result guards.
+Lemma 5.8 with the identified `Q` gain. The newest guards cover the genuine
+replica Hessian/heat expressions, averaged SK trace, actual `Q′`/`U″` identities,
+uniform scalar first/second mass bounds and the full first mass bound.
+There are **456 completed-result guards**.
 This does not certify the still-open Theorem 2.4 or Proposition 2.3. CI requires both
 local libraries to build; it does not ignore target or audit failures.
 
@@ -431,6 +471,10 @@ ParisiFormula/
 │   ├── ConstrainedFiniteState.lean   RSAT-backed first/second derivatives of the constrained terminal
 │   ├── CoupledCovariance.lean        four-overlap covariance, square completion and terminal Hessian
 │   ├── CoupledReplicaWeights.lean    actual Gibbs/split-replica weights, moments and contractions
+│   ├── CoupledReplicaHessian.lean    genuine nested disorder/spatial Hessian covariance telescope
+│   ├── CoupledReplicaAverage.lean    measurable normalized disorder-averaged split law and moments
+│   ├── CoupledReplicaTrace.lean      actual SK Hessian trace and its outer disorder expectation
+│   ├── CoupledReplicaHeat.lean       actual original-level heat replica expression through all outer levels
 │   ├── SecondInterpolationAlgebra.lean  algebraic remainder sign, telescoping and (5.9) correction
 │   ├── CoupledCascadeDeriv.lean       fixed-variance nested disorder derivatives and tilted covariance
 │   ├── CoupledCascadeSecond.lean      full-depth mixed disorder Hessian and Gaussian Stein identities
@@ -454,6 +498,8 @@ ParisiFormula/
 │   ├── ParisiMassDerivative.lean      scalar mass derivative, entropy and monotonicity via Mathlib
 │   ├── ParisiMassZero.lean            analytic mass-zero extension and half-variance derivative
 │   ├── ParisiMassLocal.lean           local derivative domination and two-sided mass-zero bound
+│   ├── ParisiMassUniform.lean         zero-inclusive uniform first/second scalar mass bounds
+│   ├── Section4MassUniform.lean       uniform first mass bound through actual full T and Phi
 │   ├── Section4MassDerivative.lean    actual full baseline mass derivative and U, including mass zero
 │   ├── Section4FirstVariation.lean    actual Phi first variation (4.46) and its upper-overlap zero
 │   ├── Section4UBounds.lean           monotonicity of U and closed-interval Lipschitz bounds for U and f
@@ -461,12 +507,15 @@ ParisiFormula/
 │   ├── ParisiJointMassContinuity.lean joint scalar mass/variance/field continuity, including mass zero
 │   ├── Section4VarianceFactorContinuity.lean actual Q continuity and integrability at baseline
 │   ├── Section4UPrime.lean            actual U′=Q and overlap derivative of the first variation
+│   ├── Section4USecond.lean           actual Q′/U″ negative-square identity and U″ in [-1,0]
 │   ├── Section4UEndpoints.lean        inward derivatives of U and f at the physical endpoints
 │   ├── Section4EndpointOptimality.lean fixed-level lower-endpoint f≥0 for noninitial intervals
 │   ├── ParisiStepSemigroup.lean       scalar semigroup including zero masses and variances
 │   ├── ParisiVarianceDerivative.lean  Gaussian heat generator and actual scalar variance derivative
 │   ├── Section4Variance.lean          actual Parisi C2, heat equation and joint variance/field calculus
 │   ├── ParisiSlopeVariance.lean       actual slope velocity, moving squared slope and uniform local domination
+│   ├── ParisiThirdSpatial.lean        actual third spatial derivative from C2 smoothing and heat equation
+│   ├── Section4SquaredSlopeDerivative.lean normalized two-step squared-slope derivative (4.16)
 │   ├── Section4SplitDerivative.lean   actual two-step split-variance identity (4.11), including zero masses
 │   ├── Section4SplitMonotone.lean     joint continuity and closed-interval split comparison
 │   ├── Section4NestedMonotone.lean    closed-interval monotonicity through every outer scalar level

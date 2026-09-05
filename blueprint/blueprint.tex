@@ -772,9 +772,9 @@ displayed correction. Above the split, shift the index by one. The original
 sum is exactly twice the existing Parisi correction.
 \end{proof}
 The quantity $\mathcal B$ above is an explicit algebraic expression, not yet
-identified with $\eta'$. The terminal Hessian is proved, but its propagation
-through the varying-variance Gaussian cascade and the actual replica-weight
-identification still require proof. Consequently
+identified with $\eta'$. The genuine full nested disorder/spatial Hessians
+and disorder-averaged SK trace are now identified with actual replica weights
+below. Combining the full trace and heat contributions still requires proof. Consequently
 neither Theorem~3.1 nor the pressure inequality (5.9) is marked complete.
 
 \begin{lemma}[Fixed-variance differentiation through the paired cascade]
@@ -1021,8 +1021,42 @@ passes the actual scalar mass-zero derivative through this expectation.
 Zero variance is constant in mass. Finally differentiate the affine correction
 in (4.37), obtaining exactly (4.46).
 \end{proof}
-This proves first mass differentiation, not the mixed identities for $U'$ and
-$U''$, uniform higher-mass bounds, or the quantitative stationarity estimates.
+This proves first mass differentiation. The identities for $U'$ and $U''$
+and uniform first mass bounds are proved below; the full nested second mass
+bound and quantitative stationarity estimates remain open.
+
+\begin{lemma}[Uniform scalar mass bounds and the first half of Lemma 4.5]
+\lean{SpinGlass.Targets.parisiStep\_parisiF\_mass\_derivatives\_uniform}\leanok
+\lean{SpinGlass.Targets.section4T\_mass\_derivative\_uniform}\leanok
+\lean{SpinGlass.Targets.section4Phi\_mass\_derivative\_uniform}\leanok
+For every actual Parisi input $A$, $0\le m\le1$ and $0\le v\le V$,
+\[
+ |\partial_m T_{m,v}A(x)|\le K_1(V),\qquad
+ |\partial_m^2 T_{m,v}A(x)|\le K_2(V),
+\]
+with explicit finite constants independent of $x$ and the input depth.
+For the actual full split recursion and inserted functional, on their closed
+physical variance/overlap intervals and $m_{r-1}\le m\le1$,
+\[
+ |\partial_m T(v,m)|\le K_1(\beta^2),\qquad
+ |\partial_m\Phi(m,u)|\le K_1(\beta^2)+\beta^2/4.
+\]
+The statements include actual differentiability at mass zero.
+\end{lemma}
+\begin{proof}
+Center the Gaussian input at $A(x)$. Its first three tilted moments have
+field-independent bounds because $A$ is 1-Lipschitz. Mathlib's analytic
+cumulant derivatives and the actual zero-mass extension give, with
+$M(m)=T_{m,v}A(x)$ and $K(m)=mM(m)$,
+\[
+ (m^2M')'=mK'',\qquad (m^3M'')'=m^2K'''.
+\]
+Integrating these weighted identities removes the apparent singularities
+at zero mass. Normalized outer means preserve the first bound without a
+depth factor; the already checked full mass derivative and affine correction
+give the two nested first bounds. The full nested second derivative bound
+in Lemma~4.5 is not yet proved.
+\end{proof}
 
 \begin{lemma}[Closed-interval bounds for the actual first variation]
 \lean{SpinGlass.Targets.section4U\_sub\_mem\_Icc}\leanok
@@ -1126,8 +1160,8 @@ from below by zero. Pass to the checked baseline mass derivative.
 The restriction $r\ge2$ preserves the compulsory mass $m_0=0$; this argument
 is not claimed for the initial interval.
 \end{proof}
-The identity for $U''$, uniform higher-mass estimates and the remaining
-endpoint stationarity conditions are still open.
+The identity for $U''$ is proved below. The full nested second mass bound and
+remaining endpoint stationarity conditions are still open.
 
 \begin{lemma}[Actual inserted functional and optimality inputs]
 \lean{SpinGlass.Targets.parisiFunctional\_insertLevel}\leanok
@@ -1176,8 +1210,38 @@ Continuity of both actual partial derivatives gives the joint chain rule.
 The tilted Gaussian first-moment estimate bounds $J_m$ uniformly in the field;
 the resulting bound is of order $1/\sqrt\ell$ near the variance boundary.
 \end{proof}
-This proves the domination prerequisite for differentiating $Q$, not the
-remaining outer averaging and Stein cancellation giving $U''$.
+This supplies the domination prerequisite used in the following cancellation.
+
+\begin{lemma}[Actual negative-square identities (4.16) and (4.45)]
+\lean{SpinGlass.Targets.hasDerivAt\_stepD2\_parisiF\_spatial}\leanok
+\lean{SpinGlass.Targets.hasDerivAt\_splitBaselineSlopeQ\_parisiF}\leanok
+\lean{SpinGlass.Targets.hasDerivAt\_section4TVarianceQ\_baseline}\leanok
+\lean{SpinGlass.Targets.hasDerivAt\_deriv\_section4U}\leanok
+\lean{SpinGlass.Targets.deriv2\_section4U\_mem\_Icc}\leanok
+Let $B(v,x)=T_{m,v}A(x)$ for an actual Parisi input and $0\le m\le1$.
+For $0<v<a$, let $\mathbb E_W$ be the actual outer normalized mean with
+variance $a-v$ and mass $m$. Then
+\[
+ \frac d{dv}\mathbb E_W[B_x(v,x+\sqrt{a-v}\,g)^2]
+ =-\mathbb E_W[B_{xx}(v,x+\sqrt{a-v}\,g)^2].
+\]
+After every remaining outer level is retained, at $m=m_{r-1}$ this yields
+$Q'(m_{r-1},v)=-R(v)$ with $0\le R(v)\le1$. For $m_{r-1}<1$,
+\[
+ U''(v)=-R(v)\in[-1,0],\qquad 0<v<\beta^2(q_r-q_{r-1}).
+\]
+\end{lemma}
+\begin{proof}
+Differentiate the spatial FTC identity in variance using the common bound
+above. The heat equation then gives the genuine third spatial derivative,
+without assuming one for the input. The equal-mass semigroup fixes the outer
+normalization; dominated differentiation and Gaussian Stein give (4.16).
+At baseline all remaining outer potential velocities vanish by (4.11), so
+their normalized means propagate the negative-square derivative unchanged.
+Finally use the actual $U'=Q$. The $Q'$ identity includes baseline zero and
+one; the $U''$ statement inherits the strict upper baseline restriction.
+No variance-endpoint second derivative or strictly negative bound is claimed.
+\end{proof}
 
 \begin{lemma}[Actual normalized constrained replicas at every split]
 \lean{SpinGlass.Targets.sum\_constrainedCascadeGibbs}\leanok
@@ -1199,7 +1263,58 @@ independent and signed shared field contractions give the corresponding
 diagonal and cross-overlap sums. Products are formed before outer averaging,
 not from two already averaged probabilities.
 \end{proof}
-The full Hessian/heat telescope and averaged covariance identity remain open.
+
+\begin{lemma}[Actual full replica Hessian and averaged SK trace]
+\lean{SpinGlass.Targets.constrainedPairFieldCascadeSecond\_eq\_replica}\leanok
+\lean{SpinGlass.Targets.constrainedPairCascadeSpatialSecond\_eq\_replica}\leanok
+\lean{SpinGlass.Targets.sum\_averagedConstrainedCascadeReplica}\leanok
+\lean{SpinGlass.Targets.integral\_constrainedPairFieldCascadeSecond\_SK\_trace}\leanok
+Write $P_j$ for the actual depth-$j$ Gibbs law and $\mu_{l,j}$ for the
+actual split-$l$ two-replica law transported to total depth $j$. For terminal
+direction observables $f,g$, the genuine nested Hessian is
+\[
+ \langle fg\rangle_{P_j}-\mu_{0,j}(f\otimes g)
+ +\sum_{l<j}m_l\bigl(\mu_{l,j}(f\otimes g)-\mu_{l+1,j}(f\otimes g)\bigr).
+\]
+The same formula holds for spatial direction observables. Contracting the
+disorder directions with the actual SK spectral covariance, with kernel
+$K(p,q)=\beta^2\sum_{a,b}R_{ab}(p,q)^2/2$, gives the outer-averaged trace
+\[
+ N\left(\beta^2(1+u^2)-\E\mu_{0,j}(K)
+ +\sum_{l<j}m_l\bigl(\E\mu_{l,j}(K)-\E\mu_{l+1,j}(K)\bigr)\right).
+\]
+\end{lemma}
+\begin{proof}
+For an independent level the intermediate covariance products of its two
+equal-mass tilts cancel pointwise, giving one covariance increment.
+Expand the genuine Hessian recursion using bounded-observable linearity and
+the exact shifted-level transport. The terminal covariance supplies the first
+two terms. Joint disorder/field measurability and the unit bound justify
+every outer expectation and finite-moment interchange. The SK contraction
+and constrained diagonal give the displayed trace, including its factor $N$.
+All fixed masses and variances may vanish. Adjacent-mass telescoping retains
+the initial and final coefficients rather than assuming endpoint masses.
+\end{proof}
+\begin{lemma}[Actual original-level heat generators under the split law]
+\lean{SpinGlass.Targets.constrainedLevelVarianceD\_independent\_eq\_replica}\leanok
+\lean{SpinGlass.Targets.constrainedLevelVarianceD\_shared\_eq\_replica}\leanok
+Each actual original-level heat generator, after every remaining outer level,
+is one half the coordinate sum of the transported inner replica Hessian plus
+the original mass times the transported inner squared first derivative.
+Independent levels use the two separate spin directions; shared levels use
+the common direction. Every term uses the same actual split law as above.
+\end{lemma}
+\begin{proof}
+Exact transport composition increases only the remaining outer depth, retaining
+each product's original split index. Identify packed independent Gaussian means
+with nested equal-mass means by uniqueness of their genuine bounded-perturbation
+derivatives. Then apply the checked original-level heat-generator identities
+and finite linearity. The algebra includes zero variances but does not claim
+a derivative at zero variance. Contracting the field directions into overlaps,
+averaging the heat terms and combining their physical coefficients with the
+SK trace remain to be assembled.
+\end{proof}
+The full combined interpolation covariance identity and inequality remain open.
 
 \begin{lemma}[One-level heat generators for actual constrained cascades]
 \lean{SpinGlass.Targets.hasDerivAt\_sharedStepPi\_constrained\_variance}\leanok

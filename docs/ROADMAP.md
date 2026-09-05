@@ -1430,13 +1430,92 @@ sources are unchanged. The updated blueprint compiles to 27 pages without
 LaTeX warnings; README status/layout, provenance and this checklist reflect
 the same checked/open boundary.
 
+**Step 29 (2026-09-05): actual U″, nested replica Hessian/heat identities, and uniform mass bounds.**
+
+Three parallel agents worked on replica covariance, scalar variance and mass
+estimates while the main agent proved disorder averaging and the actual SK
+trace, integrated the branches and updated the project map.
+
+* `Targets/ParisiThirdSpatial.lean` derives the actual third spatial derivative
+  after positive Gaussian smoothing from the existing C2 invariant. The spatial
+  FTC is differentiated in variance using the checked common interior bound;
+  the heat equation identifies the third derivative. No input third derivative
+  or unproved interchange of mixed partial derivatives is assumed.
+* `Targets/Section4SquaredSlopeDerivative.lean` proves the genuine normalized
+  two-step negative-square identity (4.16), including mass zero. The equal-mass
+  semigroup fixes the outer normalization, and dominated differentiation plus
+  Gaussian Stein gives exactly the negative tilted square of the spatial Hessian.
+* `Targets/Section4USecond.lean` propagates (4.16) through every actual remaining
+  outer level, whose potential velocity is zero at baseline by (4.11). Thus
+  `Q′=−R` with `R∈[0,1]`, and (4.45) gives actual `U″∈[−1,0]`. `Q′` includes
+  baseline masses zero and one; `U″` retains baseline below one from `U′=Q`.
+  Both derivative identities require interior physical variance. Endpoint
+  second derivatives, degenerate-interval derivatives and a strictly negative
+  bound are not asserted.
+* `Targets/ParisiMassUniform.lean` uses Mathlib CGF/MGF derivatives and the actual
+  analytic zero-mass extension to bound both scalar mass derivatives uniformly
+  in the field and input depth. Centered tilted Gaussian moments bound the
+  second/third cumulants; weighted derivative identities remove inverse-mass
+  singularities. This is the actual Gaussian-input analogue of Lemma 4.4,
+  including masses in `[0,1]` and variances in `[0,V]`.
+* `Targets/Section4MassUniform.lean` propagates the first bound through the actual
+  full `T` and inserted `Φ`, with constants depending only on `β`, not `k`, the
+  field or the adjacent mass gap. The derivative predicates and bounds include
+  zero mass and both physical variance/overlap endpoints. This completes the
+  first-derivative part of Lemma 4.5, **not its full nested second bound**.
+* `Targets/CoupledReplicaHessian.lean` proves the full genuine disorder/spatial
+  Hessian covariance telescope under the actual split law. The two independent
+  equal-mass tilts have cancelling intermediate covariance products. Terminal
+  covariance supplies the diagonal minus split-zero moment; adjacent-mass
+  telescoping retains both endpoint coefficients. All nonnegative fixed
+  masses and variances, including zeros, are supported.
+* `Targets/CoupledReplicaAverage.lean` proves joint disorder/field measurability,
+  weight integrability for any measurable random disorder on a probability
+  space, normalized averaged weights and finite-moment interchange. The actual
+  averaged covariance square completion and nonnegative remainder are checked.
+* `Targets/CoupledReplicaTrace.lean` contracts the genuine full nested Hessian
+  with the SK spectral covariance, then takes its actual outer expectation.
+  The exact factor `N`, constant constrained diagonal and all split indices
+  remain explicit. This identifies the disorder contribution, not yet the
+  complete interpolation derivative.
+* `Targets/CoupledReplicaHeat.lean` transports actual inner covariance products
+  through the unchanged outer levels, then identifies each existing original-level
+  heat generator with its replica coordinate-sum expression divided by two.
+  Packed independent and nested normalized means agree by uniqueness of genuine
+  bounded-perturbation derivatives. Zero-variance algebra is included without
+  asserting a derivative at zero variance.
+
+**Step 29 checked/open checklist:**
+
+* [x] Actual (4.16), full baseline `Q′`, and (4.45): `U″∈[−1,0]` at interior variance.
+* [x] Zero-inclusive uniform first/second scalar mass bounds.
+* [x] Uniform first mass bound for the actual full `T` and inserted `Φ`.
+* [x] Full genuine disorder/spatial Hessian telescope under actual split weights.
+* [x] Joint disorder measurability, normalized outer-averaged split law and actual SK trace.
+* [x] Actual original-level heat generators under the same split law through all outer levels.
+* [ ] Field contractions/averaging, combined physical covariance sum, interpolation inequality and endpoint transport.
+* [ ] Full nested second mass bound, quantitative optimality and remaining stationarity identities.
+* [ ] Initial/dual scalar cases, remaining overlap/sign regimes and uniform Theorem 2.4 relative to `2ψ`.
+* [ ] Original unconditional Theorem 2.2 and final Parisi-formula dependency audit.
+
+**Step 29 validation:** `bash scripts/check.sh` passes (3229 supporting-library
+jobs and 3878 target-build jobs), including **63 new standard-axiom guards**
+(456 total). All nine new modules pass direct and targeted Lean checks without
+module warnings. Independent read-only reviews checked the actual derivative
+identifications, zero-mass branches, split indices, shared normalization,
+heat factor and disorder averaging; no substantive issues were found.
+The original four placeholders, target statements, dependency pins and upstream
+sources remain unchanged. The updated blueprint compiles to 30 pages without
+LaTeX warnings. README status/layout, provenance and the checklist are synchronized.
+
 **Remaining work, following the Annals argument:**
 
 1. Prove the a priori two-replica bound of Theorem 2.4 using §3–§5 and the scheme's
    optimality. The imported RS-level `twoReplica_GT_bound` is not this general result.
-   Next concrete step: telescope the actual nested Hessian and heat terms
-   using Step 28's normalized split-level replica weights, and prove the
-   averaged derivative equals the covariance expression from Step 21.
+   Next concrete step: contract Step 29's actual heat replica expressions into
+   overlap kernels, justify their outer averaging using the checked weights,
+   and combine the physical variance coefficients with the checked averaged SK
+   trace to obtain the covariance expression from Step 21.
    Then prove the endpoint-safe integration of that derivative. The square
    completion, mass telescoping, and inserted correction of (5.9) are now
    available, as are the actual nested baseline mass derivative, first variation,
@@ -1444,9 +1523,13 @@ the same checked/open boundary.
    (4.36), (5.18), (5.19), scalar heat equation, Lemma 5.9 and optimized time-zero
    endpoint. The actual scalar insertion and optimality input inequalities are
    now available, as are `U′=Q`, its inward endpoint form and Lemma 5.8. Use
-   the checked slope derivative/domination to prove the actual `Q′`/`U″`
-   identity and the uniform higher-mass/optimality estimates of Section 4,
-   then the initial/dual scalar cases and remaining overlap/sign cases. Both neighbor
+   the checked `Q′`/`U″` negative-square identities and uniform mass bounds
+   to prove the remaining Section 4 optimality estimates. The full nested
+   second mass bound is still needed: reuse `CoupledParamDeriv.tiltSecond`
+   after connecting actual scalar second-mass regularity, and test the
+   depth-uniform invariant `|E|+D²≤K₂+K₁²` for normalized outer masses in
+   `[0,1]`; this is a proposed proof route, not a checked result. Then complete
+   the initial/dual scalar cases and remaining overlap/sign cases. Both neighbor
    interval endpoint constructions and both correction adapters are checked.
    Do not replace `2ψ(t)`
    with `2φ(t)`.
