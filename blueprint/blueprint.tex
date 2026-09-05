@@ -459,9 +459,41 @@ This connection is proved in \texttt{Targets/ReplicaMeasure.lean}; the per-level
 concentration bounds themselves remain open.
 \end{lemma}
 
+\begin{lemma}[Deterministic comparison in Talagrand Lemma 2.6]
+\lean{SpinGlass.Targets.constrainedBase\_eq\_add\_log\_event}\leanok
+\lean{SpinGlass.Targets.log\_coupledEvent\_le\_gap}\leanok
+Assume the overlap $u$ is attainable and $m_1>0$. At each positive-mass level,
+write $Q_\ell=\mathbb E_\ell(V_\ell\cdots V_k\langle 1_{R_{1,2}=u}\rangle)$
+in the paper's indexing. Then
+\[
+0<Q_\ell\le \exp\bigl(n_\ell(J_{\ell,u}-J_\ell)\bigr)\le1,
+\qquad
+\log Q_\ell\le n_\ell(J_{\ell,u}-J_\ell).
+\]
+The implementation uses the actual constrained partition sum and its recursively
+smoothed pressure.
+\end{lemma}
+
+\begin{proof}[Formalised deterministic induction]
+At the Gibbs base the event probability is the ratio of the constrained and
+unrestricted partition sums. Attainable overlap makes both sums positive,
+giving $J_{k+1,u}=J_{k+1}+\log Q_{k+1}$.
+If $B\le A$ and the next mass satisfies $0<m\le p$, then
+$F\le e^{p(B-A)}\le e^{m(B-A)}$.
+Integrating against the normalized density gives
+$\mathbb E_m F\le e^{m(T_mB-T_mA)}$.
+The two-field growth estimates justify all Gaussian integrals without
+factorising the constrained function. Positivity of the tilted event is proved
+separately before taking logarithms. The pressure-gap comparison excludes the
+outer zero-mass average; positivity includes it.
+\end{proof}
+
+This does \emph{not} yet prove Lemma~2.6: converting a negative expected pressure
+gap into an exponentially small event probability still requires Gaussian
+concentration with constants independent of $N$ and $t$.
 The remaining work follows Proposition~2.3 and the coupled-replica concentration
-argument in \S3--\S5 of \cite{Tal06}: define the overlap-constrained pressure and
-prove Lemma~2.6, Proposition~2.5, and the a priori bound of Theorem~2.4. The reduction
+argument in \S3--\S5 of \cite{Tal06}: complete that concentration step,
+deduce Proposition~2.5, and prove the a priori bound of Theorem~2.4. The reduction
 for coincident scheme levels in (2.19) also remains to be formalised before
 the concentration hypothesis is available for every admissible scheme.
 The active RSAT dependency includes

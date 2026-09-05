@@ -25,8 +25,10 @@ not the differential-inequality argument. The unconditional Theorem 2.2 remains 
 
 The unrestricted coupled cascade and both identities in Lemma 2.7 are now proved in
 `Targets/CoupledCascade.lean`. `Targets/ReplicaMeasure.lean` identifies the individual
-replica probabilities with the components of the existing remainder. The next work is
-the overlap-constrained pressure, Lemma 2.6 / Proposition 2.5, and Theorem 2.4; see Step 14.
+replica probabilities with the components of the existing remainder. The constrained
+cascade and the deterministic part of Lemma 2.6 are now proved as well (Step 15).
+The next work is Gaussian concentration to complete Lemma 2.6 / Proposition 2.5,
+followed by Theorem 2.4.
 
 **Milestone 1 (Targets 1b, 1c) is *not* on this critical path.**  Target 4 is strictly
 stronger than 1c — convergence to `parisiValue` subsumes existence of a limit — and deriving
@@ -584,11 +586,44 @@ These results have no new placeholders or axioms and are covered by `GuerraAudit
 handling zero masses in Lemma 2.7 does not establish the strict-scheme reduction needed
 by the remaining estimates.
 
+**Step 15 (2026-09-04): constrained cascade and deterministic Lemma 2.6 induction.**
+
+`Targets/CoupledGrowth.lean` handles genuinely interacting two-field functions:
+
+* Joint measurability and affine field growth imply both ordinary and exponential
+  Gaussian integrability. Product-measure Fubini proves that the independent joint
+  log-Laplace step equals successive single-field steps at the same mass.
+* Both the independent and shared steps preserve growth and order, including at
+  zero mass. These statements do not assume the constrained function factors.
+
+`Targets/CascadeEventBound.lean` proves the one-step comparison used in (2.37):
+if `B ≤ A`, `0 < m ≤ p`, and `0 ≤ F ≤ exp(p(B-A))`, then its normalized tilted
+average is at most `exp(m(T_m B - T_m A))`. Domination proves the necessary
+integrability. Positive bounded observables also have positive tilted integrals.
+
+`Targets/ConstrainedCascade.lean` instantiates this with the actual overlap event:
+
+* `constrainedZ`, `constrainedBase`, and `constrainedPhi` define (2.26)–(2.28).
+  Attainable overlap gives positive partition sums; the Gibbs event is their ratio,
+  proving (2.34). Constrained levels have affine growth and lie below unrestricted ones.
+* `coupledMass` records the correct half-mass shared levels. Its reversed-depth
+  masses decrease and stay positive before the outer zero-mass step when `s.m 1 > 0`.
+* `coupledEvent_le_exp_gap` proves the full deterministic induction on the actual
+  `coupledObservable`. `coupledEvent_pos` proves positivity, and
+  `log_coupledEvent_le_gap` gives the logarithmic comparison preceding concentration
+  on p. 233. The proof never treats `Real.log 0` as a logarithm of a probability.
+* The comparison stops before the zero-mass outer average, as it must. Positivity
+  also holds after that final average.
+
+All new proofs are placeholder-free, with regression guards in `GuerraAudit`.
+**Lemma 2.6 is not yet complete:** the mean-pressure-gap assumption has not been
+converted into exponential decay. Gaussian concentration, with constants uniform in
+`N` and `t`, and the required disorder/outer-field estimates still have to be supplied.
+
 **Remaining work, following the Annals argument:**
 
-1. Define the overlap-constrained partition sum and pressure in (2.27)–(2.28).
-   Prove the constrained free-energy gap-to-probability estimate (Lemma 2.6 and
-   Proposition 2.5), including Gaussian concentration under the cascade weights.
+1. Complete Lemma 2.6's Gaussian concentration step and its expectation estimate,
+   then combine with the proved Lemma 2.7 to obtain Proposition 2.5.
 2. Prove the a priori two-replica bound of Theorem 2.4 using §3–§5 and the scheme's
    optimality. The imported RS-level `twoReplica_GT_bound` is not this general result.
 3. Combine those bounds to obtain Proposition 2.3; Step 14 now supplies its conversion

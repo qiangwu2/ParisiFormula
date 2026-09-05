@@ -28,8 +28,14 @@ in **Lemma 2.7** for the unrestricted coupled cascade: its pressure is `2φ(t)` 
 iterated tilted expectations are the individual replica probabilities `μ_r`.
 [`Targets/ReplicaMeasure.lean`](Targets/ReplicaMeasure.lean) connects those probabilities
 to the existing mass-weighted remainder and proves that per-level tail bounds imply the
-concentration input above. The constrained-pressure and concentration estimates
-(Lemma 2.6, Proposition 2.5, and Theorem 2.4) still remain to be proved.
+concentration input above.
+
+[`Targets/ConstrainedCascade.lean`](Targets/ConstrainedCascade.lean) now defines the
+overlap-constrained cascade and proves the **deterministic induction in Lemma 2.6**:
+the log tilted event probability is bounded by the mass times the constrained pressure
+gap. Attainable overlap, positivity, and the positive-mass restriction are checked.
+The Gaussian concentration step completing Lemma 2.6 / Proposition 2.5, and the a priori
+bound of Theorem 2.4, remain open.
 
 ## Project milestones
 
@@ -91,8 +97,9 @@ lake build Targets.GuerraAudit
 do not mean a failed build, but a successful build alone does not certify the full Parisi
 formula. `GuerraAudit` checks that Theorem 2.1 and both upper bounds depend only on
 `propext`, `Classical.choice`, and `Quot.sound`—not `sorryAx` or extra axioms. It also
-checks Lemma 2.7, the replica-measure decomposition, and the conditional convergence
-lemmas; this does not certify their concentration hypothesis. CI requires both local
+checks Lemma 2.7, the replica-measure decomposition, the deterministic Lemma 2.6
+comparison, and the conditional convergence lemmas. This does not certify the missing
+concentration estimates. CI requires both local
 libraries to build; it does not ignore target or audit failures.
 
 Open the folder in VS Code and click into any `.lean` file: the Lean extension shows the
@@ -141,6 +148,9 @@ ParisiFormula/
 │   ├── TalagrandConvergence.lean     overlap concentration implies Theorem 2.2 (conditional)
 │   ├── CoupledCascade.lean          unrestricted coupled cascade; both Lemma 2.7 identities
 │   ├── ReplicaMeasure.lean          individual replica probabilities and remainder decomposition
+│   ├── CoupledGrowth.lean           interacting two-field Gaussian integrability and growth
+│   ├── CascadeEventBound.lean       one-step tilted-event comparison and positivity
+│   ├── ConstrainedCascade.lean      constrained pressure; deterministic Lemma 2.6 induction
 │   └── GuerraAudit.lean              axiom guards for completed critical-path results
 ├── .lake/packages/              generated dependency checkout; not tracked
 │   ├── mathlib/                      Mathlib v4.32.1
