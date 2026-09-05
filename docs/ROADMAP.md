@@ -803,17 +803,62 @@ Validation: `bash scripts/check.sh` passes (3,804 build jobs), including twelve
 new standard-axiom regression guards. The blueprint compiles without warnings.
 No new placeholders or axioms were added, and no dependencies were changed.
 
+**Step 21 (2026-09-04): terminal Hessian and the Theorem 3.1 covariance algebra.**
+
+The analytic base case and the final sign/telescoping calculation are now
+proved separately. The intervening nested differentiation/IBP is still open.
+
+* `Targets/ConstrainedFiniteState.lean` proves an exact bridge from
+  `constrainedPairFieldBase` to RSAT's `gtStateLogPartition` on the constrained
+  pair subtype. `pairDisorderCLM` reuses `gtCoefficientCLM`. The actual first
+  disorder derivative, derivative of each Gibbs weight, and mixed second
+  derivative follow from RSAT's existing finite-state calculus. Nonemptiness
+  of the constrained state space is explicit where needed.
+* `Targets/CoupledCovariance.lean` contracts that actual terminal Hessian with
+  the abstract SK spectral covariance. The resulting kernel is
+  `β²/2 * Σ_ab R_ab²`; its diagonal is `β²(1+u²)`. The independent and signed
+  shared field contractions are checked, as is the nonnegative four-square
+  defect. The scalar completion reuses RSAT's `gtCovariance_remainder`.
+* `Targets/SecondInterpolationAlgebra.lean` defines the explicit finite
+  covariance expression and proves it equals `-t * correction - remainder`.
+  The remainder is nonnegative for nondecreasing masses and nonnegative
+  normalized replica weights. Mathlib's summation-by-parts theorem supplies
+  the telescope. The `min(l,τ)` cross path doubles exactly the shared-level
+  correction, also for sign `η` with `η²=1`.
+* `section5Correction_eq` identifies the correction of the actual inserted
+  sequences with `2 * parisiCorrection + (m-m_(r−1)) (θ(q_r)-θ(u))`, as in
+  (5.9). This is a proved finite-sum identity, not the pressure inequality
+  in (5.9). No mass differentiation or optimality hypothesis is assumed.
+
+**Important boundary:** `pairCovarianceExpression_le` is not a theorem about
+`deriv section5Interpolation`. Its replica weights are explicit finite inputs;
+the actual nested measures and the derivative/IBP identification must still be
+constructed and proved. No equality with `η′`, or its desired bound, was added
+as an assumption. The original Theorem 2.2 placeholder is unchanged.
+
+The next analytic reuse candidates are the local fixed-variance
+`hasDerivAt_parisiStepPi_param` and `hasDerivAt_tiltAvg_param_pi`, combined with
+the independent-step Fubini and shared-step adapters. Propagate the terminal
+derivatives, including the mass covariance term, through the actual nested
+integrals. The already proved covariance and correction algebra need not be redone.
+
+Validation: `bash scripts/check.sh` passes (3,809 build jobs), including fifteen
+new standard-axiom guards. No new placeholders or axioms were added. README,
+provenance, and blueprint are synchronized with the precise proved statements.
+
 **Remaining work, following the Annals argument:**
 
 1. Prove the a priori two-replica bound of Theorem 2.4 using §3–§5 and the scheme's
    optimality. The imported RS-level `twoReplica_GT_bound` is not this general result.
    Next concrete step: prove the nested-cascade covariance derivative estimate
-   for `section5Interpolation`, then integrate it to connect the two proved
-   endpoints. Reuse RSAT's generic finite-state first/second derivatives and
-   Stein formulas; its ordinary-pressure comparison alone does not match this
-   nested pressure. Simplify the inserted correction to (5.9), then develop
-   the Section 4 variation/optimality estimates and the remaining Section 5
-   interval/sign constructions. Do not replace `2ψ(t)` with `2φ(t)`.
+   for `section5Interpolation`: propagate the terminal derivatives through
+   the nested Gaussian steps, construct its normalized replica weights, and
+   prove the derivative equals the covariance expression from Step 21.
+   Then prove the endpoint-safe integration of that derivative. The square
+   completion, mass telescoping, and inserted correction of (5.9) are now
+   available. Develop the Section 4 variation/optimality estimates and the
+   remaining Section 5 interval/sign constructions. Do not replace `2ψ(t)`
+   with `2φ(t)`.
 2. Combine those bounds to obtain Proposition 2.3; Step 14 now supplies its conversion
    to the mass-weighted form. Handle coincident masses/overlap levels via (2.19), or
    prove the needed bound directly without strictness. This reduction is not yet

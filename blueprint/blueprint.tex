@@ -695,6 +695,87 @@ construction, negative-overlap case, and Proposition~5.7's additional scheme
 also remain open. In particular Lemma~5.8's identification with $U'$ and the
 uniform second-derivative bound in Lemma~5.9 are not yet proved.
 
+\begin{lemma}[Constrained terminal derivatives and the SK covariance trace]
+\lean{SpinGlass.Targets.hasDerivAt\_constrainedPairFieldBase\_second}\leanok
+\lean{SpinGlass.Targets.constrainedPairSecond\_SK\_trace}\leanok
+Let $S_u$ be the nonempty finite set of pairs with overlap $u$, and let $F(U)$
+be the constrained log partition at fixed physical fields. If
+$V^{\rm pair}(\sigma,\tau)=V(\sigma)+V(\tau)$, then
+\[
+D F(U)[V]=\langle V^{\rm pair}\rangle_U,\qquad
+D^2 F(U)[V,W]=\operatorname{Cov}_U(V^{\rm pair},W^{\rm pair}).
+\]
+Write $R_{ab}(p,q)$ for the four overlaps between pair states and put
+$K(p,q)=\frac{\beta^2}{2}\sum_{a,b}R_{ab}(p,q)^2$.
+For the SK spectral directions $w_i$ and variances $\tau_i$, and $N>0$,
+\[
+\sum_i\tau_i D^2F(U)[w_i,w_i]
+=N\left(\beta^2(1+u^2)-\langle K(p,q)\rangle_U^{\otimes2}\right).
+\]
+\end{lemma}
+\begin{proof}
+The constrained terminal is identified with RSAT's finite-state log partition
+on $S_u$, preserving Talagrand's positive-Hamiltonian convention. Its existing
+first and Gibbs-weight derivative formulas give the mixed Hessian. The local
+SK spectral covariance identity supplies the four overlap squares. The diagonal
+matrix of a constrained pair is $\left(\begin{smallmatrix}1&u\\u&1\end{smallmatrix}\right)$,
+so its normalized covariance is the constant $\beta^2(1+u^2)$.
+\end{proof}
+
+\begin{lemma}[Covariance algebra after the intended nested IBP]
+\lean{SpinGlass.Targets.pairCovarianceExpression\_eq}\leanok
+\lean{SpinGlass.Targets.pairCovarianceExpression\_le}\leanok
+Let $0=m_0\le\cdots\le m_\kappa=1$, $\rho_0=c_0=0$,
+$\rho_{\kappa+1}=1$, and $c_{\kappa+1}=u$. Put
+\[
+Q_\ell=\begin{pmatrix}\rho_\ell&c_\ell\\c_\ell&\rho_\ell\end{pmatrix},\quad
+L_\ell(p,q)=\beta^2\sum_{a,b}(Q_\ell)_{ab}R_{ab}(p,q),\quad
+D_\ell(p,q)=\frac{\beta^2}{2}\sum_{a,b}(R_{ab}(p,q)-(Q_\ell)_{ab})^2.
+\]
+For arbitrary nonnegative normalized weights $\mu_\ell$ on $S_u^2$, define
+\[
+\mathcal B=\frac t2\left[-\beta^2(1+u^2)
+ +\sum_{\ell=1}^{\kappa}(m_{\ell-1}-m_\ell)\mu_\ell(K-L_\ell)\right],
+\]
+\[
+\mathcal C=\sum_{p=0}^{\kappa}m_p(E_{p+1}-E_p),\quad
+E_p=\frac{\beta^2}{2}(\rho_p^2+c_p^2).
+\]
+For $t\ge0$,
+\[
+\mathcal B=-t\mathcal C-\frac t2\sum_{\ell=1}^{\kappa}
+ (m_\ell-m_{\ell-1})\mu_\ell(D_\ell)\le-t\mathcal C.
+\]
+\end{lemma}
+\begin{proof}
+RSAT's scalar quadratic remainder identity gives
+$K-L_\ell=D_\ell-2E_\ell$ entry by entry. Normalize the constant terms under
+$\mu_\ell$ and apply Mathlib's summation-by-parts identity. The remaining
+weighted squares are nonnegative. For $c_\ell=\eta\rho_{\min(\ell,\tau)}$,
+$\eta^2=1$, the correction doubles exactly at the levels $p<\tau$.
+\end{proof}
+
+\begin{lemma}[Inserted correction in (5.9)]
+\lean{SpinGlass.Targets.section5Correction\_eq}\leanok
+For the inserted left-interval sequences (5.5)--(5.6), using paper indices,
+\[
+\mathcal C=\sum_{p=0}^{k}m_p\bigl(\theta(q_{p+1})-\theta(q_p)\bigr)
+ +(m-m_{r-1})\bigl(\theta(q_r)-\theta(u)\bigr),\qquad
+\theta(q)=\frac{\beta^2q^2}{2}.
+\]
+\end{lemma}
+\begin{proof}
+Below the split, the doubled shared contribution cancels the half mass.
+The two split increments combine into the original increment plus the
+displayed correction. Above the split, shift the index by one. The original
+sum is exactly twice the existing Parisi correction.
+\end{proof}
+The quantity $\mathcal B$ above is an explicit algebraic expression, not yet
+identified with $\eta'$. The terminal Hessian is proved, but its propagation
+through the positive-mass Gaussian cascade, the actual replica weights, and
+the nested integration-by-parts identity still require proof. Consequently
+neither Theorem~3.1 nor the pressure inequality (5.9) is marked complete.
+
 The remaining work follows Proposition~2.3 and the coupled-replica concentration
 argument in \S3--\S5 of \cite{Tal06}: prove the a priori bound of Theorem~2.4,
 then combine it with Proposition~2.5 to obtain Proposition~2.3. The reduction

@@ -72,6 +72,17 @@ coordinates with the combined variances of `Z + √(1−w)y`.
 **Still open:** the derivative inequality between these endpoints, the right-interval
 and negative-overlap constructions, and the §4–§5 optimality estimates. The endpoint
 results alone do not prove Theorem 2.4 or Theorem 2.2.
+
+[`Targets/ConstrainedFiniteState.lean`](Targets/ConstrainedFiniteState.lean) now
+connects the actual constrained terminal to RSAT's finite-state log partition,
+proving its first and mixed second disorder derivatives.
+[`Targets/CoupledCovariance.lean`](Targets/CoupledCovariance.lean) contracts that
+Hessian with the SK covariance and proves the four-overlap square completion.
+[`Targets/SecondInterpolationAlgebra.lean`](Targets/SecondInterpolationAlgebra.lean)
+proves the sign and telescoping calculation on pp. 240–241 and identifies the
+inserted correction in (5.9). **The missing analytic step is still to identify
+the derivative of the full nested pressure with this covariance expression.**
+The algebraic bound is not presented as a proved bound on `η′`.
 Development follows the reuse-first rules in [`AGENTS.md`](AGENTS.md); the concrete
 reuse inventory is recorded in [`docs/PROVENANCE.md`](docs/PROVENANCE.md).
 
@@ -205,6 +216,9 @@ ParisiFormula/
 │   ├── CoupledReindex.lean          zero-variance insertion/deletion and physical field rescaling
 │   ├── TalagrandSection5.lean       explicit inserted masses/variances and scalar V
 │   ├── TalagrandSecondInterpolation.lean  second-interpolation endpoints (5.8), (5.17), left interval
+│   ├── ConstrainedFiniteState.lean   RSAT-backed first/second derivatives of the constrained terminal
+│   ├── CoupledCovariance.lean        four-overlap covariance, square completion and terminal Hessian
+│   ├── SecondInterpolationAlgebra.lean  algebraic remainder sign, telescoping and (5.9) correction
 │   └── GuerraAudit.lean              axiom guards for completed critical-path results
 ├── .lake/packages/              generated dependency checkout; not tracked
 │   ├── mathlib/                      Mathlib v4.32.1

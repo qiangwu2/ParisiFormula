@@ -29,7 +29,10 @@ transitive dependencies for the standard Lean axioms only.
 | `AT.sum_bool_pair_exp_eq_four_mul_exp_gtTerminal`, `AT.sum_pair_exp_sum_eq_prod_sum_exp` | Reused by the local one-site and N-site partition identities in `CoupledLambda.lean`. |
 | `GTFrame.finiteStep`, `finiteStepD`, `step0_good`, `stepM_good`, `goodFam_fLbase` | `CoupledFiniteStep.lean` and `CoupledEndpoint.lean` iterate the existing transforms and regularity results. `TalagrandSection5.lean` specializes them to the actual inserted-level scalar `V` and its lambda derivative. No new dominated differentiation proof. |
 | `AT.gtVectorStep`, `gtScalarStep`, `gtVectorStep_sum` | Directly reused for the N-site recursion and tensorization; integrability and positivity are discharged using `GoodFam`. Proved bridges identify the old shared step and the composition giving its independent step. |
-| `AT.gtStateLogPartition`, its first/second derivatives and moderate-growth results (`Bound/FiniteState.lean`) | General in the finite state type, so usable on `AT.ConstrainedPair N u`. Candidate for the Theorem 3.1 base; not yet connected to the full finite-RSB interpolation. |
+| `AT.gtStateLogPartition`, `contDiff_gtStateLogPartition`, `fderiv_gtStateLogPartition_apply`, `fderiv_gtStateGibbs_apply` (`Bound/FiniteState.lean`) | Now used in `ConstrainedFiniteState.lean` on `AT.ConstrainedPair N u`, with an exact positive-Hamiltonian bridge and actual first/mixed second terminal derivatives. Full nested-cascade differentiation remains open. |
+| `AT.gtCoefficientCLM` (`Bound/Comparison.lean`) | Defines the pair-disorder map `U ↦ (U(σ)+U(τ))` as an existing continuous linear map; no new finite-dimensional map construction needed. |
+| `AT.pairOverlapMatrix_self`, `spin_sum_eq_mul_overlap`, `gtCovariance_remainder` (`Bound/Basic.lean`) | Reused in `CoupledCovariance.lean` for the constrained diagonal, independent/signed-shared field contractions, and entrywise square completion. The SK spectral contraction reuses the already proved local `sk_covariance_spectral_sum`. |
+| `Finset.sum_range_by_parts`, `sum_range_sub` (Mathlib) | Reused in `SecondInterpolationAlgebra.lean` for the mass-weighted telescoping identity. The inserted correction is proved equal to the existing `2 * parisiCorrection` plus the split-level term in (5.9). |
 | `AT.hasDerivAt_gtOrdinaryPressure_ibp`, `gtOrdinaryPressure_one_le_zero_add_shiftedDiagonalGap` (`Bound/Comparison.lean`) | Generic finite-state covariance interpolation, but for the ordinary expected log partition, not an arbitrary nested positive-mass cascade. Reuse where its pressure matches; extend only the missing cascade layer. |
 
 The final `AT.twoReplica_GT_bound` has RS smart-path hypotheses (one overlap
@@ -65,6 +68,27 @@ Theorem 3.1's nested-cascade derivative estimate is still missing; the ordinary
 RSAT covariance comparison cannot be applied to this pressure without that extension.
 The right-interval, negative-overlap, and general out-of-neighbor-interval
 constructions remain separate work, as do the Section 4 optimality estimates.
+
+### Covariance calculation and the remaining analytic gap
+
+The calculation was checked against the same paper, pp. 239–241. The terminal
+derivatives in `ConstrainedFiniteState.lean` are derivatives of the actual
+`constrainedPairFieldBase`, not a separately postulated Gibbs family.
+`constrainedPairSecond_SK_trace` contracts this Hessian with the actual abstract
+SK spectral covariance. In contrast, `pairCovarianceExpression_eq` and `_le`
+are deliberately statements about explicit normalized finite replica weights:
+their expression has not been identified with `η′`. This is the remaining
+nested differentiation/IBP obligation, not an assumption or relocated placeholder.
+
+The local `CascadeDerivPi.hasDerivAt_parisiStepPi_param` and
+`CascadeSecondPi.hasDerivAt_tiltAvg_param_pi` already justify first/second
+parameter differentiation through one fixed-variance Gaussian step. These are
+reuse candidates for the next induction through independent/shared steps;
+the covariance formula must retain the extra mass-weighted covariance term.
+The RSAT half-step modules were inspected: they supply a single fixed half-mass
+transform, not the arbitrary finite sequence needed here. Their final comparison
+does not close the nested-cascade gap. Do not repeat the finite-state or
+square-completion proofs already connected by this step.
 
 ## Historical copies and local ports
 

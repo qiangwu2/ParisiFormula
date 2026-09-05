@@ -11,6 +11,8 @@ the abstract disorder, not just a conditional or standard-coordinate estimate.
 The Section 5 guards cover both endpoints of the positive-overlap left-interval
 second interpolation, including (5.8) and (5.17), but not its covariance
 derivative inequality (Theorem 3.1) or Theorem 2.4.
+The terminal Hessian and covariance-algebra guards do not identify the
+algebraic expression with the derivative of the full nested pressure.
 The full Parisi formula is deliberately not listed: Theorem 2.2 is still open.
 -/
 import Targets.ReplicaMeasure
@@ -18,6 +20,7 @@ import Targets.TalagrandProposition25
 import Targets.CoupledLambdaPressure
 import Targets.CoupledFiniteStep
 import Targets.TalagrandSecondInterpolation
+import Targets.SecondInterpolationAlgebra
 
 /--
 info: 'SpinGlass.Targets.guerra_identity' depends on axioms: [propext, Classical.choice, Quot.sound]
@@ -334,3 +337,97 @@ info: 'SpinGlass.Targets.section5Interpolation_zero_le' depends on axioms: [prop
 -/
 #guard_msgs in
 #print axioms SpinGlass.Targets.section5Interpolation_zero_le
+
+/--
+info: 'SpinGlass.Targets.constrainedPairFieldBase_eq_gtStateLogPartition' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.constrainedPairFieldBase_eq_gtStateLogPartition
+
+/--
+info: 'SpinGlass.Targets.contDiff_constrainedPairFieldBase' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.contDiff_constrainedPairFieldBase
+
+/--
+info: 'SpinGlass.Targets.hasDerivAt_constrainedPairFieldBase' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.hasDerivAt_constrainedPairFieldBase
+
+/--
+info: 'SpinGlass.Targets.hasDerivAt_constrainedPairFieldBase_second' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.hasDerivAt_constrainedPairFieldBase_second
+
+/--
+info: 'SpinGlass.Targets.pairSKCovariance_spectral_sum' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.pairSKCovariance_spectral_sum
+
+/--
+info: 'SpinGlass.Targets.constrainedPairSecond_SK_trace' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.constrainedPairSecond_SK_trace
+
+/--
+info: 'SpinGlass.Targets.independent_pair_spin_contraction' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.independent_pair_spin_contraction
+
+/--
+info: 'SpinGlass.Targets.shared_pair_spin_contraction' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.shared_pair_spin_contraction
+
+/--
+info: 'SpinGlass.Targets.pairCovariance_completion' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.pairCovariance_completion
+
+/--
+info: 'SpinGlass.Targets.pairCovarianceDefect_self' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.pairCovarianceDefect_self
+
+/--
+info: 'SpinGlass.Targets.pairCascadeCorrection_telescope' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.pairCascadeCorrection_telescope
+
+/--
+info: 'SpinGlass.Targets.pairCovarianceExpression_eq' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.pairCovarianceExpression_eq
+
+/--
+info: 'SpinGlass.Targets.pairCovarianceExpression_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.pairCovarianceExpression_le
+
+/--
+info: 'SpinGlass.Targets.pairCascadeCorrection_eq_signed_split' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.pairCascadeCorrection_eq_signed_split
+
+/--
+info: 'SpinGlass.Targets.section5Correction_eq' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.section5Correction_eq
