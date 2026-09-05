@@ -8,14 +8,16 @@ interior times, and the deduction of Theorem 2.2 from an explicit overlap-concen
 The latter guards certify the implication, not its unproved concentration input.
 The Lemma 2.6 guards include Gaussian concentration and its change of law to
 the abstract disorder, not just a conditional or standard-coordinate estimate.
-The Section 5 guards cover the lambda endpoint construction and the comparison
-for the existing cascade; they do not assert Theorem 3.1 or Theorem 2.4.
+The Section 5 guards cover both endpoints of the positive-overlap left-interval
+second interpolation, including (5.8) and (5.17), but not its covariance
+derivative inequality (Theorem 3.1) or Theorem 2.4.
 The full Parisi formula is deliberately not listed: Theorem 2.2 is still open.
 -/
 import Targets.ReplicaMeasure
 import Targets.TalagrandProposition25
 import Targets.CoupledLambdaPressure
 import Targets.CoupledFiniteStep
+import Targets.TalagrandSecondInterpolation
 
 /--
 info: 'SpinGlass.Targets.guerra_identity' depends on axioms: [propext, Classical.choice, Quot.sound]
@@ -260,3 +262,75 @@ info: 'SpinGlass.Targets.hasDerivAt_pairedScalarCascade' depends on axioms: [pro
 -/
 #guard_msgs in
 #print axioms SpinGlass.Targets.hasDerivAt_pairedScalarCascade
+
+/--
+info: 'SpinGlass.Targets.coupledFieldCascade_eq_sum' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.coupledFieldCascade_eq_sum
+
+/--
+info: 'SpinGlass.Targets.constrainedFieldCascade_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.constrainedFieldCascade_le
+
+/--
+info: 'SpinGlass.Targets.coupledFieldCascade_insert_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.coupledFieldCascade_insert_zero
+
+/--
+info: 'SpinGlass.Targets.coupledFieldCascade_affine' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.coupledFieldCascade_affine
+
+/--
+info: 'SpinGlass.Targets.section5Mass_mono' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.section5Mass_mono
+
+/--
+info: 'SpinGlass.Targets.section5Rho_mono' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.section5Rho_mono
+
+/--
+info: 'SpinGlass.Targets.section5InterpolationVariance_nonneg' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.section5InterpolationVariance_nonneg
+
+/--
+info: 'SpinGlass.Targets.section5FieldEndpoint_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.section5FieldEndpoint_le
+
+/--
+info: 'SpinGlass.Targets.hasDerivAt_section5V' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.hasDerivAt_section5V
+
+/--
+info: 'SpinGlass.Targets.section5Interpolation_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.section5Interpolation_zero
+
+/--
+info: 'SpinGlass.Targets.section5Interpolation_one' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.section5Interpolation_one
+
+/--
+info: 'SpinGlass.Targets.section5Interpolation_zero_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.section5Interpolation_zero_le

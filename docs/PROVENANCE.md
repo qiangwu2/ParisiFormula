@@ -27,7 +27,7 @@ transitive dependencies for the standard Lean axioms only.
 |---|---|
 | `AT.gtTerminal`, `AT.gtTerminal_zero`, `AT.deriv_gtTerminal_zero` | `coupledSite_eq_gtTerminal` bridges the paper's hyperbolic expression to RSAT's exponential expression; local normalization and derivative proofs now reuse RSAT. |
 | `AT.sum_bool_pair_exp_eq_four_mul_exp_gtTerminal`, `AT.sum_pair_exp_sum_eq_prod_sum_exp` | Reused by the local one-site and N-site partition identities in `CoupledLambda.lean`. |
-| `GTFrame.finiteStep`, `finiteStepD`, `step0_good`, `stepM_good`, `goodFam_fLbase` | `CoupledFiniteStep.lean` iterates the existing transforms and regularity results for arbitrary finite nonnegative masses and continuous signed coefficients. No new dominated differentiation proof. |
+| `GTFrame.finiteStep`, `finiteStepD`, `step0_good`, `stepM_good`, `goodFam_fLbase` | `CoupledFiniteStep.lean` and `CoupledEndpoint.lean` iterate the existing transforms and regularity results. `TalagrandSection5.lean` specializes them to the actual inserted-level scalar `V` and its lambda derivative. No new dominated differentiation proof. |
 | `AT.gtVectorStep`, `gtScalarStep`, `gtVectorStep_sum` | Directly reused for the N-site recursion and tensorization; integrability and positivity are discharged using `GoodFam`. Proved bridges identify the old shared step and the composition giving its independent step. |
 | `AT.gtStateLogPartition`, its first/second derivatives and moderate-growth results (`Bound/FiniteState.lean`) | General in the finite state type, so usable on `AT.ConstrainedPair N u`. Candidate for the Theorem 3.1 base; not yet connected to the full finite-RSB interpolation. |
 | `AT.hasDerivAt_gtOrdinaryPressure_ibp`, `gtOrdinaryPressure_one_le_zero_add_shiftedDiagonalGap` (`Bound/Comparison.lean`) | Generic finite-state covariance interpolation, but for the ordinary expected log partition, not an arbitrary nested positive-mass cascade. Reuse where its pressure matches; extend only the missing cascade layer. |
@@ -42,6 +42,29 @@ No dependency revision was changed and no upstream source was copied or edited.
 The general finite recursion presently proves λ-differentiation at fixed masses;
 it does not assert the mass-variation estimates or identify the derivative with
 Talagrand's `U′` in Lemma 5.8.
+
+### Section 5 endpoint specialization
+
+The coefficients were checked against the [original Annals paper](https://annals.math.princeton.edu/wp-content/uploads/annals-v163-n1-p04.pdf),
+pp. 252–253, equations (5.5)–(5.17). The paper's `k` is the local `k+1`.
+For the left interval `q(r−1) ≤ u ≤ q(r)`, the inserted level is independent,
+has mass `m`, and has frozen variance zero; outer shared masses are `m_p/2`.
+The second interpolation is defined directly on standard Gaussian coordinates
+using the combined variance of `Z + √(1−w)y`, with shared fields below `r` and
+independent fields at/above `r`. Thus it does not require introducing and then
+integrating out redundant Gaussian copies. The exact endpoint identities are
+proved against the existing `constrainedPhi` and the explicit scalar recursion,
+not assumed from a distributional identification.
+
+`CoupledEndpoint.lean` reuses the existing interacting-step growth, order,
+Fubini, and additive-constant results, together with RSAT's site tensorization.
+`CoupledReindex.lean` supplies only algebraic changes of coordinates and deletion
+of a zero-variance step. `TalagrandSecondInterpolation.lean` proves (5.8) and
+(5.17) for this canonical construction. All are covered by axiom guards.
+Theorem 3.1's nested-cascade derivative estimate is still missing; the ordinary
+RSAT covariance comparison cannot be applied to this pressure without that extension.
+The right-interval, negative-overlap, and general out-of-neighbor-interval
+constructions remain separate work, as do the Section 4 optimality estimates.
 
 ## Historical copies and local ports
 

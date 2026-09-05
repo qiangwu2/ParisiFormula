@@ -53,8 +53,8 @@ the overlap-penalty comparison through the existing coupled cascade.
 [`Targets/CoupledLambdaPressure.lean`](Targets/CoupledLambdaPressure.lean) proves
 the averaged comparison `Ψ(t,u) ≤ Pλ(t) − λu`, with `P₀(t) = 2φ(t)` and
 a size-independent 1-Lipschitz bound in λ. These results do **not** yet give
-Theorem 2.4's improvement relative to `2ψ(t)`: the second interpolation of
-Theorem 3.1 and the §4–§5 parameter-variation estimates remain open.
+Theorem 2.4's improvement relative to `2ψ(t)`: the covariance derivative bound
+of Theorem 3.1 and the §4–§5 parameter-variation estimates remain open.
 Proposition 2.3 and the reduction for coincident scheme levels follow those inputs.
 Theorem 2.2 itself remains open.
 
@@ -62,7 +62,16 @@ Theorem 2.2 itself remains open.
 general Gaussian transforms to build arbitrary finite paired-field recursions:
 site factorization, continuity, and differentiation in λ are proved at every
 depth. Shared and independent steps are connected to the existing cascade.
-The actual Theorem 3.1 interpolation and its covariance estimate are still open.
+[`Targets/TalagrandSecondInterpolation.lean`](Targets/TalagrandSecondInterpolation.lean)
+now defines the second interpolation for `q(r−1) ≤ u ≤ q(r)` with nonnegative
+overlap and proves both endpoint results: **(5.8)** `η(1) = Ψ(t,u)` and **(5.17)**
+`η(0) ≤ 2 log 2 + V(λ,m,v(u)) − λu`. The inserted masses, overlap sequence,
+nonnegative Gaussian variances, N-site tensorization, and λ-differentiation of
+the actual scalar `V` are checked. The definitions use canonical Gaussian
+coordinates with the combined variances of `Z + √(1−w)y`.
+**Still open:** the derivative inequality between these endpoints, the right-interval
+and negative-overlap constructions, and the §4–§5 optimality estimates. The endpoint
+results alone do not prove Theorem 2.4 or Theorem 2.2.
 Development follows the reuse-first rules in [`AGENTS.md`](AGENTS.md); the concrete
 reuse inventory is recorded in [`docs/PROVENANCE.md`](docs/PROVENANCE.md).
 
@@ -192,6 +201,10 @@ ParisiFormula/
 │   ├── CoupledLambda.lean           Section 5 spin formula, endpoint and cascade penalty
 │   ├── CoupledLambdaPressure.lean   averaged lambda comparison, normalization and stability
 │   ├── CoupledFiniteStep.lean       RSAT-backed general finite recursion and site factorization
+│   ├── CoupledEndpoint.lean         inserted-level cascade growth, tensorization and constraint bound
+│   ├── CoupledReindex.lean          zero-variance insertion/deletion and physical field rescaling
+│   ├── TalagrandSection5.lean       explicit inserted masses/variances and scalar V
+│   ├── TalagrandSecondInterpolation.lean  second-interpolation endpoints (5.8), (5.17), left interval
 │   └── GuerraAudit.lean              axiom guards for completed critical-path results
 ├── .lake/packages/              generated dependency checkout; not tracked
 │   ├── mathlib/                      Mathlib v4.32.1

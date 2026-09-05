@@ -762,15 +762,58 @@ with `U′`, and its masses are fixed, not differentiated. Next reuse candidates
 are RSAT's generic finite-state calculus and ordinary-pressure covariance
 comparison; extend only what the nested positive-mass cascade actually needs.
 
+**Step 20 (2026-09-04): actual second-interpolation endpoints for the left interval.**
+
+The next concrete step from Step 19 is now complete for the positive-overlap
+left-interval construction `q(r−1) ≤ u ≤ q(r)` (paper indices).
+
+* `Targets/TalagrandSection5.lean` defines the inserted overlap and mass
+  sequences (5.5), (5.6), frozen variances (5.7), scalar variances (5.10)–(5.13),
+  and the actual scalar `V` in (5.15). Ordering, endpoint values, the admissible
+  split variance (5.16), and nonnegativity throughout the second interpolation
+  are proved. `V` uses the existing RSAT transforms, including zero mass.
+* `Targets/CoupledEndpoint.lean` exposes level data in the interacting cascade
+  while reusing the existing independent/shared steps, growth, monotonicity,
+  Fubini, and constant rules. Site tensorization is proved using RSAT's
+  `gtVectorStep_sum`; integrability and positivity are discharged, not assumed.
+* `Targets/CoupledReindex.lean` proves deletion of an inserted zero-variance
+  level at any mass, and exact affine changes of the physical fields through
+  the nested integrals. These connect the new scheme to the old cascade.
+* `Targets/TalagrandSecondInterpolation.lean` defines `section5Interpolation`
+  directly using canonical Gaussian coordinates with the combined variances
+  of `Z + √(1−w)y`. It proves **(5.8)**: `η(1) = Ψ(t,u)` for the existing
+  `constrainedPhi`, not a newly assumed endpoint. The inserted level disappears
+  and the field scaling is exactly that of the original Guerra Hamiltonian.
+* It also proves **(5.17)**: `η(0) ≤ 2 log 2 + V(λ,m,v(u)) − λu`, including
+  the normalization by `N`, the outer zero-mass average, arbitrary real λ,
+  and explicit attainable-overlap/positive-size hypotheses.
+* `hasDerivAt_section5V` gives the actual recursively tilted λ-derivative.
+  This is not yet Lemma 5.8's identification with `U′`. Axiom guards cover the
+  completed endpoints, tensorization, derivative, and coordinate changes.
+
+These are proved endpoint results, **not Theorem 3.1 or Theorem 2.4**. No
+covariance inequality or interior-time differentiability of the new pressure
+has been assumed. The canonical-coordinate path can be differentiated directly;
+there is no need to first construct redundant abstract `Z,y` random variables.
+The right-interval dual construction, negative-overlap branch, and the additional
+interleaved scheme of Proposition 5.7 are not yet formalized. The four original
+placeholders are unchanged, including the original Theorem 2.2 declaration.
+
+Validation: `bash scripts/check.sh` passes (3,804 build jobs), including twelve
+new standard-axiom regression guards. The blueprint compiles without warnings.
+No new placeholders or axioms were added, and no dependencies were changed.
+
 **Remaining work, following the Annals argument:**
 
 1. Prove the a priori two-replica bound of Theorem 2.4 using §3–§5 and the scheme's
    optimality. The imported RS-level `twoReplica_GT_bound` is not this general result.
-   Next concrete step: instantiate the RSAT-backed general recursion from
-   Step 19 with the second interpolation's masses/coefficients and connect its
-   endpoints to the existing pressure and Section 5 scalar construction.
-   Reuse the generic finite-state derivatives and covariance comparison after
-   checking the pressure matches; the nested-cascade extension remains open.
+   Next concrete step: prove the nested-cascade covariance derivative estimate
+   for `section5Interpolation`, then integrate it to connect the two proved
+   endpoints. Reuse RSAT's generic finite-state first/second derivatives and
+   Stein formulas; its ordinary-pressure comparison alone does not match this
+   nested pressure. Simplify the inserted correction to (5.9), then develop
+   the Section 4 variation/optimality estimates and the remaining Section 5
+   interval/sign constructions. Do not replace `2ψ(t)` with `2φ(t)`.
 2. Combine those bounds to obtain Proposition 2.3; Step 14 now supplies its conversion
    to the mass-weighted form. Handle coincident masses/overlap levels via (2.19), or
    prove the needed bound directly without strictness. This reduction is not yet

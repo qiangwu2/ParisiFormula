@@ -604,10 +604,9 @@ The terminal energies change by at most $N|\lambda-\mu|$, and cascade
 nonexpansiveness gives the final bound after division by $N$.
 \end{proof}
 
-These are supporting results for the endpoint argument in (5.17), not a proof
-of that equation for the new interpolation. The inserted level, modified
-Gaussian variances, second-interpolation endpoint identifications, and
-derivative bound of Theorem~3.1 remain open. In particular $P_0=2\varphi$
+These are supporting results for the endpoint argument in (5.17).
+The specific left-interval second-interpolation endpoints are now proved below;
+the derivative bound of Theorem~3.1 remains open. In particular $P_0=2\varphi$
 does not supply Theorem~2.4's strict improvement relative to $2\psi$.
 The terminal derivative above is not the full Lemma~5.8 cascade identity.
 
@@ -641,9 +640,60 @@ the required integrability and positivity. The old shared Gaussian step is
 the general vector step at mass $m/2$; its independent step is two vector
 steps at mass $m$, with coefficients $(\sqrt v,0)$ and $(0,\sqrt v)$.
 \end{proof}
-This is a general recursion, not yet the specific interpolating scheme of
-Theorem~3.1. The lambda derivative is proved at fixed masses; neither the
+The lambda derivative is proved at fixed masses; neither the
 mass-variation estimates nor the identification with $U'$ is asserted here.
+
+\begin{proposition}[Second-interpolation endpoints, left-interval construction]
+\lean{SpinGlass.Targets.section5Interpolation\_one}\leanok
+\lean{SpinGlass.Targets.section5Interpolation\_zero\_le}\leanok
+Use the paper's indices in this proposition. Let $1\le r\le k$,
+$q_{r-1}\le u\le q_r$, $0\le t\le1$, and
+$m_{r-1}/2\le m\le m_r$. Insert $u$ into the overlap sequence at index $r$.
+Give levels below $r$ masses $m_p/2$, the inserted level mass $m$, and levels
+above $r$ masses $m_{p-1}$, as in (5.5)--(5.6). Denote these sequences by
+$(\rho_p)$ and $(n_p)$. Put
+\[
+S_p=\begin{cases}
+\beta^2(q_{p+1}-q_p),&p<r,\\
+0,&p=r,\\
+\beta^2(q_p-q_{p-1}),&p>r,
+\end{cases}
+\qquad
+D_p(w)=(1-t)S_p+(1-w)t\beta^2(\rho_{p+1}-\rho_p).
+\]
+Define $\eta(w)$ by the constrained terminal with disorder
+$\sqrt{wt}\,H$, external field $h$, and nested Gaussian increments of variance
+$D_p(w)$: shared below $r$ and independent at or above $r$.
+The scalar $V(\lambda,m,v)$ is the finite recursion (5.10)--(5.15).
+For $N>0$ and attainable overlap $u$,
+\[
+\eta(1)=\Psi(t,u),\qquad
+\eta(0)\le2\log2+V(\lambda,m,v(u))-\lambda u,
+\quad v(u)=t\beta^2(q_r-u).
+\]
+The inserted mass and overlap sequences are nondecreasing with the prescribed
+endpoints, and all $D_p(w)$ are nonnegative on $0\le w\le1$.
+\end{proposition}
+\begin{proof}
+At $w=1$ the inserted level has variance zero, so its logarithmic-Laplace
+transform is the identity, including at mass zero. Delete this level and move
+the factor $\sqrt{1-t}$ from the Gaussian increments back to the terminal
+fields. An exact affine-coordinate identity through the nested integrals
+recovers the original constrained cascade, proving (5.8).
+
+At $w=0$ the disorder vanishes. The variances $D_p(0)$ are exactly those in
+(5.10)--(5.13) with $v=v(u)$. The overlap penalty bounds the restricted
+terminal by $2N\log2-\lambda Nu+\sum_i A^*_{\lambda}(x_i,y_i)$.
+Monotonicity and constant equivariance propagate the inequality. Applying the
+proved site tensorization at every level yields $N V(\lambda,m,v(u))$;
+division by $N$ gives (5.17). RSAT's Gaussian regularity theorems also give
+the actual lambda derivative of this $V$ at fixed $m$.
+\end{proof}
+These endpoint results do not assert the intervening covariance derivative
+bound or interior-time differentiability of $\eta$. The right-interval dual
+construction, negative-overlap case, and Proposition~5.7's additional scheme
+also remain open. In particular Lemma~5.8's identification with $U'$ and the
+uniform second-derivative bound in Lemma~5.9 are not yet proved.
 
 The remaining work follows Proposition~2.3 and the coupled-replica concentration
 argument in \S3--\S5 of \cite{Tal06}: prove the a priori bound of Theorem~2.4,

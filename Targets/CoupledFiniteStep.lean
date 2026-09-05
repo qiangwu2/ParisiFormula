@@ -5,7 +5,8 @@ The masses and the two Gaussian coefficients are specified independently at
 each step. This permits inserted levels and signed shared fields in Talagrand
 Sections 3--5. All analytic propagation is imported from `GTFrame`, and all
 site tensorization from `AT.gtVectorStep_sum`; no new Gaussian calculus is used.
-The specific interpolation coefficients and Theorem 3.1 remain to be supplied.
+The positive-overlap left-interval instance and its endpoints are supplied in
+`TalagrandSecondInterpolation`; Theorem 3.1's derivative bound remains open.
 -/
 import Targets.CoupledLambda
 import Lemmas.GuerraTalagrand.Bound.FiniteStep
