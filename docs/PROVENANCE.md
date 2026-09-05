@@ -147,8 +147,8 @@ disorder. Mathlib's dominated differentiation moves the amplitude derivative
 through the outer Gaussian expectation. The square-root chain rule gives
 the correctly normalized `1/(2N)` trace. The amplitude result holds at zero
 as well; composition with the continuous square root gives zero-variance
-continuity without claiming an endpoint variance derivative. The missing
-simultaneous outer derivative and replica-weight identification remain explicit.
+continuity without claiming an endpoint variance derivative. Replica-weight
+identification remains a separate obligation.
 
 `CoupledVariancePressure.lean` closes the outer-average issue for an individual
 field-variance derivative. It reuses the actual cascade's disorder continuity
@@ -157,8 +157,8 @@ This provides disorder measurability of the actual derivative without assuming
 joint differentiability. The uniform derivative bound then discharges the
 dominated-differentiation hypotheses. For simultaneous interpolation, separate
 partials do not by themselves justify the chain rule. The pointwise simultaneous
-chain rule is now proved separately as described below; outer averaging and
-identification of its derivative remain open.
+chain rule and outer averaging are now proved separately as described below;
+identification with the replica covariance expression remains open.
 
 `Section5VarianceFaces.lean` preserves degeneracies when applying that eventual
 chain rule: each physical variance is `A+(1-w)B` with `A,B≥0`. Before `w=1`,
@@ -207,8 +207,34 @@ joint derivative composed with the moving shift derivative. This is a proved
 derivative candidate before integration by parts, not a postulated replica formula.
 `Section5JointInterpolation.lean` discharges these hypotheses for the actual left
 and right paths at `0<w<1`, with fixed disorder and their different cutoffs.
-This proves pointwise integrand differentiability, not yet differentiation of the
-outer Gaussian pressure or identification with Talagrand's replica covariance sum.
+This module proves pointwise integrand differentiability.
+
+`CoupledPathPressure.lean` obtains a single time neighborhood with a bound
+`(A+B*‖U‖)*|z-w|` for every disorder `U`. The coefficients are chosen from the
+scalar amplitude and finitely many variance paths before choosing `U`; a
+disorder-dependent neighborhood would not justify outer dominated differentiation.
+Derivative measurability uses measurable difference quotients with variances
+clipped to `max(v,0)` only in those auxiliary quotients. Eventual nonnegativity
+identifies them with the original path near the differentiation point, preserving
+the original derivative. Mathlib's anchored Fréchet integral rule then proves
+both derivative integrability and interchange with the Gaussian expectation.
+`Section5PressureDerivative.lean` specializes to both actual physical pressures,
+with exact `1/N` normalization and their distinct cutoffs. This closes outer
+averaging, not the identification with Talagrand's replica covariance sum or its bound.
+
+`CoupledPathDecomposition.lean` reuses the Gaussian log-Laplace derivative for
+finite-dimensional parameters and proves the actual full joint induction.
+It then varies disorder and finitely many active variance coordinates on a
+face that fixes precisely the zero coordinates. Derivative uniqueness on
+disorder lines and single-coordinate update lines identifies each basis value;
+linearity of the proved Fréchet derivative gives the actual finite sum. The
+remaining depth is `j-(l+1)`, with `l+1+(j-(l+1))=j` for every visited level.
+`CoupledPathPressureFormula.lean` proves termwise integrability, splits the
+expectation and reuses radial Stein: the disorder coefficient is `a′*a`, and
+the heat terms retain their existing normalization. The physical specializations
+in `Section5PressureDerivative.lean` reduce this to `t/(2N)`, including `t=0`
+by its constant branch. Covariance eigenvalues are variances, not standard
+deviations. Replica-weight identification and the desired inequality remain open.
 
 ### Scalar variation, baseline, and finite-overlap assembly
 
@@ -289,7 +315,30 @@ and fundamental theorem for a nonnegative derivative yield the endpoint-safe
 integral identity. Integrability of `Q` alone is deduced for a strictly positive
 mass gap; at baseline no continuity or integrability of `Q` is inferred from
 the vanishing product. Proving those facts and passing to the baseline mass
-limit is a concrete route toward `U′=Q`, still uncompleted.
+limit requires the separate continuity proof below.
+
+`ParisiJointMassContinuity.lean` proves continuity of the weighted exponential
+moment and its normalized slope quotient jointly in mass, variance and field.
+The potential itself uses the existing Herbst estimate to connect the mass-zero
+expectation with the nonzero branch; no singular division is performed at zero.
+`Section4VarianceFactorContinuity.lean` uses the existing compact-path growth
+rules and dominated continuity of normalized Gaussian means to propagate the
+actual squared-slope observable. The resulting `Q` is continuous on the entire
+closed mass/variance rectangle, including mass zero and one, and is integrable
+at the baseline independently of the vanishing mass gap.
+
+`Section4UPrime.lean` uses that continuity and `0≤Q≤1` to pass the right mass
+limit through the variance integral. The two actual baseline mass derivatives
+give `(U(w)-U(v))/2`, while the mass-gap factor gives half the baseline `Q`
+integral. Hence `U(v)=∫₀ᵛQ(m_(r−1),z)dz` and the interior FTC proves `U′=Q`.
+The baseline must be below one, as in `Section4UBounds`; mass zero is included.
+The actual overlap first variation then has derivative `β²(u-Q)/2`, with beta
+zero handled by its constant branch. No mixed derivative interchange, endpoint
+stationarity, uniform second-mass estimate, or identity for `U″` is assumed.
+The optimality comparison was also rechecked: the finite-error inequality
+(4.30) alone does not bound its baseline derivative, and the upper-mass
+comparison (4.31) is not a proof that the baseline is an exact minimum. The
+missing uniform higher-mass estimate must not be replaced by that assumption.
 
 `RightInterpolationAlgebra.lean` reuses `pairCascadeCorrection_eq_split` at
 cutoff `r+1` and supplies only the changed two-interval sum. The exact result
@@ -348,7 +397,8 @@ masses do not eliminate the baseline mass zero at `r=1`.
 `ParisiMassZero.lean` supplies the actual single-step zero-mass derivative via
 Mathlib's analytic divided difference and CGF variance formula;
 `Section4MassDerivative.lean` now handles the actual nested baseline as described
-above. The mixed mass/variance identities remain open. The current variance
+above. Higher mixed mass/variance identities remain open after the checked
+first identity `U′=Q`. The current variance
 derivatives are interior ones, so endpoint
 stationarity is not silently inferred from them.
 

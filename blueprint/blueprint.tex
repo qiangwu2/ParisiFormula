@@ -1039,8 +1039,36 @@ give the displayed identity using endpoint continuity. At equal masses both
 sides vanish; no integrability of $Q$ at that baseline is inferred from the
 vanishing product. For a positive mass gap, division also proves $Q$ integrable.
 \end{proof}
-Continuity of $Q$ at the baseline, the resulting identity $U'=Q$, and $U''$
-remain separate obligations.
+\begin{lemma}[Baseline continuity and the actual derivative of $U$]
+\lean{SpinGlass.Targets.continuousOn\_parisiStep\_parisiF\_joint}\leanok
+\lean{SpinGlass.Targets.continuousOn\_section4TVarianceQ}\leanok
+\lean{SpinGlass.Targets.section4U\_eq\_integral}\leanok
+\lean{SpinGlass.Targets.hasDerivAt\_section4U}\leanok
+\lean{SpinGlass.Targets.hasDerivAt\_section4FirstVariation\_overlap}\leanok
+The actual $Q$ is continuous on $[0,1]\times[0,a]$, including both mass
+endpoints and degenerate variance intervals. If $m_{r-1}<1$, then
+\[
+ U(v)=\int_0^v Q(m_{r-1},z)\,dz,\qquad
+ U'(v)=Q(m_{r-1},v)\in[0,1]\quad(0<v<a).
+\]
+For $q_{r-1}<u<q_r$, the actual first variation satisfies
+\[
+ f'(u)=\frac{\beta^2}{2}
+ \left(u-Q\bigl(m_{r-1},\beta^2(q_r-u)\bigr)\right).
+\]
+\end{lemma}
+\begin{proof}
+Dominated Gaussian continuity gives joint continuity of the scalar normalized
+slope quotient; the potential's zero-mass branch follows from its Herbst gap.
+Propagate the bounded squared-slope observable through the normalized means.
+Continuity and $0\le Q\le1$ justify passing $m=m_{r-1}+\delta$ to baseline
+in the variance integral as $\delta\downarrow0$. The actual mass derivative
+identifies the left-hand quotient with $(U(w)-U(v))/2$; the right side tends
+to half the baseline integral. Use $U(0)=0$ and the interior FTC. The chain
+rule gives $f'$, with $\beta=0$ treated as a constant function.
+\end{proof}
+The identity for $U''$ and the remaining Lemma~5.8 comparison are still open,
+as are uniform bounds on higher mass derivatives and optimality estimates.
 
 \begin{lemma}[Actual inserted functional and optimality inputs]
 \lean{SpinGlass.Targets.parisiFunctional\_insertLevel}\leanok
@@ -1113,8 +1141,8 @@ the normalized parameter rule at every outer level. Measurable forward
 difference quotients give disorder measurability of the actual variance
 derivative; its uniform bound justifies the outer Gaussian differentiation.
 \end{proof}
-The simultaneous outer Gaussian derivative, replica-weight identification,
-and endpoint-safe integration of the full second interpolation remain to be assembled.
+Replica-weight identification and endpoint-safe integration of the desired
+derivative inequality remain to be assembled.
 
 \begin{lemma}[Degenerate interpolation variances need no endpoint derivative]
 \lean{SpinGlass.Targets.section5InterpolationVariance\_pos\_or\_eq\_zero}\leanok
@@ -1180,8 +1208,51 @@ mass zero as an ordinary expectation and use the actual independent/shared
 packing for induction. The positive-or-constant-zero alternative verifies the
 physical paths' hypotheses.
 \end{proof}
-This does not yet pass the simultaneous derivative through the outer disorder
-average or identify it with the replica covariance expression.
+\begin{lemma}[The actual Gaussian-averaged simultaneous derivative]
+\lean{SpinGlass.Targets.constrainedPairGaussian\_path\_derivative}\leanok
+\lean{SpinGlass.Targets.hasDerivAt\_section5Interpolation}\leanok
+\lean{SpinGlass.Targets.hasDerivAt\_section5RightInterpolation}\leanok
+The simultaneous path derivative passes through the actual outer Gaussian
+average. Thus both physical second interpolations are differentiable on
+$(0,1)$, retaining the exact normalized integral of the joint derivative.
+\end{lemma}
+\begin{proof}
+Choose the amplitude and finite-variance bounds before fixing the disorder:
+on one common time neighborhood the actual difference is bounded by
+$(A+B\|U\|)|z-w|$. This is Gaussian integrable. Measurable difference quotients
+give measurability of the actual derivative; clipping variances to their
+nonnegative parts is used only in the auxiliary quotients and agrees with the
+original path nearby. Mathlib's anchored dominated differentiation proves
+integrability and interchange. Substitute the physical paths and their
+distinct independent/shared cutoffs, preserving the factor $1/N$.
+\end{proof}
+\begin{lemma}[Explicit averaged trace and level-heat contributions]
+\lean{SpinGlass.Targets.hasDerivAt\_constrainedFieldCascade\_path\_decomposition}\leanok
+\lean{SpinGlass.Targets.hasDerivAt\_constrainedPairGaussian\_path\_trace}\leanok
+\lean{SpinGlass.Targets.hasDerivAt\_section5Interpolation\_trace}\leanok
+\lean{SpinGlass.Targets.hasDerivAt\_section5RightInterpolation\_trace}\leanok
+For the actual cascade $F_j$ with disorder amplitude $a(w)$ and level
+variances $v_l(w)$, the Gaussian-averaged derivative is
+\[
+ a'(w)a(w)\,\mathbb E\!\sum_i\tau_i
+   D^2_{e_i,e_i}F_j
+   +\sum_{l<j}v_l'(w)\,\mathbb E H_l.
+\]
+Here $H_l$ is the proved derivative in original level $l$ at positive variance;
+locally constant zero coordinates contribute zero. For both physical
+interpolations, site normalization gives disorder coefficient $t/(2N)$.
+\end{lemma}
+\begin{proof}
+Prove finite-dimensional joint regularity by the same dominated Gaussian
+induction. Mask the zero coordinates and identify the Fr\'echet derivative's
+basis values with the existing disorder and individual variance derivatives
+by uniqueness. Finite linearity gives the actual path sum. Each term is
+Gaussian integrable; split the expectation and apply the existing radial
+Stein identity. The physical coefficient satisfies $a'a=t/2$, including
+$t=0$ by its constant branch. The heat normalization is already contained in $H_l$.
+\end{proof}
+Identification of these trace and heat terms with the replica-overlap expression
+and its inequality remains open.
 
 \begin{lemma}[Right-interval endpoints, baseline and scalar gain]
 \lean{SpinGlass.Targets.section5RightInterpolation\_one}\leanok

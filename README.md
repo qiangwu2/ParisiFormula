@@ -144,8 +144,21 @@ The successor derivative is its normalized Gaussian expectation of the actual
 inner joint derivative composed with the moving shift, before integration by parts.
 [`Targets/Section5JointInterpolation.lean`](Targets/Section5JointInterpolation.lean)
 specializes this to both actual second-interpolation integrands for `0<w<1`, at
-fixed disorder. The outer Gaussian derivative and replica-weight identification
-are still open; differentiability alone does not prove the covariance inequality.
+fixed disorder. [`Targets/CoupledPathPressure.lean`](Targets/CoupledPathPressure.lean)
+now proves derivative measurability and affine Gaussian-norm domination on one
+common time neighborhood, passing the simultaneous derivative through the outer
+Gaussian expectation. [`Targets/Section5PressureDerivative.lean`](Targets/Section5PressureDerivative.lean)
+gives genuine derivatives of both actual pressures on `0<w<1`. Identification
+with the replica covariance expression and its inequality remains open.
+[`Targets/CoupledPathDecomposition.lean`](Targets/CoupledPathDecomposition.lean)
+proves the needed finite-dimensional joint regularity, fixing zero-variance
+coordinates, and identifies the actual time derivative with the disorder
+direction plus the sum of original-level variance derivatives.
+[`Targets/CoupledPathPressureFormula.lean`](Targets/CoupledPathPressureFormula.lean)
+integrates this decomposition and applies the existing radial Gaussian Stein
+identity. Both physical pressures now have explicit trace-plus-heat formulas,
+with disorder coefficient `t/(2N)`. These analytic terms still need to be
+identified with Talagrand's replica-overlap expressions and bounded.
 [`Targets/ParisiMassDerivative.lean`](Targets/ParisiMassDerivative.lean) reuses
 Mathlib's moment-generating-function calculus for the scalar mass derivative,
 its entropy identity and nonnegativity.
@@ -187,8 +200,7 @@ the actual inequalities **(4.30)** and **(4.31)**, including zero masses and
 coincident overlaps. These inputs do not yet prove the uniform variation bounds.
 [`Targets/Section4FirstVariation.lean`](Targets/Section4FirstVariation.lean)
 identifies **(4.46)** with the genuine baseline mass derivative of this `Φ`
-and proves that it vanishes at `u=q_r`. This is not yet stationarity in `u`
-or the identities for `U′` and `U″`.
+and proves that it vanishes at `u=q_r`. This is not yet stationarity in `u`.
 [`Targets/Section4UBounds.lean`](Targets/Section4UBounds.lean) proves the actual
 `U` is nondecreasing, 1-Lipschitz, and satisfies `0≤U(v)≤v` on the closed
 variance interval when `m_(r−1)<1`. The strict-mass reduction supplies this
@@ -197,7 +209,15 @@ first variation is continuous and `β²/2`-Lipschitz in overlap.
 [`Targets/Section4VarianceFactor.lean`](Targets/Section4VarianceFactor.lean)
 factors `∂vT=(m−m_(r−1))Q/2`, with an actual nested normalized squared-slope
 average `Q∈[0,1]` defined without division by the mass gap. The endpoint-safe
-integral identity is proved, but baseline continuity of `Q` and `U′=Q` are not.
+integral identity is proved. [`Targets/ParisiJointMassContinuity.lean`](Targets/ParisiJointMassContinuity.lean)
+proves true joint mass/variance/field continuity of the scalar step and its slope,
+including zero mass. [`Targets/Section4VarianceFactorContinuity.lean`](Targets/Section4VarianceFactorContinuity.lean)
+propagates this to the actual `Q` on the full closed mass/variance rectangle and
+proves its integrability even at baseline. [`Targets/Section4UPrime.lean`](Targets/Section4UPrime.lean)
+takes the right mass limit in the integral identity and proves `U′=Q`, with
+`0≤U′≤1` on the interior when `m_(r−1)<1`, including a zero baseline. It also
+differentiates the actual overlap first variation. `U″`, uniform higher-mass
+estimates, and the remaining stationarity/Lemma 5.8 identities are still open.
 [`Targets/RightInterpolationAlgebra.lean`](Targets/RightInterpolationAlgebra.lean)
 supplies the exact dual correction, and
 [`Targets/Section4RightVariation.lean`](Targets/Section4RightVariation.lean)
@@ -302,7 +322,8 @@ differentiation and first variation, and dual correction/comparison.
 It now checks the actual simultaneous pointwise cascade derivative and its
 normalized recursion, both physical path specializations, Gaussian-averaged
 endpoint continuity, the bounds for `U` and `f`, the normalized variance factor,
-and the full dual variance derivative. There are 311 completed-result guards.
+and the full dual variance derivative. It also checks the averaged trace-plus-heat
+formulas and the actual identity `U′=Q`. There are 348 completed-result guards.
 This does not certify the still-open Theorem 2.4 or Proposition 2.3. CI requires both
 local libraries to build; it does not ignore target or audit failures.
 
@@ -392,6 +413,10 @@ ParisiFormula/
 │   ├── ConstrainedJointTerminal.lean actual terminal joint smoothness in disorder and both fields
 │   ├── CoupledJointInterpolation.lean simultaneous cascade/field differentiation by moving Gaussian shifts
 │   ├── Section5JointInterpolation.lean actual left/right pointwise interpolation differentiability
+│   ├── CoupledPathPressure.lean      actual simultaneous derivative through the Gaussian disorder average
+│   ├── CoupledPathDecomposition.lean proved finite-parameter chain rule and disorder-plus-variance sum
+│   ├── CoupledPathPressureFormula.lean actual averaged Hessian-trace plus finite heat formula
+│   ├── Section5PressureDerivative.lean actual pressure derivatives and both physical trace-plus-heat formulas
 │   ├── Section5InterpolationContinuity.lean Gaussian averaging and both actual endpoint-continuity theorems
 │   ├── ParisiMassDerivative.lean      scalar mass derivative, entropy and monotonicity via Mathlib
 │   ├── ParisiMassZero.lean            analytic mass-zero extension and half-variance derivative
@@ -400,6 +425,9 @@ ParisiFormula/
 │   ├── Section4FirstVariation.lean    actual Phi first variation (4.46) and its upper-overlap zero
 │   ├── Section4UBounds.lean           monotonicity of U and closed-interval Lipschitz bounds for U and f
 │   ├── Section4VarianceFactor.lean    normalized squared-slope factor Q and endpoint-safe integral identity
+│   ├── ParisiJointMassContinuity.lean joint scalar mass/variance/field continuity, including mass zero
+│   ├── Section4VarianceFactorContinuity.lean actual Q continuity and integrability at baseline
+│   ├── Section4UPrime.lean            actual U′=Q and overlap derivative of the first variation
 │   ├── ParisiStepSemigroup.lean       scalar semigroup including zero masses and variances
 │   ├── ParisiVarianceDerivative.lean  Gaussian heat generator and actual scalar variance derivative
 │   ├── Section4Variance.lean          actual Parisi C2, heat equation and joint variance/field calculus

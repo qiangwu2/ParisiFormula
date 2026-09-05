@@ -59,10 +59,18 @@ continuity, the genuine square-root coefficient derivatives, full right scalar
 variance differentiation, and closed-interval bounds for the actual `U` and `f`.
 It proves genuine joint differentiation along simultaneous disorder/variance
 paths and in both fields, then specializes to the physical left/right integrands
-at fixed disorder. Outer averaging and the explicit replica identity remain open.
+at fixed disorder. The explicit replica identity is a separate obligation.
 It exposes the normalized squared-slope factor in `∂vT` and its endpoint-safe
 integral identity. These do not by themselves prove `U′`, `U″` or the uniform
 quadratic estimate.
+Step 27 passes the simultaneous derivative through the actual Gaussian average
+and proves both physical pressure derivatives.
+The finite-dimensional chain rule and termwise Gaussian Stein now identify
+those derivatives with their explicit Hessian-trace and level-heat contributions.
+Joint mass/variance continuity of the actual normalized factor now gives its baseline integrability and the
+identity `U′=Q`, including baseline mass zero when the baseline is below one.
+Replica identification, `U″`, uniform optimality estimates and the remaining
+overlap regimes still stand between these results and Theorem 2.2.
 
 **Milestone 1 (Targets 1b, 1c) is *not* on this critical path.**  Target 4 is strictly
 stronger than 1c — convergence to `parisiValue` subsumes existence of a limit — and deriving
@@ -1282,13 +1290,83 @@ and no dependency pins or upstream sources were changed. The updated blueprint
 compiles to 23 pages with no LaTeX warnings. README status/layout, provenance,
 blueprint and this checked/open checklist match the verified boundary.
 
+**Step 27 (2026-09-05): averaged path derivatives and the actual identity `U′=Q`.**
+
+The main agent and three agents continued independent critical-path tasks,
+then cross-reviewed the new analytic hypotheses and normalizations.
+
+* `Targets/CoupledPathPressure.lean` proves an anchored path bound
+  `(A+B*‖U‖)*|z-w|` on one common time neighborhood for every disorder `U`.
+  Measurable difference quotients establish measurability of the actual time
+  derivative; auxiliary clipping of variances agrees with the original path
+  nearby and does not change the interpolation. Gaussian norm integrability
+  and Mathlib's anchored differentiation rule then prove both derivative
+  integrability and interchange with the actual outer Gaussian expectation.
+* `Targets/Section5PressureDerivative.lean` specializes this to both actual
+  left/right physical pressures on `0<w<1`. The original cutoffs, reversed
+  level order and `1/N` normalization are retained. Zero masses, `t=0`, and
+  locally constant zero-variance coordinates are included. This is the genuine
+  simultaneous pressure derivative, not a formal sum of separately assumed partials.
+* `Targets/CoupledPathDecomposition.lean` proves finite-dimensional joint
+  differentiability on the actual active variance face. Basis derivatives are
+  identified with the checked disorder and single-level variance derivatives;
+  linearity then gives the actual simultaneous sum. Inactive zero coordinates
+  stay fixed, so no derivative transverse to a zero-variance face is assumed.
+  `Targets/CoupledPathPressureFormula.lean` splits the expectation only after
+  proving termwise integrability and applies the existing radial Stein identity.
+  Both physical pressure trace-plus-heat formulas are now checked, with disorder
+  coefficient `t/(2N)` and the existing heat normalization. This does not yet
+  identify the terms with the replica-overlap covariance expression.
+* `Targets/ParisiJointMassContinuity.lean` proves true joint mass/variance/field
+  continuity of the actual scalar potential and slope. Weighted exponential
+  moments have Gaussian domination; the potential's mass-zero branch uses the
+  existing two-sided Herbst estimate. No division by the mass is used at zero.
+* `Targets/Section4VarianceFactorContinuity.lean` propagates the actual bounded
+  squared-slope observable through normalized Gaussian means. It proves joint
+  continuity of `Q` on the entire closed admissible mass/variance rectangle,
+  including masses zero and one, and baseline integrability without dividing
+  by the zero mass gap.
+* `Targets/Section4UPrime.lean` passes the right mass limit through the checked
+  variance integral identity. The actual baseline mass derivative gives
+  `U(w)-U(v)=∫_v^w Q(m_(r−1),z) dz`; hence `U′=Q` and `0≤U′≤1` on the
+  interior. The baseline must satisfy `m_(r−1)<1`, supplied by strict-mass
+  reduction. Both endpoint values in the integral identity, coincident overlaps,
+  and zero baseline mass are retained. The actual overlap first variation has
+  derivative `β²(u-Q)/2`; beta zero is constant. No stationarity is inferred.
+
+Independent read-only review checked the common time neighborhood, derivative
+measurability, exact pressure normalization and cutoffs, and the mass-limit
+factor of two and first-variation sign. Separate reviews checked the full
+finite-parameter induction, active-face basis decomposition and termwise
+Gaussian trace normalization. No substantive issues were found.
+
+**Step 27 checked/open checklist:**
+
+* [x] Simultaneous derivative through the actual outer Gaussian expectation.
+* [x] Actual left/right pressure derivatives throughout the open time interval.
+* [x] Explicit disorder/variance decomposition and both averaged physical trace-plus-heat formulas.
+* [x] Actual scalar joint mass/variance continuity, including mass zero.
+* [x] Joint continuity and baseline integrability of the actual normalized `Q`.
+* [x] Actual integral representation of `U`, `U′=Q`, and overlap derivative of `f`.
+* [ ] Replica covariance identification and the interpolation inequality/transport.
+* [ ] `U″`, uniform higher-mass/optimality estimates, and the remaining Lemma 5.8 identities.
+* [ ] Remaining overlap regimes and the uniform Theorem 2.4 bound.
+* [ ] Unconditional Theorem 2.2 and the final Parisi-formula dependency audit.
+
+**Step 27 validation:** `bash scripts/check.sh` passes (3229 supporting-library
+jobs and 3864 target-build jobs), including **37 new standard-axiom guards**
+(348 total). All seven new proof modules pass direct and targeted Lean checks
+without module warnings. The original four placeholders, target statements,
+dependency pins and upstream sources remain unchanged. The updated blueprint
+compiles to 25 pages without LaTeX warnings. README status/layout, provenance
+and the checked/open checklist are synchronized with the actual proof boundary.
+
 **Remaining work, following the Annals argument:**
 
 1. Prove the a priori two-replica bound of Theorem 2.4 using §3–§5 and the scheme's
    optimality. The imported RS-level `twoReplica_GT_bound` is not this general result.
-   Next concrete step: pass Step 26's proved pointwise simultaneous derivative
-   through the outer Gaussian expectation, identify its contributions with
-   Step 25's variance/disorder formulas, construct normalized replica weights, and
+   Next concrete step: construct normalized replica weights for the now-checked
+   trace/heat contributions of the simultaneous pressure derivative, and
    prove the derivative equals the covariance expression from Step 21.
    Then prove the endpoint-safe integration of that derivative. The square
    completion, mass telescoping, and inserted correction of (5.9) are now
@@ -1296,7 +1374,8 @@ blueprint and this checked/open checklist match the verified boundary.
    and baseline identities
    (4.36), (5.18), (5.19), scalar heat equation, Lemma 5.9 and optimized time-zero
    endpoint. The actual scalar insertion and optimality input inequalities are
-   now available; prove the nested mass/variance identities and uniform estimates
+   now available, as is the actual first identity `U′=Q`; prove the higher
+   nested mass/variance identities and uniform estimates
    of Section 4, then Lemma 5.8 and the remaining overlap/sign cases. Both neighbor
    interval endpoint constructions and both correction adapters are checked.
    Do not replace `2ψ(t)`
