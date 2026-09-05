@@ -16,6 +16,11 @@ on the current critical path. Three older, off-path placeholders remain in
 for the current status and [`blueprint/blueprint.tex`](blueprint/blueprint.tex) for the
 mathematical outline and its formalisation status.
 
+**Latest checkpoint:** Lemma 5.8 is checked, together with actual split-replica
+weights, inward endpoint derivatives and further Section 4 derivative inputs.
+The full build and all 393 axiom guards pass. The interpolation inequality,
+`U″`/uniform optimality estimates and remaining overlap cases are still open.
+
 **Theorem 2.2 progress:** [`Targets/TalagrandConvergence.lean`](Targets/TalagrandConvergence.lean)
 proves the deduction from an explicit mass-weighted overlap-concentration bound to
 uniform convergence of the actual cascade on `[0,t₀]`. The tail-to-remainder estimate,
@@ -90,6 +95,14 @@ proves the sign and telescoping calculation on pp. 240–241 and identifies the
 inserted correction in (5.9). **The missing analytic step is still to identify
 the derivative of the full nested pressure with this covariance expression.**
 The algebraic bound is not presented as a proved bound on `η′`.
+
+[`Targets/CoupledReplicaWeights.lean`](Targets/CoupledReplicaWeights.lean)
+constructs the actual normalized constrained Gibbs weights at every depth and
+identifies the disorder and spatial first derivatives with their moments.
+It also constructs split-level replica weights by forming the inner product
+before the outer Gaussian averages, proving normalization and product-moment
+identities. SK and independent/shared field contractions are checked. The full
+Hessian/heat telescoping and averaged covariance identity remain open.
 
 [`Targets/CoupledCascadeDeriv.lean`](Targets/CoupledCascadeDeriv.lean) now propagates
 the actual constrained-terminal first disorder derivative through every paired
@@ -216,8 +229,20 @@ propagates this to the actual `Q` on the full closed mass/variance rectangle and
 proves its integrability even at baseline. [`Targets/Section4UPrime.lean`](Targets/Section4UPrime.lean)
 takes the right mass limit in the integral identity and proves `U′=Q`, with
 `0≤U′≤1` on the interior when `m_(r−1)<1`, including a zero baseline. It also
-differentiates the actual overlap first variation. `U″`, uniform higher-mass
-estimates, and the remaining stationarity/Lemma 5.8 identities are still open.
+differentiates the actual overlap first variation.
+[`Targets/Section4UEndpoints.lean`](Targets/Section4UEndpoints.lean) extends both
+derivative formulas to the closed physical interval as inward derivatives;
+the numerical `derivWithin` identity requires a nonzero variance gap.
+[`Targets/Section4EndpointOptimality.lean`](Targets/Section4EndpointOptimality.lean)
+proves `f(q_(r−1))≥0` for `r≥2` and a strict adjacent mass gap, using an actual
+fixed-level competitor and a zero-variance deletion. The initial interval is
+not included because `m₀=0` is fixed. `U″`, uniform higher-mass estimates,
+and the remaining stationarity identities are still open.
+[`Targets/ParisiSlopeVariance.lean`](Targets/ParisiSlopeVariance.lean) now proves
+the actual positive-variance derivative of the inner slope, its joint field/variance
+chain rule, and the moving squared-slope derivative. A common domination bound
+is independent of the field and recursion depth, but requires variance bounded
+away from zero. This is a prerequisite for differentiating `Q`, not yet `U″`.
 [`Targets/RightInterpolationAlgebra.lean`](Targets/RightInterpolationAlgebra.lean)
 supplies the exact dual correction, and
 [`Targets/Section4RightVariation.lean`](Targets/Section4RightVariation.lean)
@@ -230,8 +255,13 @@ including zero masses and the last interval. Dual stationarity remains open.
 [`Targets/CoupledLambdaCurvature.lean`](Targets/CoupledLambdaCurvature.lean) proves
 **Lemma 5.9** with the level-independent bound `0 ≤ ∂²λ V ≤ 1`.
 [`Targets/TalagrandLambdaGain.lean`](Targets/TalagrandLambdaGain.lean) optimizes λ
-to give the actual time-zero endpoint gain. Identifying `∂λ V(0)` with `U′`
-(Lemma 5.8) and transporting the gain to time one remain separate obligations.
+to give the actual time-zero endpoint gain.
+[`Targets/Section5LambdaUPrime.lean`](Targets/Section5LambdaUPrime.lean) now proves
+**Lemma 5.8**: the actual zero-λ derivative is `Q`, hence `U′` at baseline mass
+below one. The `Q` identity includes every nonnegative inserted mass and both
+variance endpoints; the endpoint `U′` statement uses inward derivatives.
+The optimized time-zero gain now contains `(Q−u)²/2`. Transporting that gain
+to time one and the uniform optimality estimates remain open.
 [`Targets/TalagrandOverlapTail.lean`](Targets/TalagrandOverlapTail.lean) now proves
 the finite-overlap deduction from a uniform Theorem 2.4 quadratic bound to
 Proposition 2.3 and uniform convergence on `[0,t₀]`, for a fixed scheme with
@@ -323,7 +353,9 @@ It now checks the actual simultaneous pointwise cascade derivative and its
 normalized recursion, both physical path specializations, Gaussian-averaged
 endpoint continuity, the bounds for `U` and `f`, the normalized variance factor,
 and the full dual variance derivative. It also checks the averaged trace-plus-heat
-formulas and the actual identity `U′=Q`. There are 348 completed-result guards.
+formulas, actual normalized split-replica weights and contractions, inward endpoint
+derivatives, noninitial endpoint optimality, slope-derivative domination and
+Lemma 5.8 with the identified `Q` gain. There are 393 completed-result guards.
 This does not certify the still-open Theorem 2.4 or Proposition 2.3. CI requires both
 local libraries to build; it does not ignore target or audit failures.
 
@@ -398,6 +430,7 @@ ParisiFormula/
 │   ├── Section4RightDerivative.lean   full dual variance derivative and closed mass-gap Lipschitz bound
 │   ├── ConstrainedFiniteState.lean   RSAT-backed first/second derivatives of the constrained terminal
 │   ├── CoupledCovariance.lean        four-overlap covariance, square completion and terminal Hessian
+│   ├── CoupledReplicaWeights.lean    actual Gibbs/split-replica weights, moments and contractions
 │   ├── SecondInterpolationAlgebra.lean  algebraic remainder sign, telescoping and (5.9) correction
 │   ├── CoupledCascadeDeriv.lean       fixed-variance nested disorder derivatives and tilted covariance
 │   ├── CoupledCascadeSecond.lean      full-depth mixed disorder Hessian and Gaussian Stein identities
@@ -428,9 +461,12 @@ ParisiFormula/
 │   ├── ParisiJointMassContinuity.lean joint scalar mass/variance/field continuity, including mass zero
 │   ├── Section4VarianceFactorContinuity.lean actual Q continuity and integrability at baseline
 │   ├── Section4UPrime.lean            actual U′=Q and overlap derivative of the first variation
+│   ├── Section4UEndpoints.lean        inward derivatives of U and f at the physical endpoints
+│   ├── Section4EndpointOptimality.lean fixed-level lower-endpoint f≥0 for noninitial intervals
 │   ├── ParisiStepSemigroup.lean       scalar semigroup including zero masses and variances
 │   ├── ParisiVarianceDerivative.lean  Gaussian heat generator and actual scalar variance derivative
 │   ├── Section4Variance.lean          actual Parisi C2, heat equation and joint variance/field calculus
+│   ├── ParisiSlopeVariance.lean       actual slope velocity, moving squared slope and uniform local domination
 │   ├── Section4SplitDerivative.lean   actual two-step split-variance identity (4.11), including zero masses
 │   ├── Section4SplitMonotone.lean     joint continuity and closed-interval split comparison
 │   ├── Section4NestedMonotone.lean    closed-interval monotonicity through every outer scalar level
@@ -439,6 +475,7 @@ ParisiFormula/
 │   ├── TalagrandSection5Zero.lean     actual scalar T and zero-lambda identities (5.18), (5.19)
 │   ├── CoupledLambdaCurvature.lean    level-independent lambda curvature: Lemma 5.9
 │   ├── TalagrandLambdaGain.lean       optimized scalar and actual second-interpolation time-zero gain
+│   ├── Section5LambdaUPrime.lean      actual zero-lambda derivative Q=U′ (Lemma 5.8) and identified gain
 │   ├── TalagrandOverlapTail.lean      finite-overlap deduction from a uniform Theorem 2.4 bound
 │   ├── RSBZeroMassPiSemigroup.lean    N-site zero-mass Gaussian semigroup
 │   ├── RSBMassPiSemigroup.lean        N-site semigroup at arbitrary mass

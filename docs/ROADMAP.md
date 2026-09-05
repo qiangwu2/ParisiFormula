@@ -1361,22 +1361,92 @@ dependency pins and upstream sources remain unchanged. The updated blueprint
 compiles to 25 pages without LaTeX warnings. README status/layout, provenance
 and the checked/open checklist are synchronized with the actual proof boundary.
 
+**Step 28 (2026-09-05): Lemma 5.8, actual replica weights, and endpoint/derivative inputs.**
+
+Three parallel agents continued the replica, scalar-bridge and higher-derivative
+branches while the main agent proved endpoint results and integrated the checks.
+
+* `Targets/Section5LambdaUPrime.lean` proves the actual Lemma 5.8 identity.
+  Independent levels propagate a product of scalar slopes at zero lambda;
+  the shared diagonal steps have potential `2B` and mass `m_old/2`, giving
+  exactly the actual normalized `Q` recursion. Thus `∂λV(0,m,v)=Q(m,v)`
+  for all `m≥0` and the full closed variance interval. At baseline below one,
+  this is `U′` on the interior and the inward derivative at the endpoints.
+  The optimized scalar and actual time-zero gains now contain `(Q−u)²/2`.
+  The `Q` identity/gain includes baseline one without invoking `U′` there.
+* `Targets/CoupledReplicaWeights.lean` constructs actual normalized constrained
+  Gibbs probabilities at every depth and identifies genuine disorder/spatial
+  first derivatives with their moments. SK and independent/shared contractions
+  have the exact `N` factor and signed cross terms. Split-level replica weights
+  multiply two inner probabilities **before** the remaining outer tilted means;
+  their positivity, normalization and product-moment identities are checked.
+  Shifted profiles and cutoff are proved to be the original cascade restarted
+  at that level. These are fixed-disorder identities, not yet the full
+  Hessian/heat expansion or its Gaussian-averaged covariance formula.
+* `Targets/ParisiSlopeVariance.lean` proves the actual positive-variance
+  derivative of the scalar slope, the joint variance/field chain rule and the
+  moving squared-slope derivative required for `Q′`. Existing C2 regularity,
+  actual Hessian continuity and Gaussian-amplitude differentiation suffice;
+  no third derivative is assumed. Tilted Gaussian moment estimates give
+  integrability and a common bound on `0<lo≤v≤hi`, uniform in field, mass in
+  `[0,1]` and actual input recursion depth. This bound is not uniform at `lo=0`.
+* `Targets/Section4UEndpoints.lean` proves the actual inward derivatives of `U`
+  and `f` throughout their closed physical intervals. Continuous extension of
+  `Q` is used only for the FTC and transferred back by equality on the original
+  interval. A numerical `derivWithin` equality requires a positive variance gap;
+  the derivative predicate alone also covers singleton intervals.
+* `Targets/Section4EndpointOptimality.lean` proves the noninitial-interval
+  lower-endpoint conclusion `f(q_(r−1))≥0` for `r≥2` and `m_(r−1)<m_r`.
+  The lower-overlap insertion has a zero-variance interval; changing its
+  irrelevant mass and merging equal masses gives an actual fixed-level
+  competitor. Fixed-level minimality bounds the true right mass quotient.
+  The initial interval is not included: its compulsory `m₀=0` cannot be raised
+  in this argument. No finite-error condition is upgraded to exact minimality.
+
+Independent read-only reviews checked both root endpoint modules, the entire
+replica module and the final Lemma 5.8 bridge. They found no substantive issues,
+including at zero mass, zero variance, the shared/independent boundary, and
+the inward-versus-two-sided endpoint derivative distinction.
+
+**Step 28 checked/open checklist:**
+
+* [x] Actual normalized Gibbs and split-level replica weights, moments and contractions.
+* [x] Actual Lemma 5.8 (`∂λV=Q=U′`) with precise interior/endpoint hypotheses.
+* [x] Identified `Q` in the optimized scalar and actual time-zero gain.
+* [x] Inward endpoint derivatives for the actual `U` and first variation.
+* [x] Lower-endpoint `f≥0` for noninitial intervals and strict adjacent mass gap.
+* [x] Actual moving slope/squared-slope derivatives and uniform interior domination.
+* [ ] Full Hessian/heat telescope, averaged replica-covariance identity and interpolation inequality/transport.
+* [ ] Actual `Q′`/`U″` negative-square identity, uniform higher-mass estimates and remaining stationarity.
+* [ ] Initial/dual scalar cases, remaining overlap regimes and the uniform Theorem 2.4 bound.
+* [ ] Original unconditional Theorem 2.2 and final Parisi-formula dependency audit.
+
+**Step 28 validation:** `bash scripts/check.sh` passes (3229 supporting-library
+jobs and 3869 target-build jobs), including **45 new standard-axiom guards**
+(393 total). All five new proof modules pass direct and targeted Lean checks
+without module warnings. Independent reviews found no substantive issues.
+The original four placeholders, target statements, dependency pins and upstream
+sources are unchanged. The updated blueprint compiles to 27 pages without
+LaTeX warnings; README status/layout, provenance and this checklist reflect
+the same checked/open boundary.
+
 **Remaining work, following the Annals argument:**
 
 1. Prove the a priori two-replica bound of Theorem 2.4 using §3–§5 and the scheme's
    optimality. The imported RS-level `twoReplica_GT_bound` is not this general result.
-   Next concrete step: construct normalized replica weights for the now-checked
-   trace/heat contributions of the simultaneous pressure derivative, and
-   prove the derivative equals the covariance expression from Step 21.
+   Next concrete step: telescope the actual nested Hessian and heat terms
+   using Step 28's normalized split-level replica weights, and prove the
+   averaged derivative equals the covariance expression from Step 21.
    Then prove the endpoint-safe integration of that derivative. The square
    completion, mass telescoping, and inserted correction of (5.9) are now
    available, as are the actual nested baseline mass derivative, first variation,
    and baseline identities
    (4.36), (5.18), (5.19), scalar heat equation, Lemma 5.9 and optimized time-zero
    endpoint. The actual scalar insertion and optimality input inequalities are
-   now available, as is the actual first identity `U′=Q`; prove the higher
-   nested mass/variance identities and uniform estimates
-   of Section 4, then Lemma 5.8 and the remaining overlap/sign cases. Both neighbor
+   now available, as are `U′=Q`, its inward endpoint form and Lemma 5.8. Use
+   the checked slope derivative/domination to prove the actual `Q′`/`U″`
+   identity and the uniform higher-mass/optimality estimates of Section 4,
+   then the initial/dual scalar cases and remaining overlap/sign cases. Both neighbor
    interval endpoint constructions and both correction adapters are checked.
    Do not replace `2ψ(t)`
    with `2φ(t)`.

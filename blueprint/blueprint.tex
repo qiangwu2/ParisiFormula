@@ -690,11 +690,11 @@ proved site tensorization at every level yields $N V(\lambda,m,v(u))$;
 division by $N$ gives (5.17). RSAT's Gaussian regularity theorems also give
 the actual lambda derivative of this $V$ at fixed $m$.
 \end{proof}
-These endpoint results do not assert the intervening covariance derivative
-bound or interior-time differentiability of $\eta$. The right-interval dual
-construction, negative-overlap case, and Proposition~5.7's additional scheme
-also remain open. Lemma~5.8's identification with $U'$ remains open;
-the uniform bound of Lemma~5.9 is now proved below.
+These endpoint results alone do not assert the intervening covariance derivative
+bound. The right-interval construction and both actual interior-time pressure
+derivatives are proved in the subsequent modules. The negative-overlap case
+and Proposition~5.7's additional scheme remain open; the uniform bound of
+Lemma~5.9 is proved below.
 
 \begin{lemma}[Constrained terminal derivatives and the SK covariance trace]
 \lean{SpinGlass.Targets.hasDerivAt\_constrainedPairFieldBase\_second}\leanok
@@ -871,8 +871,34 @@ reuse independent-step factorization and diagonal mass cancellation.
 The scalar Gaussian semigroup merges the two split increments at equal
 mass; its zero-mass expectation branch follows from Gaussian convolution.
 \end{proof}
-Nested Section~4 mass/variance identities and optimality estimates, as well
-as the identification with $U'$ in Lemma~5.8, remain separate obligations.
+Higher nested Section~4 mass/variance identities and optimality estimates
+remain open. The identification with $U'$ is now checked by the following bridge.
+
+\begin{lemma}[The actual Lemma 5.8 identity]
+\lean{SpinGlass.Targets.deriv\_section5V\_zero\_eq\_Q}\leanok
+\lean{SpinGlass.Targets.talagrand\_lemma\_5\_8}\leanok
+\lean{SpinGlass.Targets.talagrand\_lemma\_5\_8\_within}\leanok
+\lean{SpinGlass.Targets.section5Interpolation\_zero\_lambda\_gain\_Q}\leanok
+For $m\ge0$ and $0\le v\le a$,
+\[
+ \left.\partial_\lambda V(\lambda,m,v)\right|_{\lambda=0}=Q(m,v).
+\]
+At baseline mass $m_{r-1}<1$ this equals the ordinary $U'(v)$ for
+$0<v<a$, and its inward derivative at the endpoints. Numerical uniqueness
+of the latter is asserted for $a>0$; the derivative predicate remains valid
+for a degenerate interval. The optimized time-zero gain therefore has the
+explicit deficit $(Q(m_{r-1},v(u))-u)^2/2$.
+\end{lemma}
+\begin{proof}
+The actual lambda-derivative recursion propagates the product of scalar
+slopes through independent levels at lambda zero. On the diagonal the
+shared levels see twice the scalar potential and half the scalar mass,
+so their normalized means agree exactly with the recursion defining $Q$.
+Use the proved $U'=Q$ and the inward FTC at baseline. Substitute into
+the already checked lambda-curvature gain; the $Q$ gain itself also allows
+baseline mass one without claiming the $U'$ identity there.
+\end{proof}
+This does not transport the gain to time one or prove the uniform optimality estimates.
 
 \begin{lemma}[The scalar heat equation (4.4) on actual Parisi inputs]
 \lean{SpinGlass.Targets.hasDerivAt\_parisiStep\_parisiF\_variance}\leanok
@@ -1067,8 +1093,41 @@ identifies the left-hand quotient with $(U(w)-U(v))/2$; the right side tends
 to half the baseline integral. Use $U(0)=0$ and the interior FTC. The chain
 rule gives $f'$, with $\beta=0$ treated as a constant function.
 \end{proof}
-The identity for $U''$ and the remaining Lemma~5.8 comparison are still open,
-as are uniform bounds on higher mass derivatives and optimality estimates.
+\begin{lemma}[Inward derivatives at the physical endpoints]
+\lean{SpinGlass.Targets.hasDerivWithinAt\_section4U}\leanok
+\lean{SpinGlass.Targets.derivWithin\_section4U\_eq}\leanok
+\lean{SpinGlass.Targets.hasDerivWithinAt\_section4FirstVariation\_overlap}\leanok
+The formulas $U'=Q$ and $f'=\beta^2(u-Q)/2$ hold as derivatives within the
+closed physical intervals. In particular the occurrence of $U'(0)$ means
+the inward derivative. Uniqueness of the numerical derivative within the
+variance interval is asserted only when its length is positive.
+\end{lemma}
+\begin{proof}
+Extend the continuous $Q$ to the real line by projection onto $[0,a]$ and
+apply the ordinary FTC to its integral. On $[0,a]$ this integral equals the
+actual $U$, so transfer the derivative back within that interval. The
+variance map carries the closed overlap interval into $[0,a]$; apply the
+within-set chain rule to the actual $f$. The extension is only a proof
+device, not a claim about the two-sided derivative of the original $U$.
+\end{proof}
+
+\begin{lemma}[Lower-endpoint optimality for noninitial intervals]
+\lean{SpinGlass.Targets.section4Phi\_lower\_overlap\_min}\leanok
+\lean{SpinGlass.Targets.section4FirstVariation\_lower\_nonneg}\leanok
+For $r\ge2$, $m_{r-1}<m_r$, and an actual fixed-level minimizer,
+$f(q_{r-1})\ge0$.
+\end{lemma}
+\begin{proof}
+At $u=q_{r-1}$ the inserted scheme has a zero-variance interval. Raising
+its irrelevant mass to the inserted mass and merging the two equal masses
+preserves the functional and returns a competitor at the original level.
+Fixed-level minimality therefore bounds the actual mass difference quotient
+from below by zero. Pass to the checked baseline mass derivative.
+The restriction $r\ge2$ preserves the compulsory mass $m_0=0$; this argument
+is not claimed for the initial interval.
+\end{proof}
+The identity for $U''$, uniform higher-mass estimates and the remaining
+endpoint stationarity conditions are still open.
 
 \begin{lemma}[Actual inserted functional and optimality inputs]
 \lean{SpinGlass.Targets.parisiFunctional\_insertLevel}\leanok
@@ -1093,6 +1152,54 @@ inserted mass, merge the equal adjacent masses to obtain a competitor at the
 original level before applying fixed-level minimality.
 \end{proof}
 These are the inputs (4.30)--(4.31), not the remaining uniform optimality estimates.
+
+\begin{lemma}[Actual slope velocity and moving squared-slope observable]
+\lean{SpinGlass.Targets.hasDerivAt\_stepD1\_parisiF\_variance}\leanok
+\lean{SpinGlass.Targets.hasDerivAt\_stepD1\_parisiF\_variance\_curve}\leanok
+\lean{SpinGlass.Targets.hasDerivAt\_stepD1\_parisiF\_split\_sq}\leanok
+\lean{SpinGlass.Targets.abs\_stepD1Variance\_le\_on\_Icc}\leanok
+For an actual Parisi input $A$ and fixed mass $m$, the slope
+$B_x(v,x)$ has a genuine positive-variance derivative $J_m(v,x)$.
+For $m\ge0$ and $0<v<a$,
+\[
+ \frac d{dv} B_x(v,x+\sqrt{a-v}\,z)^2
+ =2B_x\left(J_m-\frac{z}{2\sqrt{a-v}}B_{xx}\right),
+\]
+with every term evaluated at the same moving field.
+On $0<\ell\le v\le b$ and $0\le m\le1$, the velocity has a common bound
+independent of $x$ and the input recursion depth.
+\end{lemma}
+\begin{proof}
+Differentiate the normalized exponential moments defining $B_x$, using
+the existing Gaussian-amplitude rule and the checked second-order invariant.
+Continuity of both actual partial derivatives gives the joint chain rule.
+The tilted Gaussian first-moment estimate bounds $J_m$ uniformly in the field;
+the resulting bound is of order $1/\sqrt\ell$ near the variance boundary.
+\end{proof}
+This proves the domination prerequisite for differentiating $Q$, not the
+remaining outer averaging and Stein cancellation giving $U''$.
+
+\begin{lemma}[Actual normalized constrained replicas at every split]
+\lean{SpinGlass.Targets.sum\_constrainedCascadeGibbs}\leanok
+\lean{SpinGlass.Targets.sum\_constrainedCascadeReplica}\leanok
+\lean{SpinGlass.Targets.constrainedCascadeReplica\_disorder\_product}\leanok
+\lean{SpinGlass.Targets.constrainedCascadeReplica\_spatial\_product}\leanok
+The terminal Gibbs coordinates transported through each inner depth are
+nonnegative normalized probabilities. Form their product at a given depth,
+then transport that product through the actual remaining outer levels.
+These split-level replica weights are again normalized and represent
+products of the genuine inner disorder and spatial first derivatives.
+\end{lemma}
+\begin{proof}
+Normalized positive tilted means preserve constants and nonnegativity.
+Finite linearity gives both normalization and moment identities. Restarting
+at depth $l$ uses the actual potential there and the shifted cutoff $d-l$.
+SK spectral contraction gives $N$ times the four-overlap covariance;
+independent and signed shared field contractions give the corresponding
+diagonal and cross-overlap sums. Products are formed before outer averaging,
+not from two already averaged probabilities.
+\end{proof}
+The full Hessian/heat telescope and averaged covariance identity remain open.
 
 \begin{lemma}[One-level heat generators for actual constrained cascades]
 \lean{SpinGlass.Targets.hasDerivAt\_sharedStepPi\_constrained\_variance}\leanok
@@ -1141,7 +1248,7 @@ the normalized parameter rule at every outer level. Measurable forward
 difference quotients give disorder measurability of the actual variance
 derivative; its uniform bound justifies the outer Gaussian differentiation.
 \end{proof}
-Replica-weight identification and endpoint-safe integration of the desired
+The full replica-covariance identification and endpoint-safe integration of the desired
 derivative inequality remain to be assembled.
 
 \begin{lemma}[Degenerate interpolation variances need no endpoint derivative]

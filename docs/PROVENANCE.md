@@ -64,9 +64,9 @@ generic supporting modules above. The generic half-step calculus may likewise
 help extend the ordinary-pressure comparison, but has not yet been adapted.
 
 No dependency revision was changed and no upstream source was copied or edited.
-The general finite recursion presently proves λ-differentiation at fixed masses;
-it does not assert the mass-variation estimates or identify the derivative with
-Talagrand's `U′` in Lemma 5.8.
+The general finite recursion supplies λ-differentiation at fixed masses;
+it does not itself assert mass-variation estimates. The identification with
+Talagrand's `U′` is now proved by the local `Section5LambdaUPrime` adapter below.
 
 ### Section 5 endpoint specialization
 
@@ -234,9 +234,42 @@ expectation and reuses radial Stein: the disorder coefficient is `a′*a`, and
 the heat terms retain their existing normalization. The physical specializations
 in `Section5PressureDerivative.lean` reduce this to `t/(2N)`, including `t=0`
 by its constant branch. Covariance eigenvalues are variances, not standard
-deviations. Replica-weight identification and the desired inequality remain open.
+deviations. The full replica-covariance identification and desired inequality
+remain open.
+
+`CoupledReplicaWeights.lean` reuses normalized paired derivative transport and
+its finite-sum rules to transport the actual constrained terminal Gibbs
+coordinates. Their nonnegativity, normalization, measurability and unit bound
+are proved, as are the actual disorder/spatial first-derivative moments and
+their SK and independent/shared field contractions. The SK spectral weights
+are variances and contribute exactly `N*pairSKCovariance`; the shared formula
+retains both signed off-diagonal overlaps.
+
+For split-level replicas, the product of the two inner Gibbs coordinates is
+formed **before** applying the remaining outer tilted means. Taking a product
+of two fully averaged probabilities would give the wrong covariance term.
+The shifted recursion uses profiles `m(l+i)`, `v(l+i)`, cutoff `d-l`, and the
+actual level-l potential; an exact level-addition identity verifies this
+restart. Positivity, normalization and both actual disorder/spatial product
+moment identities are checked. The full Hessian/heat telescope and the final
+Gaussian-averaged covariance identity have not been inferred from these facts.
 
 ### Scalar variation, baseline, and finite-overlap assembly
+
+`ParisiSlopeVariance.lean` reuses the existing Gaussian-amplitude differentiation
+lemma on `exp(mA)` and `A' exp(mA)`, then differentiates their quotient. This
+gives the actual positive-variance slope velocity without needing an assumed
+third derivative of `A` and without division by the mass, so mass zero is
+retained. The joint chain rule uses the checked continuity of the actual
+`parisiFSecond` and Mathlib's continuous-partial-derivative criterion.
+The moving squared-slope formula includes the outer-field term
+`-z B''/(2 sqrt(a-v))` with the negative sign required for (4.16).
+
+Existing tilted Gaussian moment bounds give a field-independent velocity
+bound, Gaussian integrability and a common bound on `0<lo≤v≤hi`, uniform in
+`m∈[0,1]` and the actual recursion input/depth. The bound has a factor
+`1/sqrt(lo)`: it does not assert uniform endpoint differentiability or the
+Stein cancellation needed for the negative-square identity for `Q'`/`U''`.
 
 `ParisiMassDerivative.lean` differentiates one mass while its input function
 is fixed, including every actual `parisiF` input. It does not assert the nested
@@ -335,6 +368,24 @@ The baseline must be below one, as in `Section4UBounds`; mass zero is included.
 The actual overlap first variation then has derivative `β²(u-Q)/2`, with beta
 zero handled by its constant branch. No mixed derivative interchange, endpoint
 stationarity, uniform second-mass estimate, or identity for `U″` is assumed.
+
+`Section4UEndpoints.lean` reuses Mathlib's continuous interval projection and
+FTC to obtain the same formulas as derivatives within the full closed physical
+intervals. A continuous extension of `Q` is used only to prove the FTC; its
+integral agrees with the actual `U` on the admissible interval. It does not
+silently replace `U` outside its physical domain or assert a two-sided derivative
+at variance zero. The `derivWithin` identity requires a positive interval length;
+the derivative predicate alone allows a singleton interval without claiming uniqueness.
+
+`Section4EndpointOptimality.lean` proves the noninitial-interval part of
+Proposition 4.8 by an actual fixed-level competitor: at the lower overlap the
+inserted interval has zero variance, its mass can be raised without changing
+either the scalar recursion or correction, and equal-mass compression removes
+the redundant level. The baseline derivative then gives `f(q_(r−1))≥0` when
+`r≥2` and `m_(r−1)<m_r`. The initial interval is deliberately excluded: its
+fixed mass `m₀=0` cannot simply be raised while retaining scheme admissibility.
+No initial-interval bound or equality at an interior mass is inferred here.
+
 The optimality comparison was also rechecked: the finite-error inequality
 (4.30) alone does not bound its baseline derivative, and the upper-mass
 comparison (4.31) is not a proof that the baseline is an exact minimum. The
@@ -367,8 +418,26 @@ Consequently `0 ≤ E ≤ 1-D²` is preserved exactly. This supplies the uniform
 constant missing from a naive iteration of RSAT's coarse `c+m` curvature bound.
 The actual Section 5 inserted/halved masses are all in `[0,1]` at the baseline
 mass. The explicit choice `λ=u-V′(0)` gives (5.33) with denominator 2 and the
-proved endpoint comparison transfers it to `η(0)`. It does **not** identify
-`V′(0)` with `U′` (Lemma 5.8), invoke scheme optimality, or bound `η(1)`.
+proved endpoint comparison transfers it to `η(0)`. This curvature argument alone
+does not identify `V′(0)` with `U′`, invoke scheme optimality, or bound `η(1)`.
+
+`Section5LambdaUPrime.lean` proves Lemma 5.8 by reusing the actual RSAT-backed
+λ derivative, not by differentiating a zero-λ equality of potentials.
+Independent levels at λ=0 propagate a product of the two scalar slopes.
+After the inserted independent level, these are the slopes of
+`B=parisiStep m v (parisiF ...)`. Shared levels on the diagonal see potential
+`2B` and paired mass `m_old/2`, exactly the scalar normalized tilt of mass
+`m_old` defining `Q`. The suffix length `r−1`, total depth `k+3` and remaining
+variance `β²(q_r−q_(r−1))−v` match the actual Section 4 definitions.
+
+Thus `∂λV(0,m,v)=Q(m,v)` for every `m≥0` and the entire closed variance
+interval, including zero masses and coincident endpoints. At baseline mass
+below one, the checked `U′=Q` proves Lemma 5.8 for ordinary interior derivatives
+and for inward endpoint derivatives. A numerical `derivWithin` equality needs
+a positive variance gap; the derivative predicate also covers a singleton
+interval without implying uniqueness. The optimized baseline and actual
+time-zero gain consequently have the explicit deficit `(Q−u)²/2`, including
+baseline masses zero and one. No stationarity or time-one transport is inferred.
 
 The Proposition 2.3 assembly follows p. 232. The bound is relative to `2ψ`,
 not `2φ`: the threshold `2K(ψ−φ)+η` supplies the `η/K` deficit needed by
@@ -398,9 +467,8 @@ masses do not eliminate the baseline mass zero at `r=1`.
 Mathlib's analytic divided difference and CGF variance formula;
 `Section4MassDerivative.lean` now handles the actual nested baseline as described
 above. Higher mixed mass/variance identities remain open after the checked
-first identity `U′=Q`. The current variance
-derivatives are interior ones, so endpoint
-stationarity is not silently inferred from them.
+first identity `U′=Q`. Closed-interval inward derivatives are now also proved,
+but the remaining endpoint stationarity is not silently inferred from them.
 
 ## Historical copies and local ports
 
