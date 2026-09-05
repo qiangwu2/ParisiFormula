@@ -58,6 +58,14 @@ Theorem 3.1 and the §4–§5 parameter-variation estimates remain open.
 Proposition 2.3 and the reduction for coincident scheme levels follow those inputs.
 Theorem 2.2 itself remains open.
 
+[`Targets/CoupledFiniteStep.lean`](Targets/CoupledFiniteStep.lean) now reuses RSAT's
+general Gaussian transforms to build arbitrary finite paired-field recursions:
+site factorization, continuity, and differentiation in λ are proved at every
+depth. Shared and independent steps are connected to the existing cascade.
+The actual Theorem 3.1 interpolation and its covariance estimate are still open.
+Development follows the reuse-first rules in [`AGENTS.md`](AGENTS.md); the concrete
+reuse inventory is recorded in [`docs/PROVENANCE.md`](docs/PROVENANCE.md).
+
 ## Project milestones
 
 1. **Existence of the thermodynamic limit** (Guerra–Toninelli superadditivity + Fekete).
@@ -120,6 +128,7 @@ formula. `GuerraAudit` checks that Theorem 2.1 and both upper bounds depend only
 `propext`, `Classical.choice`, and `Quot.sound`—not `sorryAx` or extra axioms. It also
 checks Lemma 2.7, the replica-measure decomposition, Lemma 2.6 including concentration
 and change of law, interior-time Proposition 2.5, the §5 λ endpoint/pressure comparison,
+the imported-analytic finite paired recursion and its tensorization,
 and the conditional convergence lemmas.
 This does not certify the still-open Theorem 2.4 or Proposition 2.3. CI requires both
 local libraries to build; it does not ignore target or audit failures.
@@ -145,6 +154,7 @@ VS Code) and paste it to your collaborator/assistant. Most first-run errors are 
 ParisiFormula/
 ├── lakefile.lean                 two local libraries; Mathlib and RSAT dependencies
 ├── lean-toolchain                Lean v4.32.1
+├── AGENTS.md                     Talagrand objective, reuse-first policy, verification rules
 ├── lake-manifest.json            locked dependency revisions, including RSAT
 ├── ParisiFormula/                default library; no source placeholders
 │   ├── AnnealedBound.lean            Gaussian moments and the annealed upper bound
@@ -181,6 +191,7 @@ ParisiFormula/
 │   ├── TalagrandProposition25.lean   Lemma 2.6 and interior-time Proposition 2.5
 │   ├── CoupledLambda.lean           Section 5 spin formula, endpoint and cascade penalty
 │   ├── CoupledLambdaPressure.lean   averaged lambda comparison, normalization and stability
+│   ├── CoupledFiniteStep.lean       RSAT-backed general finite recursion and site factorization
 │   └── GuerraAudit.lean              axiom guards for completed critical-path results
 ├── .lake/packages/              generated dependency checkout; not tracked
 │   ├── mathlib/                      Mathlib v4.32.1

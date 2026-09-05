@@ -33,6 +33,9 @@ an explicit size/time-independent constant. This is the time domain needed by th
 existing convergence deduction. The a priori bound of Theorem 2.4 is in progress:
 Step 18 supplies the §5 lambda endpoint construction and its comparison for the
 existing cascade, but not the second interpolation or the strict improvement.
+Step 19 reuses RSAT's general analytic framework to supply finite paired-field
+recursions, their site tensorization, and lambda differentiation. It does not
+yet instantiate the new interpolation's coefficients or prove its derivative bound.
 
 **Milestone 1 (Targets 1b, 1c) is *not* on this critical path.**  Target 4 is strictly
 stronger than 1c — convergence to `parisiValue` subsumes existence of a limit — and deriving
@@ -726,16 +729,48 @@ of (5.5)–(5.13), their one-site cascade factorization, Theorem 3.1's derivativ
 bound, and the optimality/variation estimates in §4–§5. The terminal derivative
 proved here is not the full derivative-through-cascade identity of Lemma 5.8.
 
+**Step 19 (2026-09-04): reuse existing results for the finite paired recursion.**
+
+The reuse audit found that, although the final RSAT two-replica theorem is
+RS-specific, its underlying Gaussian calculus and site-tensorization modules
+are generic. `docs/PROVENANCE.md` records exact matches and limitations, and
+`AGENTS.md` records the user's standing goal and reuse-first development policy.
+
+* `coupledSite_eq_gtTerminal` proves the exact normalization bridge to RSAT.
+  The local zero-coupling, terminal derivative, and spin-sum results now reuse
+  the corresponding existing results instead of duplicating their proofs.
+* `Targets/CoupledFiniteStep.lean` defines the finite one-site and N-site
+  recursions directly using `GTFrame.finiteStep`, `finiteStepD`, and
+  `AT.gtVectorStep`. Coefficients may be arbitrary signed continuous functions
+  of a parameter; masses are any fixed nonnegative sequence, including zero.
+* `pairedScalarCascade_good` propagates the upstream `GoodFam` property:
+  joint continuity, the actual lambda derivative and its unit bound, and
+  unit spatial Lipschitz bounds. `hasDerivAt_pairedScalarCascade` exposes the
+  derivative, without assuming differentiability of any new integral.
+* `pairedVectorCascade_eq_sum` proves site tensorization at every finite depth
+  by applying `AT.gtVectorStep_sum` and discharging its integrability/positivity
+  hypotheses using `GoodFam`. Equal fields give `N` times the scalar result.
+* `sharedStepPi_eq_gtVectorStep` identifies the existing shared step with the
+  general step at mass `m/2`; `independentStepPi_eq_gtVectorSteps` identifies
+  the independent step with two general steps at mass `m`. These bridges
+  include zero mass and retain the existing physical Gaussian conventions.
+
+This supplies the general recursion and tensorization infrastructure mentioned
+in Step 18, not yet the particular coefficients/endpoints of (5.5)–(5.13) or
+Theorem 3.1. The generic lambda derivative is not Lemma 5.8's identification
+with `U′`, and its masses are fixed, not differentiated. Next reuse candidates
+are RSAT's generic finite-state calculus and ordinary-pressure covariance
+comparison; extend only what the nested positive-mass cascade actually needs.
+
 **Remaining work, following the Annals argument:**
 
 1. Prove the a priori two-replica bound of Theorem 2.4 using §3–§5 and the scheme's
    optimality. The imported RS-level `twoReplica_GT_bound` is not this general result.
-   Next concrete step: construct the second, fixed-overlap interpolation of
-   Theorem 3.1 with independently specified masses/variances and shared or
-   sign-reversed paired fields; connect its endpoints to the existing pressure
-   and the Section 5 single-site construction. The present `coupledCascade`
-   fixes its variance increments to the original scheme and cannot simply be
-   reused unchanged for the inserted-level construction.
+   Next concrete step: instantiate the RSAT-backed general recursion from
+   Step 19 with the second interpolation's masses/coefficients and connect its
+   endpoints to the existing pressure and Section 5 scalar construction.
+   Reuse the generic finite-state derivatives and covariance comparison after
+   checking the pressure matches; the nested-cascade extension remains open.
 2. Combine those bounds to obtain Proposition 2.3; Step 14 now supplies its conversion
    to the mass-weighted form. Handle coincident masses/overlap levels via (2.19), or
    prove the needed bound directly without strictness. This reduction is not yet

@@ -15,6 +15,7 @@ The full Parisi formula is deliberately not listed: Theorem 2.2 is still open.
 import Targets.ReplicaMeasure
 import Targets.TalagrandProposition25
 import Targets.CoupledLambdaPressure
+import Targets.CoupledFiniteStep
 
 /--
 info: 'SpinGlass.Targets.guerra_identity' depends on axioms: [propext, Classical.choice, Quot.sound]
@@ -217,3 +218,45 @@ info: 'SpinGlass.Targets.lambdaCoupledPhi_dist_le' depends on axioms: [propext, 
 -/
 #guard_msgs in
 #print axioms SpinGlass.Targets.lambdaCoupledPhi_dist_le
+
+/--
+info: 'SpinGlass.Targets.coupledSite_eq_gtTerminal' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.coupledSite_eq_gtTerminal
+
+/--
+info: 'SpinGlass.Targets.sharedStepPi_eq_gtVectorStep' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.sharedStepPi_eq_gtVectorStep
+
+/--
+info: 'SpinGlass.Targets.independentStepPi_eq_gtVectorSteps' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.independentStepPi_eq_gtVectorSteps
+
+/--
+info: 'SpinGlass.Targets.pairedScalarCascade_good' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.pairedScalarCascade_good
+
+/--
+info: 'SpinGlass.Targets.pairedVectorCascade_eq_sum' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.pairedVectorCascade_eq_sum
+
+/--
+info: 'SpinGlass.Targets.pairedVectorCascade_const' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.pairedVectorCascade_const
+
+/--
+info: 'SpinGlass.Targets.hasDerivAt_pairedScalarCascade' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.hasDerivAt_pairedScalarCascade

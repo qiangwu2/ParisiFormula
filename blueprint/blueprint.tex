@@ -611,6 +611,40 @@ derivative bound of Theorem~3.1 remain open. In particular $P_0=2\varphi$
 does not supply Theorem~2.4's strict improvement relative to $2\psi$.
 The terminal derivative above is not the full Lemma~5.8 cascade identity.
 
+\begin{lemma}[General finite paired recursion via existing RSAT results]
+\lean{SpinGlass.Targets.pairedScalarCascade\_good}\leanok
+\lean{SpinGlass.Targets.pairedVectorCascade\_eq\_sum}\leanok
+Fix any sequence of masses $m_j\ge0$ and continuous signed coefficients
+$a_j(p),b_j(p)$, where $p$ belongs to a first-countable topological space.
+Starting with $F_0(p,\lambda;x,y)=A^*_{\lambda}(x,y)$, let
+\[
+F_{j+1}(p,\lambda;x,y)
+=\begin{cases}
+\E_z F_j(p,\lambda;x+a_j(p)z,y+b_j(p)z),&m_j=0,\\
+\dfrac1{m_j}\log\E_z e^{m_jF_j(p,\lambda;x+a_j(p)z,y+b_j(p)z)},&m_j>0.
+\end{cases}
+\]
+Let $\mathcal F_j$ be the corresponding $N$-site recursion, starting with
+$\sum_i A^*_{\lambda}(x_i,y_i)$ and using independent standard $z_i$ at each
+step. At every finite depth,
+\[
+\mathcal F_j(p,\lambda;x,y)=\sum_i F_j(p,\lambda;x_i,y_i).
+\]
+Moreover $F_j$ and its lambda derivative are jointly continuous, the derivative
+is bounded in absolute value by one, and $F_j$ is one-Lipschitz in each field.
+\end{lemma}
+\begin{proof}
+The local terminal is proved equal to RSAT's \texttt{gtTerminal}. Iterate
+RSAT's \texttt{step0\_good} and \texttt{stepM\_good}, then apply its
+\texttt{gtVectorStep\_sum} at every step. The regularity property supplies
+the required integrability and positivity. The old shared Gaussian step is
+the general vector step at mass $m/2$; its independent step is two vector
+steps at mass $m$, with coefficients $(\sqrt v,0)$ and $(0,\sqrt v)$.
+\end{proof}
+This is a general recursion, not yet the specific interpolating scheme of
+Theorem~3.1. The lambda derivative is proved at fixed masses; neither the
+mass-variation estimates nor the identification with $U'$ is asserted here.
+
 The remaining work follows Proposition~2.3 and the coupled-replica concentration
 argument in \S3--\S5 of \cite{Tal06}: prove the a priori bound of Theorem~2.4,
 then combine it with Proposition~2.5 to obtain Proposition~2.3. The reduction

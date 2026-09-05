@@ -8,6 +8,8 @@ the existing coupled cascade. This is the endpoint construction used in (5.17),
 not the interpolating inequality of Theorem 3.1 or the full Theorem 2.4.
 -/
 import Targets.CoupledLipschitz
+import Lemmas.GuerraTalagrand.Bound.Basic
+import Lemmas.GuerraTalagrand.Gaussian
 
 open MeasureTheory ProbabilityTheory Real Filter Topology
 open scoped BigOperators NNReal
@@ -76,39 +78,43 @@ noncomputable def coupledSiteZ (ℓ x y : ℝ) : ℝ :=
 
 noncomputable def coupledSite (ℓ x y : ℝ) : ℝ := Real.log (coupledSiteZ ℓ x y)
 
+/-- Normalization bridge to RSAT's already formalized two-replica terminal. -/
+theorem coupledSiteZ_eq_exp_gtTerminal (ℓ x y : ℝ) :
+    coupledSiteZ ℓ x y = Real.exp (AT.gtTerminal ℓ x y) := by
+  rw [AT.gtTerminal, Real.exp_log (by positivity)]
+  simp only [coupledSiteZ, Real.cosh_eq, Real.sinh_eq, sub_eq_add_neg,
+    Real.exp_add, Real.exp_neg]
+  ring
+
+/-- The paper's hyperbolic form and RSAT's four-exponential form are identical. -/
+theorem coupledSite_eq_gtTerminal (ℓ x y : ℝ) : coupledSite ℓ x y = AT.gtTerminal ℓ x y := by
+  rw [coupledSite, coupledSiteZ_eq_exp_gtTerminal, Real.log_exp]
+
 theorem coupledSite_spin_sum (ℓ x y : ℝ) :
     (∑ a : Bool, ∑ b : Bool, Real.exp
       ((if a then (1 : ℝ) else -1) * x + (if b then (1 : ℝ) else -1) * y +
         ℓ * (if a then (1 : ℝ) else -1) * (if b then (1 : ℝ) else -1))) =
       4 * coupledSiteZ ℓ x y := by
-  simp only [Fintype.sum_bool, Bool.false_eq_true, if_false, if_true]
-  simp only [coupledSiteZ, Real.cosh_eq, Real.sinh_eq, Real.exp_add, Real.exp_neg,
-    one_mul, neg_one_mul, mul_one, mul_neg_one, inv_inv]
-  ring
+  rw [coupledSiteZ_eq_exp_gtTerminal]
+  simpa only [Fintype.sum_prod_type, mul_comm] using
+    AT.sum_bool_pair_exp_eq_four_mul_exp_gtTerminal ℓ x y
 
 theorem coupledSiteZ_pos (ℓ x y : ℝ) : 0 < coupledSiteZ ℓ x y := by
-  have hp := Finset.sum_pos (s := Finset.univ) (fun (a : Bool) _ =>
-    Finset.sum_pos (s := Finset.univ) (fun (b : Bool) _ => Real.exp_pos
-      ((if a then (1 : ℝ) else -1) * x + (if b then (1 : ℝ) else -1) * y +
-        ℓ * (if a then (1 : ℝ) else -1) * (if b then (1 : ℝ) else -1)))
-      Finset.univ_nonempty) Finset.univ_nonempty
-  rw [coupledSite_spin_sum] at hp
-  linarith
+  rw [coupledSiteZ_eq_exp_gtTerminal]
+  exact Real.exp_pos _
 
 @[simp] theorem coupledSite_zero (x y : ℝ) :
     coupledSite 0 x y = Real.log (Real.cosh x) + Real.log (Real.cosh y) := by
-  simp only [coupledSite, coupledSiteZ, Real.cosh_zero, Real.sinh_zero, mul_one,
-    mul_zero, add_zero]
-  exact Real.log_mul (Real.cosh_pos x).ne' (Real.cosh_pos y).ne'
+  rw [coupledSite_eq_gtTerminal]
+  exact AT.gtTerminal_zero x y
 
 /-- The terminal lambda derivative used in the proof of Lemma 5.8. -/
 theorem hasDerivAt_coupledSite_zero (x y : ℝ) :
     HasDerivAt (fun ℓ => coupledSite ℓ x y)
       ((Real.sinh x / Real.cosh x) * (Real.sinh y / Real.cosh y)) 0 := by
-  have hd := (((Real.hasDerivAt_cosh 0).const_mul (Real.cosh x * Real.cosh y)).add
-    ((Real.hasDerivAt_sinh 0).const_mul (Real.sinh x * Real.sinh y))).log
-      (coupledSiteZ_pos 0 x y).ne'
-  convert hd using 1 <;> simp [coupledSite, coupledSiteZ, div_mul_div_comm]
+  simp only [coupledSite_eq_gtTerminal]
+  simpa only [AT.deriv_gtTerminal_zero, Real.tanh_eq_sinh_div_cosh] using
+    (AT.hasDerivAt_gtTerminal 0 x y).differentiableAt.hasDerivAt
 
 /-- Unrestricted two-replica log partition function with an actual spin interaction. -/
 noncomputable def lambdaCoupledBase (n : ℕ) (U : EnergySpace n) (h t ℓ : ℝ)
@@ -185,15 +191,12 @@ theorem pairSpinSum_exp {n : ℕ} (ℓ : ℝ) (x y : Fin n → ℝ) :
     (∑ σ : Config n, ∑ τ : Config n, Real.exp
       (∑ i, (spin n σ i * x i + spin n τ i * y i + ℓ * spin n σ i * spin n τ i))) =
       ∏ i, 4 * coupledSiteZ ℓ (x i) (y i) := by
-  simp_rw [Real.exp_sum]
-  rw [show (∑ σ : Config n, ∑ τ : Config n,
-      ∏ i, Real.exp (spin n σ i * x i + spin n τ i * y i + ℓ * spin n σ i * spin n τ i)) =
-      ∏ i, ∑ a : Bool, ∑ b : Bool, Real.exp
-        ((if a then (1 : ℝ) else -1) * x i + (if b then (1 : ℝ) else -1) * y i +
-          ℓ * (if a then (1 : ℝ) else -1) * (if b then (1 : ℝ) else -1)) from
-    pairSpinSum_prod (fun i a b => Real.exp
-      ((if a then (1 : ℝ) else -1) * x i + (if b then (1 : ℝ) else -1) * y i +
-        ℓ * (if a then (1 : ℝ) else -1) * (if b then (1 : ℝ) else -1)))]
+  have H := AT.sum_pair_exp_sum_eq_prod_sum_exp (fun i (p : Bool × Bool) =>
+    (if p.1 then (1 : ℝ) else -1) * x i + (if p.2 then (1 : ℝ) else -1) * y i +
+      ℓ * (if p.1 then (1 : ℝ) else -1) * (if p.2 then (1 : ℝ) else -1))
+  simp only [Fintype.sum_prod_type] at H
+  rw [show (∑ σ : Config n, ∑ τ : Config n, Real.exp
+      (∑ i, (spin n σ i * x i + spin n τ i * y i + ℓ * spin n σ i * spin n τ i))) = _ from H]
   simp_rw [coupledSite_spin_sum]
 
 /-- At zero interpolation time the interacting partition function separates over sites. -/
@@ -220,7 +223,6 @@ theorem lambdaCoupledBase_time_zero (n : ℕ) (U : EnergySpace n) (h ℓ : ℝ)
 theorem constrainedBase_le_lambda {n : ℕ} (hn : 0 < n) (U : EnergySpace n) (h t u ℓ : ℝ)
     (hu : ∃ σ τ : Config n, overlap n σ τ = u) (x y : Fin n → ℝ) :
     constrainedBase n U h t u x y ≤ -ℓ * n * u + lambdaCoupledBase n U h t ℓ x y := by
-  have hnR : (n : ℝ) ≠ 0 := by exact_mod_cast hn.ne'
   have hp : 0 < ∑ σ : Config n, ∑ τ : Config n,
       Real.exp (guerraH n U h t x σ + guerraH n U h t y τ +
         ℓ * ∑ i, spin n σ i * spin n τ i) :=
@@ -237,8 +239,7 @@ theorem constrainedBase_le_lambda {n : ℕ} (hn : 0 < n) (U : EnergySpace n) (h 
     intro τ _
     split_ifs with hστ
     · have hs : ∑ i, spin n σ i * spin n τ i = (n : ℝ) * u := by
-        rw [← hστ, overlap]
-        field_simp
+        rw [AT.spin_sum_eq_mul_overlap hn, hστ]
       rw [← Finset.mul_sum, hs, ← Real.exp_add]
       apply le_of_eq
       congr 1

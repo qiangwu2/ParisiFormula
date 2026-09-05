@@ -16,6 +16,33 @@ copies. Neither `Lemmas/` nor `port/` is a local build target. The `main` select
 the RSAT dependency declaration does not replace the pinned revision when reproducing
 the checked-in manifest; `lake update` would deliberately refresh dependencies.
 
+## Reuse inventory for the Talagrand lower bound
+
+Search the locked dependency before developing new analytic machinery. The
+following matches were checked in the active RSAT source, not the historical
+copies. `Targets/GuerraAudit.lean` checks the completed local bridges and their
+transitive dependencies for the standard Lean axioms only.
+
+| Existing result | Local use or remaining adaptation |
+|---|---|
+| `AT.gtTerminal`, `AT.gtTerminal_zero`, `AT.deriv_gtTerminal_zero` | `coupledSite_eq_gtTerminal` bridges the paper's hyperbolic expression to RSAT's exponential expression; local normalization and derivative proofs now reuse RSAT. |
+| `AT.sum_bool_pair_exp_eq_four_mul_exp_gtTerminal`, `AT.sum_pair_exp_sum_eq_prod_sum_exp` | Reused by the local one-site and N-site partition identities in `CoupledLambda.lean`. |
+| `GTFrame.finiteStep`, `finiteStepD`, `step0_good`, `stepM_good`, `goodFam_fLbase` | `CoupledFiniteStep.lean` iterates the existing transforms and regularity results for arbitrary finite nonnegative masses and continuous signed coefficients. No new dominated differentiation proof. |
+| `AT.gtVectorStep`, `gtScalarStep`, `gtVectorStep_sum` | Directly reused for the N-site recursion and tensorization; integrability and positivity are discharged using `GoodFam`. Proved bridges identify the old shared step and the composition giving its independent step. |
+| `AT.gtStateLogPartition`, its first/second derivatives and moderate-growth results (`Bound/FiniteState.lean`) | General in the finite state type, so usable on `AT.ConstrainedPair N u`. Candidate for the Theorem 3.1 base; not yet connected to the full finite-RSB interpolation. |
+| `AT.hasDerivAt_gtOrdinaryPressure_ibp`, `gtOrdinaryPressure_one_le_zero_add_shiftedDiagonalGap` (`Bound/Comparison.lean`) | Generic finite-state covariance interpolation, but for the ordinary expected log partition, not an arbitrary nested positive-mass cascade. Reuse where its pressure matches; extend only the missing cascade layer. |
+
+The final `AT.twoReplica_GT_bound` has RS smart-path hypotheses (one overlap
+parameter, positive `β` and `h`, and an interior RS overlap). It cannot replace
+the finite-RSB Theorem 2.4 as stated. This mismatch does **not** exclude its
+generic supporting modules above. The generic half-step calculus may likewise
+help extend the ordinary-pressure comparison, but has not yet been adapted.
+
+No dependency revision was changed and no upstream source was copied or edited.
+The general finite recursion presently proves λ-differentiation at fixed masses;
+it does not assert the mass-variation estimates or identify the derivative with
+Talagrand's `U′` in Lemma 5.8.
+
 ## Historical copies and local ports
 
 All vendored files are Apache-2.0.  Original headers are retained unchanged.
