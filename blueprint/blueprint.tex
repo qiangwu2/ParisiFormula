@@ -51,7 +51,7 @@ identified explicitly. The active theorem statement is in
 \texttt{Targets/Talagrand.lean}; its supporting modules are mapped in the README.
 \texttt{Targets/Milestones.lean} also contains older, off-path targets.
 
-\textbf{Status (4 September 2026).} The exact-covariance SK version of Theorem~2.1,
+\textbf{Status (5 September 2026).} The exact-covariance SK version of Theorem~2.1,
 Guerra's RSB upper bound, and its limiting consequence are proved.
 \texttt{Targets/GuerraAudit.lean} guards their standard-axiom-only dependencies.
 Theorem~2.2 remains open, so the full Parisi formula is still conditional.
@@ -959,6 +959,45 @@ function. Reuse Mathlib's analytic divided-difference and second CGF derivative
 theorems; the expectation branch agrees exactly with the derivative at zero.
 \end{proof}
 
+\begin{lemma}[Actual nested baseline mass derivative and first variation]
+\lean{SpinGlass.Targets.hasDerivAt\_section4T\_mass\_baseline}\leanok
+\lean{SpinGlass.Targets.section4U\_zero\_baseline}\leanok
+\lean{SpinGlass.Targets.hasDerivAt\_section4Phi\_mass\_baseline}\leanok
+For $1\le r\le k+1$ and $0\le v\le a=\beta^2(q_r-q_{r-1})$, the actual
+full scalar recursion is differentiable in its inserted mass at $m_{r-1}$.
+Thus the function of (4.42) is genuinely defined by
+\[
+ U(v)=2\left.\partial_m T(v,m)\right|_{m=m_{r-1}},\qquad U(0)=0.
+\]
+At a zero baseline, let $B(m,v,x)$ be the actual inserted scalar step.
+Then every unchanged outer mass is zero and
+\[
+ T(v,m)=\mathbb E_g B(m,v,h+\sqrt{\beta^2q_r-v}\,g).
+\]
+In this case $U(v)$ is the outer average of the centered second moment of
+the actual inserted input. For the actual functional $\Phi$ of (4.37),
+\[
+ \left.\partial_m\Phi(m,u)\right|_{m=m_{r-1}}
+ =f(u):=\tfrac12U\bigl(\beta^2(q_r-u)\bigr)
+        -\frac{\beta^2}4(q_r^2-u^2),\qquad f(q_r)=0.
+\]
+Both overlap endpoints, coincident overlaps and zero baseline mass are included.
+\end{lemma}
+\begin{proof}
+For positive mass, the existing tilted first-moment bound gives domination
+uniform in the field on a compact positive mass interval. Propagate the
+actual derivative through the normalized outer parameter rules. At zero mass,
+Herbst and reflection of input and mass give the two-sided anchored bound
+$|B(m,v,x)-B(0,v,x)|\le |m|v/2$. Scheme monotonicity forces every outer mass
+to vanish, and the Gaussian semigroup collapses their variance to
+$\beta^2q_r-v$. Mathlib's anchored dominated-differentiation theorem then
+passes the actual scalar mass-zero derivative through this expectation.
+Zero variance is constant in mass. Finally differentiate the affine correction
+in (4.37), obtaining exactly (4.46).
+\end{proof}
+This proves first mass differentiation, not the mixed identities for $U'$ and
+$U''$, uniform higher-mass bounds, or the quantitative stationarity estimates.
+
 \begin{lemma}[Actual inserted functional and optimality inputs]
 \lean{SpinGlass.Targets.parisiFunctional\_insertLevel}\leanok
 \lean{SpinGlass.Targets.section4Phi\_near\_min}\leanok
@@ -1001,8 +1040,49 @@ Stein. The actual cascade's previously checked growth and Hessian bounds
 discharge all analytic assumptions. Mathlib's measure-preserving product
 reindexing packs the independent fields into $2N$ coordinates.
 \end{proof}
-The simultaneous variation of all levels and the disorder, its replica-weight
-identification, and endpoint-safe integration remain to be assembled.
+\begin{lemma}[Actual averaged partial derivatives of the full paired cascade]
+\lean{SpinGlass.Targets.hasDerivAt\_constrainedFieldCascade\_variance}\leanok
+\lean{SpinGlass.Targets.hasDerivAt\_constrainedDisorderPressure}\leanok
+\lean{SpinGlass.Targets.hasDerivAt\_constrainedDisorderPressure\_variance}\leanok
+Fix all paired masses and field variances. The disorder-only pressure
+$P(t)=N^{-1}\mathbb E F(\sqrt t H)$ of the actual nested constrained cascade has
+\[
+ P'(t)=\frac1{2N}\mathbb E\sum_i\tau_i D_{w_i}^2F(\sqrt t H),\qquad t>0.
+\]
+It is continuous at $t=0$. Separately, changing one original field variance
+to $v>0$ differentiates its actual heat seed through every unchanged outer
+level. The resulting derivative is an explicit nested normalized mean; its
+bound is $NK$ for an independent level and $2NK$ for a shared level, where
+\[
+ K=2+4\sum_{i<\ell}|m_i|+|m_\ell|.
+\]
+This bound has no additional outer-depth factor. The derivative also passes
+through the actual Gaussian disorder average and site normalization.
+\end{lemma}
+\begin{proof}
+For disorder, prove finite linearity of the actual propagated direction, then
+apply scaled coordinate Stein. The mixed-Hessian bound and Gaussian norm
+integrability justify differentiation under the expectation. Compose with
+$t\mapsto\sqrt t$ for the coefficient $1/(2N)$ and endpoint continuity.
+For a field variance, use the existing heat generator at the chosen level and
+the normalized parameter rule at every outer level. Measurable forward
+difference quotients give disorder measurability of the actual variance
+derivative; its uniform bound justifies the outer Gaussian differentiation.
+\end{proof}
+The simultaneous finite-parameter chain rule, replica-weight identification,
+and endpoint-safe integration of the full second interpolation remain to be assembled.
+
+\begin{lemma}[Degenerate interpolation variances need no endpoint derivative]
+\lean{SpinGlass.Targets.section5InterpolationVariance\_pos\_or\_eq\_zero}\leanok
+\lean{SpinGlass.Targets.section5RightInterpolationVariance\_pos\_or\_eq\_zero}\leanok
+Before interpolation time one, each actual field variance in either neighbor
+construction is positive or identically zero. Coincident overlaps are allowed.
+\end{lemma}
+\begin{proof}
+Each variance is $A+(1-w)B$ with $A,B\ge0$. If this vanishes at $w<1$, then
+$A=B=0$. Such a coordinate is constant and can be omitted from the eventual
+chain rule; no two-sided variance derivative at zero is required.
+\end{proof}
 
 \begin{lemma}[Right-interval endpoints, baseline and scalar gain]
 \lean{SpinGlass.Targets.section5RightInterpolation\_one}\leanok
@@ -1027,6 +1107,29 @@ sharp lambda-curvature invariant for the explicit optimized gain.
 \end{proof}
 This does not identify the lambda derivative with the dual $U'$ or transport
 the scalar gain to time one.
+
+\begin{lemma}[Dual correction and full right scalar comparison]
+\lean{SpinGlass.Targets.section5RightCorrection\_eq}\leanok
+\lean{SpinGlass.Targets.hasDerivAt\_section4RightCascade\_split}\leanok
+\lean{SpinGlass.Targets.antitoneOn\_section4RightT}\leanok
+The actual dual paired correction, with shared cutoff $r+1$, is
+\[
+ 2\operatorname{ParisiCorrection}
+ +(m-m_r)\frac{\beta^2}{2}(u^2-q_r^2).
+\]
+For $0\le m\le m_r$, the full actual $T_{\rm right}(v,m)$ is continuous and
+nonincreasing on the closed split interval, with
+$T_{\rm right}(0,m)=A_0(h)$ and hence $T_{\rm right}(v,m)\le A_0(h)$.
+The actual two-step derivative has coefficient $(m-m_r)/2$ times the
+normalized tilted squared first derivative.
+\end{lemma}
+\begin{proof}
+Reuse the generic shared/independent correction sum, changing only the two
+pieces of $[q_r,q_{r+1}]$. Reflect (4.11) by $v\mapsto a-v$ with inner mass
+$m_r$ and outer mass $m$, then propagate the closed-interval comparison through
+order-preserving outer scalar steps. The last overlap interval is included.
+\end{proof}
+This does not yet give the derivative through all right outer levels or dual stationarity.
 
 \begin{lemma}[Lemma 5.9 and the optimized scalar endpoint]
 \lean{SpinGlass.Targets.talagrand\_lemma\_5\_9}\leanok

@@ -4,7 +4,7 @@ A Lean 4 formalisation project for the **Parisi formula** for the Sherrington–
 spin glass, following Guerra's interpolation bounds and Talagrand's proof
 (*Ann. of Math.* 163, 2006).
 
-**Status (September 4, 2026):** the SK-model version of Talagrand's **Theorem 2.1**
+**Status (September 5, 2026):** the SK-model version of Talagrand's **Theorem 2.1**
 (`guerra_identity`) is proved, including endpoint continuity and an explicit nonnegative,
 bounded squared-overlap remainder. The Guerra RSB upper bound and its thermodynamic
 upper-bound consequence are also proved without `sorry` dependencies. Build-time axiom
@@ -107,13 +107,37 @@ level of the actual constrained cascade, including zero mass. Spatial-direction
 linearity and the independent two-field Gaussian packing are checked. Simultaneous
 variation of every level and the disorder, and identification with replica weights,
 are still needed for the full interpolation derivative.
+[`Targets/CoupledNestedVariance.lean`](Targets/CoupledNestedVariance.lean) now
+propagates a single original level's variance derivative through every unchanged
+outer level of the actual constrained cascade. The varying variance must be
+positive; zero fixed variances and masses are included. Its derivative bound
+has no additional outer-depth factor.
+[`Targets/CoupledDisorderInterpolation.lean`](Targets/CoupledDisorderInterpolation.lean)
+proves the other partial contribution: at fixed field variances, the actual
+Gaussian-averaged disorder derivative is the nested Hessian trace divided by
+`2N`. Radial linearity, outer differentiation, and continuity at zero disorder
+variance are checked. These partial identities are not yet the simultaneous
+derivative of the full second interpolation.
+[`Targets/CoupledVariancePressure.lean`](Targets/CoupledVariancePressure.lean)
+also carries the individual variance derivative through the actual Gaussian
+disorder average, proving the required measurability and domination.
+[`Targets/Section5VarianceFaces.lean`](Targets/Section5VarianceFaces.lean) checks
+that any zero variance before time one is an identically zero coordinate in
+either neighbor-interval construction. No positive-variance assumption is
+therefore imposed on coincident overlap increments.
 [`Targets/ParisiMassDerivative.lean`](Targets/ParisiMassDerivative.lean) reuses
 Mathlib's moment-generating-function calculus for the scalar mass derivative,
 its entropy identity and nonnegativity.
 [`Targets/ParisiMassZero.lean`](Targets/ParisiMassZero.lean) identifies the actual
 mass-zero branch with an analytic divided difference: its derivative is half the
-variance, and mass monotonicity now holds on all of `ℝ`. Nested Section 4
-mass-variation estimates are not yet proved.
+variance, and mass monotonicity now holds on all of `ℝ`.
+[`Targets/ParisiMassLocal.lean`](Targets/ParisiMassLocal.lean) adds local domination,
+including a two-sided mass-zero bound.
+[`Targets/Section4MassDerivative.lean`](Targets/Section4MassDerivative.lean) now
+differentiates the actual full `T` at every original baseline mass, including
+zero and both variance endpoints. This justifies the actual **(4.42)**
+`U = 2∂m T`; higher mixed mass/variance identities and uniform optimality
+estimates are still open.
 [`Targets/TalagrandSection5Zero.lean`](Targets/TalagrandSection5Zero.lean) proves
 **(5.18)** `V(0,m,v)=2T(v,m)` and **(5.19)** `V(0,m_(r−1),v)=2A₀(h)`.
 The baseline uses the Gaussian semigroup with zero mass and zero variance included.
@@ -140,6 +164,16 @@ constructs the admissible inserted scalar scheme and identifies its functional
 with **(4.37)**. The near-global and fixed-level optimality hypotheses now give
 the actual inequalities **(4.30)** and **(4.31)**, including zero masses and
 coincident overlaps. These inputs do not yet prove the uniform variation bounds.
+[`Targets/Section4FirstVariation.lean`](Targets/Section4FirstVariation.lean)
+identifies **(4.46)** with the genuine baseline mass derivative of this `Φ`
+and proves that it vanishes at `u=q_r`. This is not yet stationarity in `u`
+or the identities for `U′` and `U″`.
+[`Targets/RightInterpolationAlgebra.lean`](Targets/RightInterpolationAlgebra.lean)
+supplies the exact dual correction, and
+[`Targets/Section4RightVariation.lean`](Targets/Section4RightVariation.lean)
+reuses (4.11) by reflection: the actual dual two-step derivative and full
+closed-interval antimonotonicity are checked for decreased inserted mass.
+The full right-recursion derivative and dual stationarity remain open.
 [`Targets/CoupledLambdaCurvature.lean`](Targets/CoupledLambdaCurvature.lean) proves
 **Lemma 5.9** with the level-independent bound `0 ≤ ∂²λ V ≤ 1`.
 [`Targets/TalagrandLambdaGain.lean`](Targets/TalagrandLambdaGain.lean) optimizes λ
@@ -229,6 +263,9 @@ the full-depth fixed-variance disorder Hessian and Gaussian Stein identities,
 scalar mass/variance calculus, Lemma 5.9 and the optimized scalar endpoint,
 zero-lambda identities, exact equal-mass compression, and the conditional
 finite-overlap/convergence deductions, including the strict-mass bridge.
+The audit also covers the actual Gaussian-averaged disorder and individual
+variance derivatives, degenerate variance coordinates, full baseline mass
+differentiation and first variation, and dual correction/comparison.
 This does not certify the still-open Theorem 2.4 or Proposition 2.3. CI requires both
 local libraries to build; it does not ignore target or audit failures.
 
@@ -298,6 +335,8 @@ ParisiFormula/
 │   ├── CoupledSharedInsertion.lean    exact shared zero-variance insertion and cutoff adapter
 │   ├── TalagrandRightInterpolation.lean  dual right-interval construction and both endpoints
 │   ├── TalagrandRightZero.lean         dual scalar baseline and optimized time-zero lambda gain
+│   ├── RightInterpolationAlgebra.lean exact dual deterministic correction and its baseline
+│   ├── Section4RightVariation.lean    dual split derivative and full closed-interval antimonotonicity
 │   ├── ConstrainedFiniteState.lean   RSAT-backed first/second derivatives of the constrained terminal
 │   ├── CoupledCovariance.lean        four-overlap covariance, square completion and terminal Hessian
 │   ├── SecondInterpolationAlgebra.lean  algebraic remainder sign, telescoping and (5.9) correction
@@ -305,8 +344,15 @@ ParisiFormula/
 │   ├── CoupledCascadeSecond.lean      full-depth mixed disorder Hessian and Gaussian Stein identities
 │   ├── CoupledCascadeField.lean       separate replica-field first/mixed derivatives and spin directions
 │   ├── CoupledCascadeVariance.lean    actual independent/shared one-level heat generators
+│   ├── CoupledNestedVariance.lean     one original variance derivative through every outer level
+│   ├── CoupledDisorderInterpolation.lean  actual Gaussian-averaged disorder derivative and radial Stein
+│   ├── CoupledVariancePressure.lean   individual variance derivative through the Gaussian disorder average
+│   ├── Section5VarianceFaces.lean     positive-or-identically-zero alternative for actual level variances
 │   ├── ParisiMassDerivative.lean      scalar mass derivative, entropy and monotonicity via Mathlib
 │   ├── ParisiMassZero.lean            analytic mass-zero extension and half-variance derivative
+│   ├── ParisiMassLocal.lean           local derivative domination and two-sided mass-zero bound
+│   ├── Section4MassDerivative.lean    actual full baseline mass derivative and U, including mass zero
+│   ├── Section4FirstVariation.lean    actual Phi first variation (4.46) and its upper-overlap zero
 │   ├── ParisiStepSemigroup.lean       scalar semigroup including zero masses and variances
 │   ├── ParisiVarianceDerivative.lean  Gaussian heat generator and actual scalar variance derivative
 │   ├── Section4Variance.lean          actual Parisi C2, heat equation and joint variance/field calculus

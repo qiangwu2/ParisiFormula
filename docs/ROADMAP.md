@@ -47,6 +47,13 @@ generators, the analytic scalar mass-zero extension, closed-interval nested
 monotonicity, actual inserted-scheme optimality comparisons, and right-interval
 endpoints. The full varying-variance interpolation/replica identification, uniform
 Section 4--5 optimality estimates, and remaining overlap/sign cases are still missing.
+Step 25 propagates individual variance derivatives through the full cascade
+and the Gaussian average, proves the averaged disorder Hessian-trace term,
+handles identically zero variance coordinates, and supplies the right correction
+and scalar antimonotonicity. It also differentiates the actual full Section 4
+recursion at every baseline mass, including zero, and identifies the actual
+first variation (4.46). The simultaneous chain rule and replica-weight
+identification must still be proved; partial derivatives alone are not that identity.
 
 **Milestone 1 (Targets 1b, 1c) is *not* on this critical path.**  Target 4 is strictly
 stronger than 1c — convergence to `parisiValue` subsumes existence of a limit — and deriving
@@ -1089,22 +1096,109 @@ placeholder or axiom was introduced. The updated blueprint compiles with no
 LaTeX warnings, and README status/layout, roadmap and provenance are synchronized.
 Dependency pins and upstream sources are unchanged.
 
+**Step 25 (2026-09-05): averaged partial derivatives, actual first variation, and dual comparisons.**
+
+The main agent and three agents again worked on separate critical-path modules,
+with read-only cross-review. This checkpoint distinguishes checked component
+derivatives from the still-unproved simultaneous second-interpolation derivative.
+
+* `Targets/CoupledNestedVariance.lean` differentiates one original level variance
+  of the actual cascade, expressed by `Function.update v ℓ w`. The checked heat
+  seed is propagated through every unchanged outer level by the existing
+  normalized parameter rule. For positive varying variance the bound is
+  `N K` at an independent level and `2N K` at a shared one, with
+  `K=2+4Σ_{i<ℓ}|m_i|+|m_ℓ|`. There is no additional outer-depth loss, but
+  this auxiliary analytic bound is not claimed uniform in the inner depth.
+  Unvisited levels have derivative zero. Zero masses and zero fixed variances
+  are included; no zero-variance derivative is postulated.
+* `Targets/CoupledDisorderInterpolation.lean` proves the actual radial disorder
+  direction equals its finite spectral sum, then applies scaled coordinate
+  Stein. The amplitude derivative of the Gaussian-averaged cascade is the
+  expected radial direction and hence the amplitude times the nested Hessian
+  trace. The square-root chain rule gives the genuine fixed-field pressure
+  derivative with normalization `1/(2N)`. Its domination and measurability are
+  proved, not assumed. The pressure is continuous at zero disorder variance.
+  All field variances are held fixed in this contribution.
+* `Targets/CoupledVariancePressure.lean` proves disorder measurability of the
+  actual individual variance derivative by measurable forward difference
+  quotients and the checked disorder continuity. The uniform derivative bound
+  then justifies differentiation under the Gaussian disorder average, including
+  the site-normalized pressure. Thus both kinds of averaged partial derivative
+  are now available; their simultaneous chain rule remains an obligation.
+* `Targets/Section5VarianceFaces.lean` checks the boundary alternative for the
+  actual left and right variances: before interpolation time one, each is
+  positive or identically zero. A vanishing coordinate has zero speed and can
+  be omitted from the eventual chain rule. Coincident overlaps are retained.
+* `Targets/RightInterpolationAlgebra.lean` proves the exact dual correction
+  `2*parisiCorrection + (m-m_r)*(β²/2)*(u²-q_r²)`, with shared cutoff `r+1`.
+  At baseline `m_r` it is twice the original correction. The algebra includes
+  the last interval and makes no pressure-derivative claim.
+  `Targets/Section4RightVariation.lean` reflects the checked two-step (4.11),
+  giving coefficient `(m-m_r)/2` for the actual right split. For `0≤m≤m_r`,
+  closed-interval antimonotonicity propagates through the full actual dual `T`;
+  continuity and `T_right(0)=A₀(h)` give `T_right(v)≤A₀(h)`. The derivative
+  through all right outer levels and dual stationarity remain open.
+* `Targets/ParisiMassLocal.lean` proves a field-uniform derivative bound on
+  positive compact mass intervals and the two-sided zero-mass bound
+  `|Step(m,v,A)-Step(0,v,A)|≤|m|v/2`. The latter reuses Herbst and reflection,
+  then Mathlib's anchored dominated-differentiation theorem. Positive local
+  bounds are not claimed uniform as their lower mass endpoint tends to zero.
+* `Targets/Section4MassDerivative.lean` differentiates the actual full `T`
+  in its inserted mass. At a positive baseline, an explicit nested normalized
+  derivative propagates through every outer level. At zero baseline, all
+  unchanged outer masses vanish, and the semigroup reduces them to a single
+  Gaussian expectation with variance `β²q_r-v`. The baseline theorem covers
+  the entire closed variance interval, including coincident overlaps.
+  It justifies the actual `U=2∂mT` of (4.42), its zero-baseline centered-second-
+  moment formula, and `U(0)=0`.
+  `Targets/Section4FirstVariation.lean` identifies (4.46) with the actual
+  baseline mass derivative of `section4Phi` and proves `f(q_r)=0`.
+  Mixed mass/variance derivatives, uniform higher-mass estimates and the
+  quantitative stationarity argument are not inferred from these results.
+
+Independent read-only cross-reviews checked the radial Stein factor and site
+normalization, original variance-level indexing and heat factor, measurable
+outer averaging, and the actual mass-zero semigroup/differentiation argument.
+No correctness issues were found. The original target remains unchanged.
+
+**Checkpoint checklist:**
+
+* [x] Individual variance derivative through all outer levels and disorder averaging.
+* [x] Actual averaged disorder derivative, radial Stein, and zero-disorder continuity.
+* [x] Zero variance coordinates in both neighbor intervals are constant.
+* [x] Actual nested baseline mass derivative, `U`, and first variation (4.46).
+* [x] Right correction and closed-interval scalar comparison.
+* [ ] Simultaneous interpolation derivative, replica identification, and transport.
+* [ ] `U′`, `U″`, uniform optimality estimates, and Lemma 5.8.
+* [ ] Remaining overlap regimes and the uniform Theorem 2.4 bound.
+* [ ] Unconditional Theorem 2.2 and the final Parisi-formula dependency audit.
+
+**Step 25 validation:** `bash scripts/check.sh` passes (3847 target-build jobs),
+including **57 new standard-axiom guards** (257 total). All nine new proof
+modules compile without new warnings. The four original placeholders are
+unchanged; no new placeholder, project axiom, dependency update or upstream
+source edit was introduced. The updated blueprint compiles to 21 pages with
+no LaTeX warnings. README status/layout, provenance and this checked/open
+checklist are synchronized with the actual proof boundary.
+
 **Remaining work, following the Annals argument:**
 
 1. Prove the a priori two-replica bound of Theorem 2.4 using §3–§5 and the scheme's
    optimality. The imported RS-level `twoReplica_GT_bound` is not this general result.
-   Next concrete step: propagate Step 24's one-level heat generators together
-   with the disorder variation through `section5Interpolation`, construct its normalized replica weights, and
+   Next concrete step: combine Step 25's averaged variance/disorder partial
+   derivatives by a justified simultaneous finite-parameter chain rule for
+   `section5Interpolation`, construct its normalized replica weights, and
    prove the derivative equals the covariance expression from Step 21.
    Then prove the endpoint-safe integration of that derivative. The square
    completion, mass telescoping, and inserted correction of (5.9) are now
-   available, as are the scalar mass derivative and baseline identities
+   available, as are the actual nested baseline mass derivative, first variation,
+   and baseline identities
    (4.36), (5.18), (5.19), scalar heat equation, Lemma 5.9 and optimized time-zero
    endpoint. The actual scalar insertion and optimality input inequalities are
    now available; prove the nested mass/variance identities and uniform estimates
    of Section 4, then Lemma 5.8 and the remaining overlap/sign cases. Both neighbor
-   interval endpoint constructions are checked; the right-interval correction
-   adapter must still be assembled. Do not replace `2ψ(t)`
+   interval endpoint constructions and both correction adapters are checked.
+   Do not replace `2ψ(t)`
    with `2φ(t)`.
 2. Apply the completed conditional Proposition 2.3/convergence deduction and
    Step 23's exact equal-mass compression/strict-mass bridge once the uniform
