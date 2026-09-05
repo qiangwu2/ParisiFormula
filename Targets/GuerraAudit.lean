@@ -13,6 +13,9 @@ second interpolation, including (5.8) and (5.17), but not its covariance
 derivative inequality (Theorem 3.1) or Theorem 2.4.
 The terminal Hessian and covariance-algebra guards do not identify the
 algebraic expression with the derivative of the full nested pressure.
+The newer guards cover fixed-variance full-depth first derivatives, one-shared-level
+mixed derivatives, scalar mass calculus, the zero-lambda baseline, and the conditional
+finite-overlap deduction from a uniform Theorem 2.4 bound. They do not certify that bound.
 The full Parisi formula is deliberately not listed: Theorem 2.2 is still open.
 -/
 import Targets.ReplicaMeasure
@@ -21,6 +24,11 @@ import Targets.CoupledLambdaPressure
 import Targets.CoupledFiniteStep
 import Targets.TalagrandSecondInterpolation
 import Targets.SecondInterpolationAlgebra
+import Targets.CoupledCascadeDeriv
+import Targets.ParisiMassDerivative
+import Targets.ParisiStepSemigroup
+import Targets.TalagrandSection5Zero
+import Targets.TalagrandOverlapTail
 
 /--
 info: 'SpinGlass.Targets.guerra_identity' depends on axioms: [propext, Classical.choice, Quot.sound]
@@ -431,3 +439,145 @@ info: 'SpinGlass.Targets.section5Correction_eq' depends on axioms: [propext, Cla
 -/
 #guard_msgs in
 #print axioms SpinGlass.Targets.section5Correction_eq
+
+/--
+info: 'SpinGlass.Targets.hasDerivAt_parisiStep_mass_entropy' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.hasDerivAt_parisiStep_mass_entropy
+
+/--
+info: 'SpinGlass.Targets.integral_tiltWeight_mul_log_nonneg' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.integral_tiltWeight_mul_log_nonneg
+
+/--
+info: 'SpinGlass.Targets.monotoneOn_parisiStep_mass_pos' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.monotoneOn_parisiStep_mass_pos
+
+/--
+info: 'SpinGlass.Targets.hasDerivAt_parisiStep_parisiF_mass' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.hasDerivAt_parisiStep_parisiF_mass
+
+/--
+info: 'SpinGlass.Targets.parisiStep_add' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.parisiStep_add
+
+/--
+info: 'SpinGlass.Targets.section5V_zero_eq_two_section4T' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.section5V_zero_eq_two_section4T
+
+/--
+info: 'SpinGlass.Targets.section4T_baseline' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.section4T_baseline
+
+/--
+info: 'SpinGlass.Targets.section5V_zero_baseline' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.section5V_zero_baseline
+
+/--
+info: 'SpinGlass.Targets.card_attainableOverlaps_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.card_attainableOverlaps_le
+
+/--
+info: 'SpinGlass.Targets.guerraReplicaMeasure_finset_sum' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.guerraReplicaMeasure_finset_sum
+
+/--
+info: 'SpinGlass.Targets.guerraReplicaMeasure_overlapTail_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.guerraReplicaMeasure_overlapTail_le
+
+/--
+info: 'SpinGlass.Targets.talagrand_replica_tail_of_quadratic_bound' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.talagrand_replica_tail_of_quadratic_bound
+
+/--
+info: 'SpinGlass.Targets.talagrand_proposition_2_3_of_quadratic_bound' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.talagrand_proposition_2_3_of_quadratic_bound
+
+/--
+info: 'SpinGlass.Targets.guerraOverlapTail_eventually_of_quadratic_bound' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.guerraOverlapTail_eventually_of_quadratic_bound
+
+/--
+info: 'SpinGlass.Targets.guerraPhi_uniform_of_quadratic_bound' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.guerraPhi_uniform_of_quadratic_bound
+
+/--
+info: 'SpinGlass.Targets.pairedTiltMean_abs_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.pairedTiltMean_abs_le
+
+/--
+info: 'SpinGlass.Targets.CoupledParamDeriv.fieldCascade' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.CoupledParamDeriv.fieldCascade
+
+/--
+info: 'SpinGlass.Targets.hasDerivAt_constrainedPairFieldCascade' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.hasDerivAt_constrainedPairFieldCascade
+
+/--
+info: 'SpinGlass.Targets.constrainedPairFieldCascadeD_abs_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.constrainedPairFieldCascadeD_abs_le
+
+/--
+info: 'SpinGlass.Targets.hasDerivAt_pairedSecondMean' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.hasDerivAt_pairedSecondMean
+
+/--
+info: 'SpinGlass.Targets.hasDerivAt_pairedSharedMean' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.hasDerivAt_pairedSharedMean
+
+/--
+info: 'SpinGlass.Targets.constrainedPairSecond_abs_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.constrainedPairSecond_abs_le
+
+/--
+info: 'SpinGlass.Targets.hasDerivAt_sharedConstrainedPair_second' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.hasDerivAt_sharedConstrainedPair_second

@@ -776,9 +776,86 @@ through the positive-mass Gaussian cascade, the actual replica weights, and
 the nested integration-by-parts identity still require proof. Consequently
 neither Theorem~3.1 nor the pressure inequality (5.9) is marked complete.
 
+\begin{lemma}[Fixed-variance differentiation through the paired cascade]
+\lean{SpinGlass.Targets.hasDerivAt\_constrainedPairFieldCascade}\leanok
+\lean{SpinGlass.Targets.constrainedPairFieldCascadeD\_abs\_le}\leanok
+For fixed nonnegative masses and variances, the actual constrained cascade
+with disorder $U+aV$ is differentiable in $a$ at every finite depth.
+Its derivative is the iterated normalized tilt of the terminal Gibbs mean
+of $V(\sigma)+V(\tau)$ and has absolute value at most
+$2\max_\sigma|V(\sigma)|$, without a depth factor.
+At one second-field or shared step, the tilted observable derivative is
+\[
+ \partial_a\mathbb E_W G
+ =\mathbb E_W G'+m\bigl(\mathbb E_W(GA')-\mathbb E_WG\,\mathbb E_WA'\bigr).
+\]
+The actual one-shared-level mixed Hessian is proved as a specialization.
+\end{lemma}
+\begin{proof}
+Reuse the existing one-field parameter chain rules. An independent level
+is two transforms by Fubini; a shared level is one diagonal-shift transform
+at its actual mass. Propagate measurable growth and the derivative bound
+together, starting from the already proved finite-state calculus.
+\end{proof}
+This does not yet differentiate the varying-variance interpolation or
+perform the full nested Hessian/Stein calculation.
+
+\begin{lemma}[Scalar mass variation and the zero-lambda baseline]
+\lean{SpinGlass.Targets.hasDerivAt\_parisiStep\_mass\_entropy}\leanok
+\lean{SpinGlass.Targets.section5V\_zero\_eq\_two\_section4T}\leanok
+\lean{SpinGlass.Targets.section5V\_zero\_baseline}\leanok
+For a measurable linear-growth input $A$ held fixed, write
+$B_m(x)=m^{-1}\log\mathbb E e^{mA(x+\sqrt v g)}$ when $m\ne0$
+and let $W_m$ be its normalized exponential density. Then
+\[
+ \partial_m B_m(x)=\frac{\mathbb E[W_m A]-B_m(x)}m
+ =\frac{\mathbb E[W_m\log W_m]}{m^2}\ge0.
+\]
+For the actual split scalar recursion $T(v,m)$ of (4.35),
+\[
+ V(0,m,v)=2T(v,m),\qquad T(v,m_{r-1})=A_0(h),\qquad
+ V(0,m_{r-1},v)=2A_0(h).
+\]
+The baseline identities include zero masses and both variance endpoints.
+\end{lemma}
+\begin{proof}
+Mathlib's moment-generating-function calculus applies because the existing
+Gaussian growth estimates give all exponential moments. Normalization and
+$w\log w\ge w-1$ give the entropy sign. For the zero-lambda identities,
+reuse independent-step factorization and diagonal mass cancellation.
+The scalar Gaussian semigroup merges the two split increments at equal
+mass; its zero-mass expectation branch follows from Gaussian convolution.
+\end{proof}
+Nested Section~4 mass/variance identities and optimality estimates, as well
+as the identification with $U'$ in Lemma~5.8, remain separate obligations.
+
+\begin{lemma}[Conditional finite-overlap deduction of Proposition 2.3]
+\lean{SpinGlass.Targets.talagrand\_proposition\_2\_3\_of\_quadratic\_bound}\leanok
+\lean{SpinGlass.Targets.guerraPhi\_uniform\_of\_quadratic\_bound}\leanok
+Fix a scheme with positive first mass. Suppose the Theorem~2.4 quadratic
+bound holds eventually in $N$, with one $K>0$ uniform in the replica level
+and $0<t<t_0<1$. For $\eta>0$, Proposition~2.5 and a finite-overlap union give
+\[
+ \mu_r\!\left((R-q_r)^2\ge2K(\psi-\varphi_N)+\eta\right)
+ \le (N+1)C\exp(-N/C),
+\]
+where $C$ is the existing event constant for deficit $\eta/K$.
+Consequently the per-level and mass-weighted tails are eventually at most
+$\eta$, uniformly in $t$, and $\varphi_N\to\psi$ uniformly on $[0,t_0]$.
+\end{lemma}
+\begin{proof}
+Ising overlaps have at most $N+1$ distinct values. The displayed threshold
+converts the bound relative to $2\psi$ into a pressure deficit $\eta/K$
+relative to $2\varphi_N$. Apply Proposition~2.5, finite additivity of the
+actual replica functional, and exponential decay. Reuse the proved
+mass-weighted conversion and endpoint-safe convergence argument.
+\end{proof}
+This certifies the deduction only: the uniform quadratic estimate and
+the reduction removing the positive-first-mass restriction remain unproved.
+
 The remaining work follows Proposition~2.3 and the coupled-replica concentration
 argument in \S3--\S5 of \cite{Tal06}: prove the a priori bound of Theorem~2.4,
-then combine it with Proposition~2.5 to obtain Proposition~2.3. The reduction
+then apply the checked conditional deduction of Proposition~2.3. The reduction
 for coincident scheme levels in (2.19) also remains to be formalised before
 the concentration hypothesis is available for every admissible scheme.
 The active RSAT dependency includes

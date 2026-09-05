@@ -34,6 +34,12 @@ transitive dependencies for the standard Lean axioms only.
 | `AT.pairOverlapMatrix_self`, `spin_sum_eq_mul_overlap`, `gtCovariance_remainder` (`Bound/Basic.lean`) | Reused in `CoupledCovariance.lean` for the constrained diagonal, independent/signed-shared field contractions, and entrywise square completion. The SK spectral contraction reuses the already proved local `sk_covariance_spectral_sum`. |
 | `Finset.sum_range_by_parts`, `sum_range_sub` (Mathlib) | Reused in `SecondInterpolationAlgebra.lean` for the mass-weighted telescoping identity. The inserted correction is proved equal to the existing `2 * parisiCorrection` plus the split-level term in (5.9). |
 | `AT.hasDerivAt_gtOrdinaryPressure_ibp`, `gtOrdinaryPressure_one_le_zero_add_shiftedDiagonalGap` (`Bound/Comparison.lean`) | Generic finite-state covariance interpolation, but for the ordinary expected log partition, not an arbitrary nested positive-mass cascade. Reuse where its pressure matches; extend only the missing cascade layer. |
+| `hasDerivAt_mgf`, `integrable_pow_mul_exp_of_mem_interior_integrableExpSet` (Mathlib `MGFAnalytic`) | `ParisiMassDerivative.lean` proves the actual scalar mass derivative. Existing Gaussian linear-growth integrability makes the exponential-integrability domain all of `ℝ`; no new dominated-differentiation proof. |
+| `Real.self_sub_one_le_mul_log` (Mathlib) | Nonnegativity of the genuine normalized tilt's entropy, hence scalar mass monotonicity. Integrability and density normalization are checked. |
+| Local `Parisi.T_add_of_hasLinearGrowth`, Mathlib `integral_conv`, `gaussianReal_conv_gaussianReal` | `ParisiStepSemigroup.lean` adapts the existing nonzero-mass semigroup and proves the actual expectation branch at mass zero. Both variance endpoints are allowed. |
+| Local `independentStepPi_add`, `sharedStepPi_diag`, `parisiStepPi_sum`, `coupledFieldCascade_eq_sum` | `TalagrandSection5Zero.lean` derives the actual zero-lambda factorization (5.18); the semigroup then restores the original recursion for (4.36), (5.19). |
+| Local `hasDerivAt_parisiStepPi_param`, `hasDerivAt_tiltAvg_param_pi` | `CoupledCascadeDeriv.lean` adapts the first derivative through independent/shared levels and the tilted covariance rules, retaining the actual mass coefficient. The finite-state terminal supplies concrete derivative inputs. |
+| Local `talagrand_proposition_2_5`, replica-weighted-tail conversion, and endpoint-safe convergence; Mathlib exponential asymptotics | `TalagrandOverlapTail.lean` sums over at most `N+1` attainable Ising overlaps and proves the full conditional concentration/convergence deduction. The uniform quadratic bound and positive first mass remain hypotheses. |
 
 The final `AT.twoReplica_GT_bound` has RS smart-path hypotheses (one overlap
 parameter, positive `β` and `h`, and an interior RS overlap). It cannot replace
@@ -80,15 +86,39 @@ are deliberately statements about explicit normalized finite replica weights:
 their expression has not been identified with `η′`. This is the remaining
 nested differentiation/IBP obligation, not an assumption or relocated placeholder.
 
-The local `CascadeDerivPi.hasDerivAt_parisiStepPi_param` and
-`CascadeSecondPi.hasDerivAt_tiltAvg_param_pi` already justify first/second
-parameter differentiation through one fixed-variance Gaussian step. These are
-reuse candidates for the next induction through independent/shared steps;
-the covariance formula must retain the extra mass-weighted covariance term.
+The local `hasDerivAt_parisiStepPi_param` and `hasDerivAt_tiltAvg_param_pi`
+are now reused in `CoupledCascadeDeriv.lean`: first disorder derivatives
+propagate through the entire actual paired cascade with fixed variances,
+and tilted-observable derivatives retain the mass-weighted covariance term.
+This is not yet the varying-variance derivative of the second interpolation;
+full nested Hessian propagation and the Stein/replica identification remain open.
 The RSAT half-step modules were inspected: they supply a single fixed half-mass
 transform, not the arbitrary finite sequence needed here. Their final comparison
 does not close the nested-cascade gap. Do not repeat the finite-state or
 square-completion proofs already connected by this step.
+
+### Scalar variation, baseline, and finite-overlap assembly
+
+`ParisiMassDerivative.lean` differentiates one mass while its input function
+is fixed, including every actual `parisiF` input. It does not assert the nested
+Section 4 variation or stationarity identities. The derivative theorem assumes
+nonzero mass; entropy integrability includes mass zero, and the separate scalar
+semigroup covers zero mass without identifying it with the incorrect totalized
+operator `Parisi.T 0`.
+
+The zero-lambda formulas were independently checked against pp. 246 and 253
+of the Annals paper: local forward index `p=k+2-j`, total depth `k+3`, and
+split `k+3-r` give independent inserted/inner levels and shared outer levels.
+`section4T` is the actual scalar nested integral, not half of `V` by definition.
+Its Lean argument order is mass then variance, while the paper writes `T(v,m)`.
+The outer mass-zero expectation and all split-variance endpoints are retained.
+
+The Proposition 2.3 assembly follows p. 232. The bound is relative to `2ψ`,
+not `2φ`: the threshold `2K(ψ−φ)+η` supplies the `η/K` deficit needed by
+Proposition 2.5. Counting overlap values gives the sharper Ising factor `N+1`
+(the paper uses the sufficient `2N+1`); no exponential spin-pair factor is lost.
+The resulting fixed-scheme convergence is conditional on the uniform quadratic
+estimate and `s.m 1 > 0`, not a proof of the remaining Theorem 2.4 or (2.19).
 
 ## Historical copies and local ports
 

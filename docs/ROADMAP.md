@@ -34,8 +34,14 @@ existing convergence deduction. The a priori bound of Theorem 2.4 is in progress
 Step 18 supplies the §5 lambda endpoint construction and its comparison for the
 existing cascade, but not the second interpolation or the strict improvement.
 Step 19 reuses RSAT's general analytic framework to supply finite paired-field
-recursions, their site tensorization, and lambda differentiation. It does not
-yet instantiate the new interpolation's coefficients or prove its derivative bound.
+recursions, their site tensorization, and lambda differentiation. Step 20
+instantiates the second interpolation and proves both endpoints; Step 21
+proves the terminal Hessian and covariance algebra. Step 22 proves full-depth
+fixed-variance first disorder derivatives, scalar mass differentiation,
+zero-lambda identities (5.18)--(5.19), and the conditional finite-overlap
+deduction of Proposition 2.3 and convergence. The varying-variance nested
+Hessian/Stein identification, Section 4--5 optimality estimates, and
+coincident-level reduction are still missing.
 
 **Milestone 1 (Targets 1b, 1c) is *not* on this critical path.**  Target 4 is strictly
 stronger than 1c — convergence to `parisiValue` subsumes existence of a limit — and deriving
@@ -846,21 +852,72 @@ Validation: `bash scripts/check.sh` passes (3,809 build jobs), including fifteen
 new standard-axiom guards. No new placeholders or axioms were added. README,
 provenance, and blueprint are synchronized with the precise proved statements.
 
+**Step 22 (2026-09-04): parallel analytic and concentration assembly.**
+
+Independent agents developed fixed-variance nested derivatives, scalar mass
+variation, and the finite-overlap deduction while the main agent assembled the
+Section 5 zero-lambda identities. File ownership was separated; the zero-lambda
+indexing and mass normalization received an independent read-only review.
+
+* `Targets/CoupledCascadeDeriv.lean` proves the actual first disorder derivative
+  through every level of `coupledFieldCascade`, with bound `2 * uAbs V`
+  independent of cascade depth. Joint measurability, growth, and normalized-tilt
+  bounds are discharged for the actual constrained terminal. The existing
+  one-field chain rules and independent-step Fubini are reused. The second-field
+  and shared tilted-observable derivatives retain the mass covariance term;
+  an actual one-shared-level mixed Hessian is also proved, including mass zero.
+* `Targets/ParisiMassDerivative.lean` reuses Mathlib's analytic moment-generating
+  function theorem to differentiate the actual scalar step in any nonzero mass.
+  The derivative equals normalized tilt entropy divided by `m²`; entropy
+  integrability, normalization, nonnegativity and positive-mass monotonicity
+  are checked. Every actual `parisiF` input is covered. This holds with the
+  input fixed, not yet for all nested Section 4 variations.
+* `Targets/ParisiStepSemigroup.lean` supplies the scalar semigroup including
+  zero masses and zero variances. The nonzero branch adapts the already proved
+  linear-growth semigroup; the expectation branch uses Mathlib convolution.
+* `Targets/TalagrandSection5Zero.lean` defines the actual scalar `T(v,m)` of
+  (4.35) and proves **(5.18)** `V(0,m,v)=2T(v,m)`. At the original mass the
+  two split increments merge by the semigroup, proving **(4.36)** and **(5.19)**.
+  The outer zero-mass level and both split-variance endpoints are included.
+  The local function takes mass before variance, unlike the paper's notation.
+* `Targets/TalagrandOverlapTail.lean` proves the conditional deduction of
+  **Proposition 2.3 from a uniform Theorem 2.4 bound** and then uniform convergence
+  on `[0,t₀]` for a fixed scheme with `s.m 1 > 0`. There are at most `N+1`
+  attainable Ising overlaps. The threshold `2K(ψ−φ)+η` yields the `η/K`
+  deficit required by Proposition 2.5, and the finite-overlap union is bounded
+  by `(N+1) C exp(-N/C)`, uniformly in time and replica level. The mass-weighted
+  conversion introduces no additional factor in the number of RSB levels.
+
+**Still not proved:** the full-depth mixed Hessian, varying-variance derivative,
+Gaussian Stein/averaging and actual replica identification needed for Theorem 3.1;
+the Section 4 nested variations and optimality estimates; Lemmas 5.8--5.9 and
+the remaining interval/sign constructions; the coincident-level reduction.
+The conditional Proposition 2.3 theorem assumes the uniform quadratic bound,
+not its conclusion, and does not claim Theorem 2.4. The original Theorem 2.2
+placeholder remains exactly where it was; none was moved into a helper.
+
+Validation: `bash scripts/check.sh` passes (3,815 build jobs), with twenty-three
+new standard-axiom regression guards. All five new modules compile without
+warnings. The blueprint compiles without warnings; README layout/status,
+roadmap and provenance are synchronized. No placeholders or axioms were added,
+and no dependency pins or upstream sources were changed.
+
 **Remaining work, following the Annals argument:**
 
 1. Prove the a priori two-replica bound of Theorem 2.4 using §3–§5 and the scheme's
    optimality. The imported RS-level `twoReplica_GT_bound` is not this general result.
-   Next concrete step: prove the nested-cascade covariance derivative estimate
-   for `section5Interpolation`: propagate the terminal derivatives through
-   the nested Gaussian steps, construct its normalized replica weights, and
+   Next concrete step: extend the fixed-variance first derivative and one-level
+   Hessian from Step 22 to the full nested Hessian and varying-variance derivative
+   of `section5Interpolation`, construct its normalized replica weights, and
    prove the derivative equals the covariance expression from Step 21.
    Then prove the endpoint-safe integration of that derivative. The square
    completion, mass telescoping, and inserted correction of (5.9) are now
-   available. Develop the Section 4 variation/optimality estimates and the
+   available, as are the scalar mass derivative and baseline identities
+   (4.36), (5.18), (5.19). Develop the Section 4 variation/optimality estimates and the
    remaining Section 5 interval/sign constructions. Do not replace `2ψ(t)`
    with `2φ(t)`.
-2. Combine those bounds to obtain Proposition 2.3; Step 14 now supplies its conversion
-   to the mass-weighted form. Handle coincident masses/overlap levels via (2.19), or
+2. Apply Step 22's completed conditional Proposition 2.3/convergence deduction
+   once the uniform Theorem 2.4 bound is proved. Handle coincident masses/overlap levels via (2.19), or
    prove the needed bound directly without strictness. This reduction is not yet
    formalised merely because the convergence lemma accepts degenerate schemes.
 3. Supply the concentration hypothesis and replace the original Theorem 2.2

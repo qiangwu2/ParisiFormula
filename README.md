@@ -83,6 +83,24 @@ proves the sign and telescoping calculation on pp. 240–241 and identifies the
 inserted correction in (5.9). **The missing analytic step is still to identify
 the derivative of the full nested pressure with this covariance expression.**
 The algebraic bound is not presented as a proved bound on `η′`.
+
+[`Targets/CoupledCascadeDeriv.lean`](Targets/CoupledCascadeDeriv.lean) now propagates
+the actual constrained-terminal first disorder derivative through every paired
+level with fixed variances, retaining zero masses and a depth-independent bound.
+The tilted-observable rules retain the mass covariance term.
+[`Targets/ParisiMassDerivative.lean`](Targets/ParisiMassDerivative.lean) reuses
+Mathlib's moment-generating-function calculus for the scalar mass derivative,
+its entropy identity and nonnegativity; nested Section 4 optimality estimates
+are not yet proved.
+[`Targets/TalagrandSection5Zero.lean`](Targets/TalagrandSection5Zero.lean) proves
+**(5.18)** `V(0,m,v)=2T(v,m)` and **(5.19)** `V(0,m_(r−1),v)=2A₀(h)`.
+The baseline uses the Gaussian semigroup with zero mass and zero variance included.
+[`Targets/TalagrandOverlapTail.lean`](Targets/TalagrandOverlapTail.lean) now proves
+the finite-overlap deduction from a uniform Theorem 2.4 quadratic bound to
+Proposition 2.3 and uniform convergence on `[0,t₀]`, for a fixed scheme with
+positive first mass. The quadratic bound and the coincident-level reduction
+remain open; no unconditional completion of Theorem 2.2 is claimed.
+
 Development follows the reuse-first rules in [`AGENTS.md`](AGENTS.md); the concrete
 reuse inventory is recorded in [`docs/PROVENANCE.md`](docs/PROVENANCE.md).
 
@@ -149,7 +167,8 @@ formula. `GuerraAudit` checks that Theorem 2.1 and both upper bounds depend only
 checks Lemma 2.7, the replica-measure decomposition, Lemma 2.6 including concentration
 and change of law, interior-time Proposition 2.5, the §5 λ endpoint/pressure comparison,
 the imported-analytic finite paired recursion and its tensorization,
-and the conditional convergence lemmas.
+the fixed-variance nested disorder derivatives, scalar mass derivative and
+zero-lambda identities, and the conditional finite-overlap/convergence deductions.
 This does not certify the still-open Theorem 2.4 or Proposition 2.3. CI requires both
 local libraries to build; it does not ignore target or audit failures.
 
@@ -219,6 +238,11 @@ ParisiFormula/
 │   ├── ConstrainedFiniteState.lean   RSAT-backed first/second derivatives of the constrained terminal
 │   ├── CoupledCovariance.lean        four-overlap covariance, square completion and terminal Hessian
 │   ├── SecondInterpolationAlgebra.lean  algebraic remainder sign, telescoping and (5.9) correction
+│   ├── CoupledCascadeDeriv.lean       fixed-variance nested disorder derivatives and tilted covariance
+│   ├── ParisiMassDerivative.lean      scalar mass derivative, entropy and monotonicity via Mathlib
+│   ├── ParisiStepSemigroup.lean       scalar semigroup including zero masses and variances
+│   ├── TalagrandSection5Zero.lean     actual scalar T and zero-lambda identities (5.18), (5.19)
+│   ├── TalagrandOverlapTail.lean      finite-overlap deduction from a uniform Theorem 2.4 bound
 │   └── GuerraAudit.lean              axiom guards for completed critical-path results
 ├── .lake/packages/              generated dependency checkout; not tracked
 │   ├── mathlib/                      Mathlib v4.32.1
