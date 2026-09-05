@@ -46,8 +46,17 @@ SK-disorder formulation. The change of Gaussian law and the outer-average identi
 are proved, giving `Ψ(t,u) ≤ 2φ(t) − ε ⇒ μ_r(R=u) ≤ K exp(-N/K)` with explicit `K`
 independent of `N` and `t`. The interior-time proposition is sufficient for the
 existing endpoint-safe convergence deduction.
-The next major task is **Theorem 2.4**, followed by Proposition 2.3 and the reduction
-for coincident scheme levels. Theorem 2.2 itself remains open.
+**Theorem 2.4 is now in progress:**
+[`Targets/CoupledLambda.lean`](Targets/CoupledLambda.lean) proves the λ-interacting
+single-site formula from §5, exact factorization at zero interpolation time, and
+the overlap-penalty comparison through the existing coupled cascade.
+[`Targets/CoupledLambdaPressure.lean`](Targets/CoupledLambdaPressure.lean) proves
+the averaged comparison `Ψ(t,u) ≤ Pλ(t) − λu`, with `P₀(t) = 2φ(t)` and
+a size-independent 1-Lipschitz bound in λ. These results do **not** yet give
+Theorem 2.4's improvement relative to `2ψ(t)`: the second interpolation of
+Theorem 3.1 and the §4–§5 parameter-variation estimates remain open.
+Proposition 2.3 and the reduction for coincident scheme levels follow those inputs.
+Theorem 2.2 itself remains open.
 
 ## Project milestones
 
@@ -110,7 +119,8 @@ do not mean a failed build, but a successful build alone does not certify the fu
 formula. `GuerraAudit` checks that Theorem 2.1 and both upper bounds depend only on
 `propext`, `Classical.choice`, and `Quot.sound`—not `sorryAx` or extra axioms. It also
 checks Lemma 2.7, the replica-measure decomposition, Lemma 2.6 including concentration
-and change of law, interior-time Proposition 2.5, and the conditional convergence lemmas.
+and change of law, interior-time Proposition 2.5, the §5 λ endpoint/pressure comparison,
+and the conditional convergence lemmas.
 This does not certify the still-open Theorem 2.4 or Proposition 2.3. CI requires both
 local libraries to build; it does not ignore target or audit failures.
 
@@ -169,6 +179,8 @@ ParisiFormula/
 │   ├── CoupledGaussianLaw.lean      spectral/abstract disorder joint-law identity
 │   ├── CoupledOuterExpectation.lean  outer-average, pressure-gap and replica identities
 │   ├── TalagrandProposition25.lean   Lemma 2.6 and interior-time Proposition 2.5
+│   ├── CoupledLambda.lean           Section 5 spin formula, endpoint and cascade penalty
+│   ├── CoupledLambdaPressure.lean   averaged lambda comparison, normalization and stability
 │   └── GuerraAudit.lean              axiom guards for completed critical-path results
 ├── .lake/packages/              generated dependency checkout; not tracked
 │   ├── mathlib/                      Mathlib v4.32.1

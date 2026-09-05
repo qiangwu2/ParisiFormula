@@ -30,7 +30,9 @@ cascade and the deterministic part of Lemma 2.6 are now proved as well (Step 15)
 Gaussian concentration (Step 16) and its transfer to the abstract disorder (Step 17)
 are now proved. Lemma 2.6 holds on `[0,1]`, and Proposition 2.5 holds on `(0,1)` with
 an explicit size/time-independent constant. This is the time domain needed by the
-existing convergence deduction. Next: the a priori bound of Theorem 2.4.
+existing convergence deduction. The a priori bound of Theorem 2.4 is in progress:
+Step 18 supplies the §5 lambda endpoint construction and its comparison for the
+existing cascade, but not the second interpolation or the strict improvement.
 
 **Milestone 1 (Targets 1b, 1c) is *not* on this critical path.**  Target 4 is strictly
 stronger than 1c — convergence to `parisiValue` subsumes existence of a limit — and deriving
@@ -695,10 +697,45 @@ existing `guerraPhi_uniform_of_overlap_concentration` hypothesis, which only ask
 concentration on `(0,t₀)` and already concludes convergence on `[0,t₀]`.
 No additional endpoint concentration result is needed for that deduction.
 
+**Step 18 (2026-09-04): the Section 5 lambda endpoint construction.**
+
+`Targets/CoupledLambda.lean` proves:
+
+* The genuine four-term, two-spin partition identity (5.14), positivity of its logarithm
+  argument, and the terminal derivative at zero coupling, `tanh(x) * tanh(y)`.
+* Factorization of the interacting `N`-site partition sum into those one-site
+  factors, with the exact `2 N log 2` normalization at zero interpolation time.
+* For every real `λ`, the actual constrained base is bounded by the interacting
+  unrestricted base minus `λ N u`. Attainable overlap and `N > 0` are explicit.
+* Additive-constant equivariance through independent and shared cascade steps,
+  including zero mass, and hence the same penalty comparison at every depth.
+* A uniform `N |λ-μ|` bound through the cascade, without assuming replica
+  factorization when `λ ≠ 0`.
+
+`Targets/CoupledLambdaPressure.lean` proves joint measurability and integrability
+in the abstract SK disorder, then obtains `Ψ(t,u) ≤ Pλ(t) - λu`, `P₀(t) = 2φ(t)`,
+and `|Pλ(t)-Pμ(t)| ≤ |λ-μ|`, for the existing cascade on `[0,1]` (with positive
+size and an admissible split where required). Axiom guards cover the endpoint
+identities and the averaged results.
+
+This is a supporting construction for (5.17), **not** a proof of (5.17) for
+Talagrand's new interpolating scheme. In particular, the existing `t = 0`
+factorization is not an identification of his second interpolation's `v = 0`
+endpoint. Still needed are the inserted level and modified Gaussian variances
+of (5.5)–(5.13), their one-site cascade factorization, Theorem 3.1's derivative
+bound, and the optimality/variation estimates in §4–§5. The terminal derivative
+proved here is not the full derivative-through-cascade identity of Lemma 5.8.
+
 **Remaining work, following the Annals argument:**
 
 1. Prove the a priori two-replica bound of Theorem 2.4 using §3–§5 and the scheme's
    optimality. The imported RS-level `twoReplica_GT_bound` is not this general result.
+   Next concrete step: construct the second, fixed-overlap interpolation of
+   Theorem 3.1 with independently specified masses/variances and shared or
+   sign-reversed paired fields; connect its endpoints to the existing pressure
+   and the Section 5 single-site construction. The present `coupledCascade`
+   fixes its variance increments to the original scheme and cannot simply be
+   reused unchanged for the inserted-level construction.
 2. Combine those bounds to obtain Proposition 2.3; Step 14 now supplies its conversion
    to the mass-weighted form. Handle coincident masses/overlap levels via (2.19), or
    prove the needed bound directly without strictness. This reduction is not yet

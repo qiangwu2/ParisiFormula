@@ -559,6 +559,58 @@ the formalised concentration-to-convergence implication only needs concentration
 on $(0,t_0)$ and already concludes convergence on $[0,t_0]$.
 \end{proposition}
 
+\begin{lemma}[The Section 5 single-site construction]
+\lean{SpinGlass.Targets.coupledSite\_spin\_sum}\leanok
+\lean{SpinGlass.Targets.lambdaCoupledBase\_time\_zero}\leanok
+Define
+\[
+A^*_{\lambda}(x,y)=\log\bigl(\cosh x\cosh y\cosh\lambda
+  +\sinh x\sinh y\sinh\lambda\bigr).
+\]
+Its logarithm argument is strictly positive, and
+\[
+\sum_{a,b=\pm1}e^{ax+by+\lambda ab}=4e^{A^*_{\lambda}(x,y)}.
+\]
+The unrestricted interacting partition function at zero interpolation time
+therefore has logarithm
+\[
+2N\log 2+\sum_i A^*_{\lambda}(x_i+h,y_i+h).
+\]
+Also $A^*_0(x,y)=\log\cosh x+\log\cosh y$, and its derivative in $\lambda$
+at zero is $\tanh x\tanh y$.
+\end{lemma}
+
+\begin{proposition}[Lambda comparison for the existing coupled cascade]
+\lean{SpinGlass.Targets.constrainedCascade\_le\_lambda}\leanok
+\lean{SpinGlass.Targets.constrainedPhi\_le\_lambdaCoupledPhi}\leanok
+Let $P_{\lambda}(t)$ denote the normalized expected pressure of the existing
+coupled cascade with terminal energy
+$H_t(\sigma)+H_t(\tau)+\lambda\sum_i\sigma_i\tau_i$.
+For $N>0$, attainable $u$, $0\le t\le1$, and $d\le k+1$,
+\[
+\Psi(t,u)\le P_{\lambda}(t)-\lambda u,\qquad
+P_0(t)=2\varphi(t),\qquad
+|P_{\lambda}(t)-P_{\mu}(t)|\le|\lambda-\mu|.
+\]
+\end{proposition}
+\begin{proof}
+On $R_{1,2}=u$ the extra interaction equals $\lambda Nu$, so the restricted
+partition sum is at most $e^{-\lambda Nu}$ times the unrestricted interacting
+sum. Monotonicity and additive-constant equivariance propagate this through
+every cascade level, including zero mass. Gaussian-disorder integrability
+follows from the bound $N|\lambda|$ relative to the unrestricted cascade.
+Integration gives the pressure comparison; Lemma~2.7 gives the normalization.
+The terminal energies change by at most $N|\lambda-\mu|$, and cascade
+nonexpansiveness gives the final bound after division by $N$.
+\end{proof}
+
+These are supporting results for the endpoint argument in (5.17), not a proof
+of that equation for the new interpolation. The inserted level, modified
+Gaussian variances, second-interpolation endpoint identifications, and
+derivative bound of Theorem~3.1 remain open. In particular $P_0=2\varphi$
+does not supply Theorem~2.4's strict improvement relative to $2\psi$.
+The terminal derivative above is not the full Lemma~5.8 cascade identity.
+
 The remaining work follows Proposition~2.3 and the coupled-replica concentration
 argument in \S3--\S5 of \cite{Tal06}: prove the a priori bound of Theorem~2.4,
 then combine it with Proposition~2.5 to obtain Proposition~2.3. The reduction

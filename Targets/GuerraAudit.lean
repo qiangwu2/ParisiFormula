@@ -8,10 +8,13 @@ interior times, and the deduction of Theorem 2.2 from an explicit overlap-concen
 The latter guards certify the implication, not its unproved concentration input.
 The Lemma 2.6 guards include Gaussian concentration and its change of law to
 the abstract disorder, not just a conditional or standard-coordinate estimate.
+The Section 5 guards cover the lambda endpoint construction and the comparison
+for the existing cascade; they do not assert Theorem 3.1 or Theorem 2.4.
 The full Parisi formula is deliberately not listed: Theorem 2.2 is still open.
 -/
 import Targets.ReplicaMeasure
 import Targets.TalagrandProposition25
+import Targets.CoupledLambdaPressure
 
 /--
 info: 'SpinGlass.Targets.guerra_identity' depends on axioms: [propext, Classical.choice, Quot.sound]
@@ -166,3 +169,51 @@ info: 'SpinGlass.Targets.talagrand_proposition_2_5' depends on axioms: [propext,
 -/
 #guard_msgs in
 #print axioms SpinGlass.Targets.talagrand_proposition_2_5
+
+/--
+info: 'SpinGlass.Targets.coupledSite_spin_sum' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.coupledSite_spin_sum
+
+/--
+info: 'SpinGlass.Targets.hasDerivAt_coupledSite_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.hasDerivAt_coupledSite_zero
+
+/--
+info: 'SpinGlass.Targets.lambdaCoupledBase_time_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.lambdaCoupledBase_time_zero
+
+/--
+info: 'SpinGlass.Targets.constrainedBase_time_zero_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.constrainedBase_time_zero_le
+
+/--
+info: 'SpinGlass.Targets.constrainedCascade_le_lambda' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.constrainedCascade_le_lambda
+
+/--
+info: 'SpinGlass.Targets.lambdaCoupledPhi_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.lambdaCoupledPhi_zero
+
+/--
+info: 'SpinGlass.Targets.constrainedPhi_le_lambdaCoupledPhi' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.constrainedPhi_le_lambdaCoupledPhi
+
+/--
+info: 'SpinGlass.Targets.lambdaCoupledPhi_dist_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.lambdaCoupledPhi_dist_le
