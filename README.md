@@ -39,9 +39,15 @@ Gaussian concentration and the exponential expectation estimate in **standard Ga
 coordinates**, using the SK spectral coefficients and shared outer field. The constants
 are explicit and uniform in `N` and `t`. Joint measurability, integrability, and the
 required `O(√N)` Lipschitz bound are proved, not assumed.
-To finish Lemma 2.6 / Proposition 2.5, these expectations must still be identified with
-the project's abstract disorder and replica measures. The a priori bound of Theorem 2.4
-also remains open.
+
+[`Targets/TalagrandProposition25.lean`](Targets/TalagrandProposition25.lean) now completes
+**Lemma 2.6** for `0 ≤ t ≤ 1` and **Proposition 2.5** for `0 < t < 1`, in the abstract
+SK-disorder formulation. The change of Gaussian law and the outer-average identities
+are proved, giving `Ψ(t,u) ≤ 2φ(t) − ε ⇒ μ_r(R=u) ≤ K exp(-N/K)` with explicit `K`
+independent of `N` and `t`. The interior-time proposition is sufficient for the
+existing endpoint-safe convergence deduction.
+The next major task is **Theorem 2.4**, followed by Proposition 2.3 and the reduction
+for coincident scheme levels. Theorem 2.2 itself remains open.
 
 ## Project milestones
 
@@ -103,10 +109,10 @@ lake build Targets.GuerraAudit
 do not mean a failed build, but a successful build alone does not certify the full Parisi
 formula. `GuerraAudit` checks that Theorem 2.1 and both upper bounds depend only on
 `propext`, `Classical.choice`, and `Quot.sound`—not `sorryAx` or extra axioms. It also
-checks Lemma 2.7, the replica-measure decomposition, the deterministic Lemma 2.6
-comparison, and the conditional convergence lemmas. This does not certify the missing
-concentration estimates. CI requires both local
-libraries to build; it does not ignore target or audit failures.
+checks Lemma 2.7, the replica-measure decomposition, Lemma 2.6 including concentration
+and change of law, interior-time Proposition 2.5, and the conditional convergence lemmas.
+This does not certify the still-open Theorem 2.4 or Proposition 2.3. CI requires both
+local libraries to build; it does not ignore target or audit failures.
 
 Open the folder in VS Code and click into any `.lean` file: the Lean extension shows the
 proof state live in the side panel ("Lean Infoview").
@@ -160,6 +166,9 @@ ParisiFormula/
 │   ├── CoupledLipschitz.lean        nonexpansiveness and Gaussian-input stability of cascades
 │   ├── CoupledMeasurability.lean    joint measurability in disorder and replica fields
 │   ├── CoupledConcentration.lean    Gaussian tail and event decay in standard coordinates
+│   ├── CoupledGaussianLaw.lean      spectral/abstract disorder joint-law identity
+│   ├── CoupledOuterExpectation.lean  outer-average, pressure-gap and replica identities
+│   ├── TalagrandProposition25.lean   Lemma 2.6 and interior-time Proposition 2.5
 │   └── GuerraAudit.lean              axiom guards for completed critical-path results
 ├── .lake/packages/              generated dependency checkout; not tracked
 │   ├── mathlib/                      Mathlib v4.32.1

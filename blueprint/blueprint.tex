@@ -519,12 +519,49 @@ Joint measurability of the disorder-dependent cascade and integrability of
 the gap and event are proved separately.
 \end{proof}
 
-Lemma~2.6 is not yet complete in the project's abstract disorder formulation:
-the standard-coordinate expectations must still be identified with the law of
-\texttt{sk.U} and the outer zero-mass average.
+\begin{lemma}[Lemma 2.6 in the abstract disorder formulation]
+\lean{SpinGlass.Targets.coupledGaussian\_pair\_map}\leanok
+\lean{SpinGlass.Targets.talagrand\_lemma\_2\_6}\leanok
+For $N>0$, attainable $u$, $m_1>0$, and $0\le t\le1$, suppose
+$\E J_{1,u}\le\E J_1-\varepsilon N$, where $\varepsilon>0$.
+Then the original tilted event expectation satisfies
+\[
+\E\bigl(V_1\cdots V_k\langle1_{R_{1,2}=u}\rangle\bigr)
+\le K e^{-N/K},\qquad
+K=2+\frac1r,\quad
+r=\min\left(\frac{m_1\varepsilon}{4},
+\frac{\varepsilon^2}{128(1+|\beta|)^2}\right)>0.
+\]
+The constant is independent of $N,t,u$ and the replica split.
+\end{lemma}
+
+\begin{proof}[Formalised change of law]
+The abstract disorder's independent Gaussian coordinates have the same product
+law as the scaled standard coordinates, including zero spectral variances.
+The joint-law identity preserves an independent outer field. At the last cascade
+level the mass is zero and the increment is shared, so Fubini identifies the
+standard-coordinate gap mean with $N(\Psi(t,u)-2\varphi(t))$ and the event mean
+with the original tilted expectation. The constrained and unrestricted pressures
+are proved integrable, justifying the subtraction of their expectations.
+Apply the preceding Gaussian-coordinate estimate and use the displayed $K$.
+\end{proof}
+
+\begin{proposition}[Proposition 2.5 at interior times]
+\lean{SpinGlass.Targets.talagrand\_proposition\_2\_5}\leanok
+Under the same positivity and attainability conditions, for $0<t<1$,
+\[
+\Psi(t,u)\le2\varphi(t)-\varepsilon
+\quad\Longrightarrow\quad
+\mu_r(R_{1,2}=u)\le K e^{-N/K}.
+\]
+This follows from Lemmas~2.6 and~2.7. The interior-time domain is sufficient:
+the formalised concentration-to-convergence implication only needs concentration
+on $(0,t_0)$ and already concludes convergence on $[0,t_0]$.
+\end{proposition}
+
 The remaining work follows Proposition~2.3 and the coupled-replica concentration
-argument in \S3--\S5 of \cite{Tal06}: complete this change of law,
-deduce Proposition~2.5, and prove the a priori bound of Theorem~2.4. The reduction
+argument in \S3--\S5 of \cite{Tal06}: prove the a priori bound of Theorem~2.4,
+then combine it with Proposition~2.5 to obtain Proposition~2.3. The reduction
 for coincident scheme levels in (2.19) also remains to be formalised before
 the concentration hypothesis is available for every admissible scheme.
 The active RSAT dependency includes

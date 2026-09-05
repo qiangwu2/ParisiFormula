@@ -3,15 +3,15 @@
 
 These guards are part of `lake build Targets`. They reject any reintroduced
 `sorryAx` or additional axiom in Theorem 2.1, its upper-bound consequences,
-Lemma 2.7, the replica-measure decomposition, the deterministic comparison in
-Lemma 2.6, and the deduction of Theorem 2.2 from an explicit overlap-concentration hypothesis.
+Lemma 2.7, the replica-measure decomposition, Lemma 2.6, Proposition 2.5 on
+interior times, and the deduction of Theorem 2.2 from an explicit overlap-concentration hypothesis.
 The latter guards certify the implication, not its unproved concentration input.
-The Lemma 2.6 guards include Gaussian concentration in standard coordinates;
-the change-of-law connection to the abstract disorder remains open.
+The Lemma 2.6 guards include Gaussian concentration and its change of law to
+the abstract disorder, not just a conditional or standard-coordinate estimate.
 The full Parisi formula is deliberately not listed: Theorem 2.2 is still open.
 -/
 import Targets.ReplicaMeasure
-import Targets.CoupledConcentration
+import Targets.TalagrandProposition25
 
 /--
 info: 'SpinGlass.Targets.guerra_identity' depends on axioms: [propext, Classical.choice, Quot.sound]
@@ -136,3 +136,33 @@ info: 'SpinGlass.Targets.gaussianCoupledEvent_small' depends on axioms: [propext
 -/
 #guard_msgs in
 #print axioms SpinGlass.Targets.gaussianCoupledEvent_small
+
+/--
+info: 'SpinGlass.Targets.coupledGaussian_pair_map' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.coupledGaussian_pair_map
+
+/--
+info: 'SpinGlass.Targets.gaussianCoupledGap_mean_eq' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.gaussianCoupledGap_mean_eq
+
+/--
+info: 'SpinGlass.Targets.gaussianCoupledEvent_mean_eq' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.gaussianCoupledEvent_mean_eq
+
+/--
+info: 'SpinGlass.Targets.talagrand_lemma_2_6' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.talagrand_lemma_2_6
+
+/--
+info: 'SpinGlass.Targets.talagrand_proposition_2_5' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.talagrand_proposition_2_5

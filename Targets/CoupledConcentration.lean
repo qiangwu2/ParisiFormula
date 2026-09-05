@@ -226,8 +226,8 @@ theorem integrable_gaussianCoupledEvent (sk : SKDisorder (Ω := Ω) n β h)
   exact coupledEvent_le_one s hs β _ h u ht hu d (k + 1) le_rfl _ _
 
 /-- The concentration/expectation conclusion of Lemma 2.6 in standard Gaussian
-coordinates. Transferring its mean hypothesis and conclusion to `sk.U` is a
-separate change-of-law step; this theorem does not assume a concentration bound. -/
+coordinates. Its mean hypothesis and conclusion are transferred to `sk.U` in
+`Targets.CoupledOuterExpectation`; this theorem does not assume a concentration bound. -/
 theorem gaussianCoupledEvent_small (sk : SKDisorder (Ω := Ω) n β h)
     (s : RSBScheme k) (hn : 0 < n) (hs : 0 < s.m 1) {t : ℝ}
     (ht : t ∈ Set.Icc (0 : ℝ) 1) (u : ℝ)

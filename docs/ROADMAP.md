@@ -27,10 +27,10 @@ The unrestricted coupled cascade and both identities in Lemma 2.7 are now proved
 `Targets/CoupledCascade.lean`. `Targets/ReplicaMeasure.lean` identifies the individual
 replica probabilities with the components of the existing remainder. The constrained
 cascade and the deterministic part of Lemma 2.6 are now proved as well (Step 15).
-Gaussian concentration and the exponential event estimate in standard Gaussian
-coordinates are now proved (Step 16). Next, transfer their expectations to the abstract
-SK disorder and replica measures to finish Lemma 2.6 / Proposition 2.5, then prove
-Theorem 2.4.
+Gaussian concentration (Step 16) and its transfer to the abstract disorder (Step 17)
+are now proved. Lemma 2.6 holds on `[0,1]`, and Proposition 2.5 holds on `(0,1)` with
+an explicit size/time-independent constant. This is the time domain needed by the
+existing convergence deduction. Next: the a priori bound of Theorem 2.4.
 
 **Milestone 1 (Targets 1b, 1c) is *not* on this critical path.**  Target 4 is strictly
 stronger than 1c — convergence to `parisiValue` subsumes existence of a limit — and deriving
@@ -652,23 +652,58 @@ standard coordinates for the shared outer field of variance `β² q₁`. For `N 
   It does not assume concentration of the logarithm of the tilted event.
 
 The new tail, integrability, and expectation results have standard-axiom-only guards.
-**The remaining Lemma 2.6 gap is change of law:** identify these standard-coordinate
-means with the abstract `sk.U` and the outer zero-mass average (for `d ≤ k+1`), then
-use Lemma 2.7 to obtain Proposition 2.5. No theorem has been weakened or placeholder
-relocated; the original Theorem 2.2 remains open.
+At this checkpoint the remaining Lemma 2.6 gap was change of law. Step 17 below
+identifies these means with the abstract disorder and outer average, then applies
+Lemma 2.7. The original Theorem 2.2 remains open.
+
+**Step 17 (2026-09-04): complete Lemma 2.6 and the needed Proposition 2.5.**
+
+`Targets/CoupledGaussianLaw.lean` proves equality of the joint laws of the spectral
+SK realisation and the abstract disorder, each accompanied by an independent standard
+outer field. It uses the recorded independence and Gaussian laws of `sk.hU.c` and
+the spectral representation, including zero spectral variances. Both integrals and
+integrability transfer along this equality of laws.
+
+`Targets/CoupledOuterExpectation.lean` proves:
+
+* For `d ≤ k+1`, the last cascade step is exactly the shared field average with
+  variance `β² q₁` and mass zero. The pressure and observable identities hold on
+  the actual recursively defined objects, not on substitute definitions.
+* `gaussianCoupledGap_mean_eq` identifies the Gaussian mean with
+  `N * (constrainedPhi - 2*guerraPhi)`. Fubini and subtraction of expectations are
+  justified by proved integrability, including that of the constrained pressure.
+* `integral_gaussianCoupledEvent_eq` transfers the event mean to the abstract outer
+  average on `[0,1]`. `gaussianCoupledEvent_mean_eq` then uses Lemma 2.7 to identify
+  this average with the individual replica probability on `(0,1)`.
+
+`Targets/TalagrandProposition25.lean` completes the estimates:
+
+* `talagrand_lemma_2_6`: an expected unnormalised pressure deficit of `ε N` implies
+  exponential decay of the actual iterated tilted event expectation, for `N > 0`,
+  attainable overlap, `m₁ > 0`, `d ≤ k+1`, and `0 ≤ t ≤ 1`.
+* `talagrand_proposition_2_5_explicit` and `talagrand_proposition_2_5`: on `0<t<1`,
+  `Ψ(t,u) ≤ 2φ(t) - ε` implies `μ_r(R=u) ≤ K exp(-N/K)`. Here
+  `K = 2 + 1/r`, with `r = min(m₁ ε/4, ε²/(128(1+|β|)²)) > 0`.
+  The definition of `K` depends only on the scheme, `β`, and `ε`, not on `N`, `t`,
+  the overlap, the split, or the particular disorder realisation.
+* No optimality or a priori constrained-pressure bound is assumed beyond the
+  explicit pressure deficit. Obtaining that deficit is the separate Theorem 2.4 task.
+
+Standard-axiom-only regression guards cover the law and mean identities, Lemma 2.6,
+and Proposition 2.5. The restriction to interior time in Proposition 2.5 matches the
+existing `guerraPhi_uniform_of_overlap_concentration` hypothesis, which only asks for
+concentration on `(0,t₀)` and already concludes convergence on `[0,t₀]`.
+No additional endpoint concentration result is needed for that deduction.
 
 **Remaining work, following the Annals argument:**
 
-1. Transport Step 16's Gaussian-coordinate gap and event expectations to the
-   abstract disorder and outer field. Relate the mean gap to `constrainedPhi - 2*guerraPhi`,
-   then combine with the proved Lemma 2.7 to obtain Proposition 2.5.
-2. Prove the a priori two-replica bound of Theorem 2.4 using §3–§5 and the scheme's
+1. Prove the a priori two-replica bound of Theorem 2.4 using §3–§5 and the scheme's
    optimality. The imported RS-level `twoReplica_GT_bound` is not this general result.
-3. Combine those bounds to obtain Proposition 2.3; Step 14 now supplies its conversion
+2. Combine those bounds to obtain Proposition 2.3; Step 14 now supplies its conversion
    to the mass-weighted form. Handle coincident masses/overlap levels via (2.19), or
    prove the needed bound directly without strictness. This reduction is not yet
    formalised merely because the convergence lemma accepts degenerate schemes.
-4. Supply the concentration hypothesis and replace the original Theorem 2.2
+3. Supply the concentration hypothesis and replace the original Theorem 2.2
    placeholder; then audit `parisi_formula` itself.
 
 
