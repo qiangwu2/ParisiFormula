@@ -29,7 +29,7 @@ transitive dependencies for the standard Lean axioms only.
 | `AT.sum_bool_pair_exp_eq_four_mul_exp_gtTerminal`, `AT.sum_pair_exp_sum_eq_prod_sum_exp` | Reused by the local one-site and N-site partition identities in `CoupledLambda.lean`. |
 | `GTFrame.finiteStep`, `finiteStepD`, `step0_good`, `stepM_good`, `goodFam_fLbase` | `CoupledFiniteStep.lean` and `CoupledEndpoint.lean` iterate the existing transforms and regularity results. `TalagrandSection5.lean` specializes them to the actual inserted-level scalar `V` and its lambda derivative. No new dominated differentiation proof. |
 | `AT.gtVectorStep`, `gtScalarStep`, `gtVectorStep_sum` | Directly reused for the N-site recursion and tensorization; integrability and positivity are discharged using `GoodFam`. Proved bridges identify the old shared step and the composition giving its independent step. |
-| `AT.gtStateLogPartition`, `contDiff_gtStateLogPartition`, `fderiv_gtStateLogPartition_apply`, `fderiv_gtStateGibbs_apply` (`Bound/FiniteState.lean`) | Now used in `ConstrainedFiniteState.lean` on `AT.ConstrainedPair N u`, with an exact positive-Hamiltonian bridge and actual first/mixed second terminal derivatives. Full nested-cascade differentiation remains open. |
+| `AT.gtStateLogPartition`, `contDiff_gtStateLogPartition`, `fderiv_gtStateLogPartition_apply`, `fderiv_gtStateGibbs_apply` (`Bound/FiniteState.lean`) | Used in `ConstrainedFiniteState.lean` on `AT.ConstrainedPair N u`, with an exact positive-Hamiltonian bridge and actual first/mixed second terminal derivatives. `CoupledCascadeSecond.lean` now propagates the disorder Hessian through all fixed-variance levels. |
 | `AT.gtCoefficientCLM` (`Bound/Comparison.lean`) | Defines the pair-disorder map `U ↦ (U(σ)+U(τ))` as an existing continuous linear map; no new finite-dimensional map construction needed. |
 | `AT.pairOverlapMatrix_self`, `spin_sum_eq_mul_overlap`, `gtCovariance_remainder` (`Bound/Basic.lean`) | Reused in `CoupledCovariance.lean` for the constrained diagonal, independent/signed-shared field contractions, and entrywise square completion. The SK spectral contraction reuses the already proved local `sk_covariance_spectral_sum`. |
 | `Finset.sum_range_by_parts`, `sum_range_sub` (Mathlib) | Reused in `SecondInterpolationAlgebra.lean` for the mass-weighted telescoping identity. The inserted correction is proved equal to the existing `2 * parisiCorrection` plus the split-level term in (5.9). |
@@ -39,7 +39,13 @@ transitive dependencies for the standard Lean axioms only.
 | Local `Parisi.T_add_of_hasLinearGrowth`, Mathlib `integral_conv`, `gaussianReal_conv_gaussianReal` | `ParisiStepSemigroup.lean` adapts the existing nonzero-mass semigroup and proves the actual expectation branch at mass zero. Both variance endpoints are allowed. |
 | Local `independentStepPi_add`, `sharedStepPi_diag`, `parisiStepPi_sum`, `coupledFieldCascade_eq_sum` | `TalagrandSection5Zero.lean` derives the actual zero-lambda factorization (5.18); the semigroup then restores the original recursion for (4.36), (5.19). |
 | Local `hasDerivAt_parisiStepPi_param`, `hasDerivAt_tiltAvg_param_pi` | `CoupledCascadeDeriv.lean` adapts the first derivative through independent/shared levels and the tilted covariance rules, retaining the actual mass coefficient. The finite-state terminal supplies concrete derivative inputs. |
-| Local `talagrand_proposition_2_5`, replica-weighted-tail conversion, and endpoint-safe convergence; Mathlib exponential asymptotics | `TalagrandOverlapTail.lean` sums over at most `N+1` attainable Ising overlaps and proves the full conditional concentration/convergence deduction. The uniform quadratic bound and positive first mass remain hypotheses. |
+| Mathlib mean value theorem and `measurable_lineDeriv`; local `stein_coord_of_hasDerivAt`, Gaussian affine-growth integrability | `CoupledCascadeSecond.lean` derives disorder continuity/measurability from the proved mixed Hessian, then proves actual coordinate and summed-trace Stein identities without extra analytic hypotheses. |
+| Local `gaussianReal_stein_of_bound`, scalar spatial derivative formulas, and Gaussian exponential-growth integrability | `ParisiVarianceDerivative.lean` proves the positive-variance heat equation, retaining the actual mass-zero expectation. `Section4Variance.lean` applies it to every genuine Parisi input. |
+| RSAT `GTFrame.goodTriple_finiteStep`; Mathlib `hasStrictFDerivAt_uncurry_coprod` | Joint continuity of the scalar step and its spatial derivatives, then joint variance/spatial differentiation in `Section4Variance.lean`; separate partial derivatives are not silently treated as joint differentiability. |
+| RSAT `GoodTriple`, `stepMD_le`, `stepMVar_nonneg`, and terminal `fLbaseDD = 1-fLbaseD²` | `CoupledLambdaCurvature.lean` supplies only the strengthened invariant `E ≤ 1-D²`. All analytic regularity is inherited. This gives Lemma 5.9 with constant 1, not RSAT's coarse depth-dependent bound. |
+| Mathlib `convexOn_univ_of_deriv2_nonneg`, `ConvexOn.isMinOn_of_rightDeriv_eq_zero` | Tangent-quadratic estimate and explicit lambda optimization; `TalagrandLambdaGain.lean` applies this to the actual time-zero second-interpolation endpoint. |
+| Local `talagrand_proposition_2_5`, replica-weighted-tail conversion, and endpoint-safe convergence; Mathlib exponential asymptotics | `TalagrandOverlapTail.lean` sums over at most `N+1` attainable Ising overlaps and proves the conditional concentration/convergence deduction. `RSBSchemeReduction.lean` removes its positive-first-mass restriction by exact equivalence; the uniform quadratic bound remains unproved. |
+| Mathlib `measurePreserving_arrowProdEquivProdArrow`, `Measure.pi_map_pi`, Gaussian convolution; local scalar semigroup | `RSBZeroMassPiSemigroup.lean` proves the N-site expectation semigroup. Leading zero-mass deletion preserves the actual pressure and Parisi data; exact zero-variance padding transfers fixed-level minimality. |
 
 The final `AT.twoReplica_GT_bound` has RS smart-path hypotheses (one overlap
 parameter, positive `β` and `h`, and an interior RS overlap). It cannot replace
@@ -90,8 +96,16 @@ The local `hasDerivAt_parisiStepPi_param` and `hasDerivAt_tiltAvg_param_pi`
 are now reused in `CoupledCascadeDeriv.lean`: first disorder derivatives
 propagate through the entire actual paired cascade with fixed variances,
 and tilted-observable derivatives retain the mass-weighted covariance term.
-This is not yet the varying-variance derivative of the second interpolation;
-full nested Hessian propagation and the Stein/replica identification remain open.
+`CoupledCascadeSecond.lean` extends the mixed Hessian to arbitrary depth and
+proves actual Gaussian-coordinate Stein identities, including the summed trace.
+The uniform-in-disorder Hessian bound gives continuity of first directions via
+Mathlib's mean value theorem; measurable line derivatives avoid duplicating
+joint differentiation theory. This is not yet the varying-variance derivative
+of the second interpolation or its identification with actual replica weights.
+`CoupledCascadeField.lean` reuses the same induction with separate replica-field
+directions represented as finite-state spin observables. Translation commutation
+identifies the resulting derivatives with actual spatial derivatives, and the
+coordinate spin bridges match the existing independent/signed-shared contractions.
 The RSAT half-step modules were inspected: they supply a single fixed half-mass
 transform, not the arbitrary finite sequence needed here. Their final comparison
 does not close the nested-cascade gap. Do not repeat the finite-state or
@@ -106,6 +120,23 @@ nonzero mass; entropy integrability includes mass zero, and the separate scalar
 semigroup covers zero mass without identifying it with the incorrect totalized
 operator `Parisi.T 0`.
 
+The scalar heat generator is checked at **positive variance**; the mass can be
+zero. `Section4Variance.lean` proves the spatial second-order invariant on every
+actual Parisi input, then bridges a spatial translation into RSAT's general
+`GoodTriple` parameter to obtain joint continuity in variance and field. Together
+with the heat equation, Mathlib's continuous-partials theorem gives joint
+differentiability. This is the justified input to the moving-field chain rule,
+not a new assumption of the nested variation being sought.
+`Section4SplitDerivative.lean` adapts the existing local-neighborhood N-site
+parameter chain rule to one coordinate. Compactness and RSAT joint continuity
+give neighborhood growth bounds; the established joint derivative differentiates
+the inner step at the moving outer field. Normalized scalar Stein then cancels
+the `Bxx` terms and proves **(4.11)** for the actual two-step recursion, with
+the correct `(m-m')/2` coefficient. Both mass-zero branches are included, and
+actual `parisiF` specialization discharges all analytic input hypotheses.
+Only `0<v<a` is covered; endpoint derivatives, higher mixed identities and
+the remaining outer propagation to `section4T` are not claimed.
+
 The zero-lambda formulas were independently checked against pp. 246 and 253
 of the Annals paper: local forward index `p=k+2-j`, total depth `k+3`, and
 split `k+3-r` give independent inserted/inner levels and shared outer levels.
@@ -113,12 +144,41 @@ split `k+3-r` give independent inserted/inner levels and shared outer levels.
 Its Lean argument order is mass then variance, while the paper writes `T(v,m)`.
 The outer mass-zero expectation and all split-variance endpoints are retained.
 
+For Lemma 5.9 (p. 255), a normalized tilt of mass `m ∈ [0,1]` sends
+`D` to its tilted mean and `E` to its tilted mean plus `m Var(D)`.
+Consequently `0 ≤ E ≤ 1-D²` is preserved exactly. This supplies the uniform
+constant missing from a naive iteration of RSAT's coarse `c+m` curvature bound.
+The actual Section 5 inserted/halved masses are all in `[0,1]` at the baseline
+mass. The explicit choice `λ=u-V′(0)` gives (5.33) with denominator 2 and the
+proved endpoint comparison transfers it to `η(0)`. It does **not** identify
+`V′(0)` with `U′` (Lemma 5.8), invoke scheme optimality, or bound `η(1)`.
+
 The Proposition 2.3 assembly follows p. 232. The bound is relative to `2ψ`,
 not `2φ`: the threshold `2K(ψ−φ)+η` supplies the `η/K` deficit needed by
 Proposition 2.5. Counting overlap values gives the sharper Ising factor `N+1`
 (the paper uses the sufficient `2N+1`); no exponential spin-pair factor is lost.
-The resulting fixed-scheme convergence is conditional on the uniform quadratic
-estimate and `s.m 1 > 0`, not a proof of the remaining Theorem 2.4 or (2.19).
+The fixed-scheme convergence initially assumes the uniform quadratic estimate
+and `s.m 1 > 0`. `RSBSchemeReduction.lean` now removes leading zero masses
+by exact Gaussian semigroup identities for both scalar and N-site cascades.
+The actual functional and pressure are preserved, and padding each smaller
+competitor transfers fixed-level minimality. This yields the original Theorem
+2.2 quantifiers from the uniform quadratic estimate for positive-first-mass
+schemes. It does not by itself assert every strictness condition of (2.19),
+in particular strictness at the endpoint overlaps.
+
+`RSBMassPiSemigroup.lean` extends the same product-Gaussian convolution adapter
+to every real mass. `RSBSchemeMassReduction.lean` uses it for arbitrary
+equal-adjacent-mass deletion. The scalar identity is obtained by the existing
+one-site tensorization, not a second reindexing proof. Correction telescoping
+and competitor padding preserve the functional and fixed-level minimality.
+Induction yields strictness of the entire mass sequence; no strictness of the
+overlap sequence is claimed. An independent read-only review also checked
+the lambda-curvature/gain modules against the actual paired mass convention.
+The final strict-mass conditional bridge reduces the uniform quadratic estimate
+to that smaller comparison class without assuming overlap strictness. Strict
+masses do not eliminate the baseline mass zero at `r=1`; later mass variation
+must handle that case separately. The current variance derivatives are interior
+ones, so endpoint stationarity is not silently inferred from them.
 
 ## Historical copies and local ports
 

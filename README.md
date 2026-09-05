@@ -55,7 +55,8 @@ the averaged comparison `Ψ(t,u) ≤ Pλ(t) − λu`, with `P₀(t) = 2φ(t)` an
 a size-independent 1-Lipschitz bound in λ. These results do **not** yet give
 Theorem 2.4's improvement relative to `2ψ(t)`: the covariance derivative bound
 of Theorem 3.1 and the §4–§5 parameter-variation estimates remain open.
-Proposition 2.3 and the reduction for coincident scheme levels follow those inputs.
+The deduction of Proposition 2.3 is checked conditionally on the quadratic bound;
+the leading-zero-mass scheme reduction is now exact.
 Theorem 2.2 itself remains open.
 
 [`Targets/CoupledFiniteStep.lean`](Targets/CoupledFiniteStep.lean) now reuses RSAT's
@@ -88,6 +89,13 @@ The algebraic bound is not presented as a proved bound on `η′`.
 the actual constrained-terminal first disorder derivative through every paired
 level with fixed variances, retaining zero masses and a depth-independent bound.
 The tilted-observable rules retain the mass covariance term.
+[`Targets/CoupledCascadeSecond.lean`](Targets/CoupledCascadeSecond.lean) extends
+this to the actual mixed disorder Hessian at every depth, with a uniform-in-disorder
+bound, and proves Gaussian-coordinate and summed-trace integration by parts.
+[`Targets/CoupledCascadeField.lean`](Targets/CoupledCascadeField.lean) proves the
+separate replica-field first and mixed second derivatives at every depth, including
+their spin-observable formulas, field-uniform bounds, and measurability.
+The varying-variance derivative and identification with replica weights are still needed.
 [`Targets/ParisiMassDerivative.lean`](Targets/ParisiMassDerivative.lean) reuses
 Mathlib's moment-generating-function calculus for the scalar mass derivative,
 its entropy identity and nonnegativity; nested Section 4 optimality estimates
@@ -95,11 +103,34 @@ are not yet proved.
 [`Targets/TalagrandSection5Zero.lean`](Targets/TalagrandSection5Zero.lean) proves
 **(5.18)** `V(0,m,v)=2T(v,m)` and **(5.19)** `V(0,m_(r−1),v)=2A₀(h)`.
 The baseline uses the Gaussian semigroup with zero mass and zero variance included.
+[`Targets/ParisiVarianceDerivative.lean`](Targets/ParisiVarianceDerivative.lean) and
+[`Targets/Section4Variance.lean`](Targets/Section4Variance.lean) prove the scalar heat
+equation **(4.4)** on every actual Parisi input, including zero mass, at positive
+variance. Spatial second derivatives, joint variance/field differentiation, and
+the moving-field chain rule are checked; the nested optimality estimates remain open.
+[`Targets/Section4SplitDerivative.lean`](Targets/Section4SplitDerivative.lean) now
+proves the genuine two-step split-variance identity **(4.11)** for every actual
+Parisi input, including zero masses, on the interior variance interval. Higher
+mixed derivatives, variance-endpoint stationarity, and propagation to the full
+Section 4 optimality estimates remain open.
+[`Targets/CoupledLambdaCurvature.lean`](Targets/CoupledLambdaCurvature.lean) proves
+**Lemma 5.9** with the level-independent bound `0 ≤ ∂²λ V ≤ 1`.
+[`Targets/TalagrandLambdaGain.lean`](Targets/TalagrandLambdaGain.lean) optimizes λ
+to give the actual time-zero endpoint gain. Identifying `∂λ V(0)` with `U′`
+(Lemma 5.8) and transporting the gain to time one remain separate obligations.
 [`Targets/TalagrandOverlapTail.lean`](Targets/TalagrandOverlapTail.lean) now proves
 the finite-overlap deduction from a uniform Theorem 2.4 quadratic bound to
 Proposition 2.3 and uniform convergence on `[0,t₀]`, for a fixed scheme with
-positive first mass. The quadratic bound and the coincident-level reduction
-remain open; no unconditional completion of Theorem 2.2 is claimed.
+positive first mass. [`Targets/RSBSchemeReduction.lean`](Targets/RSBSchemeReduction.lean)
+removes that mass restriction exactly, preserving the actual pressure, the functional,
+and fixed-level minimality. The original Theorem 2.2 quantifiers now follow from a
+uniform quadratic bound for positive-first-mass schemes. That bound remains unproved;
+no unconditional completion of Theorem 2.2 is claimed.
+[`Targets/RSBSchemeMassReduction.lean`](Targets/RSBSchemeMassReduction.lean) further
+removes every equal adjacent mass, preserving the same quantities. This completes
+the mass-strictness part of **(2.19)**, not strictness of the overlap sequence.
+Its final conditional theorem reduces the original Theorem 2.2 to the uniform
+quadratic bound for strictly increasing mass sequences alone.
 
 Development follows the reuse-first rules in [`AGENTS.md`](AGENTS.md); the concrete
 reuse inventory is recorded in [`docs/PROVENANCE.md`](docs/PROVENANCE.md).
@@ -167,8 +198,10 @@ formula. `GuerraAudit` checks that Theorem 2.1 and both upper bounds depend only
 checks Lemma 2.7, the replica-measure decomposition, Lemma 2.6 including concentration
 and change of law, interior-time Proposition 2.5, the §5 λ endpoint/pressure comparison,
 the imported-analytic finite paired recursion and its tensorization,
-the fixed-variance nested disorder derivatives, scalar mass derivative and
-zero-lambda identities, and the conditional finite-overlap/convergence deductions.
+the full-depth fixed-variance disorder Hessian and Gaussian Stein identities,
+scalar mass/variance calculus, Lemma 5.9 and the optimized scalar endpoint,
+zero-lambda identities, exact equal-mass compression, and the conditional
+finite-overlap/convergence deductions, including the strict-mass bridge.
 This does not certify the still-open Theorem 2.4 or Proposition 2.3. CI requires both
 local libraries to build; it does not ignore target or audit failures.
 
@@ -239,10 +272,21 @@ ParisiFormula/
 │   ├── CoupledCovariance.lean        four-overlap covariance, square completion and terminal Hessian
 │   ├── SecondInterpolationAlgebra.lean  algebraic remainder sign, telescoping and (5.9) correction
 │   ├── CoupledCascadeDeriv.lean       fixed-variance nested disorder derivatives and tilted covariance
+│   ├── CoupledCascadeSecond.lean      full-depth mixed disorder Hessian and Gaussian Stein identities
+│   ├── CoupledCascadeField.lean       separate replica-field first/mixed derivatives and spin directions
 │   ├── ParisiMassDerivative.lean      scalar mass derivative, entropy and monotonicity via Mathlib
 │   ├── ParisiStepSemigroup.lean       scalar semigroup including zero masses and variances
+│   ├── ParisiVarianceDerivative.lean  Gaussian heat generator and actual scalar variance derivative
+│   ├── Section4Variance.lean          actual Parisi C2, heat equation and joint variance/field calculus
+│   ├── Section4SplitDerivative.lean   actual two-step split-variance identity (4.11), including zero masses
 │   ├── TalagrandSection5Zero.lean     actual scalar T and zero-lambda identities (5.18), (5.19)
+│   ├── CoupledLambdaCurvature.lean    level-independent lambda curvature: Lemma 5.9
+│   ├── TalagrandLambdaGain.lean       optimized scalar and actual second-interpolation time-zero gain
 │   ├── TalagrandOverlapTail.lean      finite-overlap deduction from a uniform Theorem 2.4 bound
+│   ├── RSBZeroMassPiSemigroup.lean    N-site zero-mass Gaussian semigroup
+│   ├── RSBMassPiSemigroup.lean        N-site semigroup at arbitrary mass
+│   ├── RSBSchemeReduction.lean        exact leading-zero-mass reduction and conditional Theorem 2.2
+│   ├── RSBSchemeMassReduction.lean    exact equal-mass compression: mass-strictness part of (2.19)
 │   └── GuerraAudit.lean              axiom guards for completed critical-path results
 ├── .lake/packages/              generated dependency checkout; not tracked
 │   ├── mathlib/                      Mathlib v4.32.1

@@ -39,9 +39,12 @@ instantiates the second interpolation and proves both endpoints; Step 21
 proves the terminal Hessian and covariance algebra. Step 22 proves full-depth
 fixed-variance first disorder derivatives, scalar mass differentiation,
 zero-lambda identities (5.18)--(5.19), and the conditional finite-overlap
-deduction of Proposition 2.3 and convergence. The varying-variance nested
-Hessian/Stein identification, Section 4--5 optimality estimates, and
-coincident-level reduction are still missing.
+deduction of Proposition 2.3 and convergence. Step 23 extends the disorder
+Hessian to all depths and proves its Gaussian Stein identities, the scalar
+heat equation on actual Parisi inputs, Lemma 5.9 with a level-independent
+constant, and the exact leading-zero-mass reduction. The varying-variance
+interpolation/replica identification, Section 4--5 optimality estimates, and
+remaining interval/sign constructions are still missing.
 
 **Milestone 1 (Targets 1b, 1c) is *not* on this critical path.**  Target 4 is strictly
 stronger than 1c — convergence to `parisiValue` subsumes existence of a limit — and deriving
@@ -888,7 +891,7 @@ indexing and mass normalization received an independent read-only review.
   by `(N+1) C exp(-N/C)`, uniformly in time and replica level. The mass-weighted
   conversion introduces no additional factor in the number of RSB levels.
 
-**Still not proved:** the full-depth mixed Hessian, varying-variance derivative,
+**At the Step 22 checkpoint, still not proved:** the full-depth mixed Hessian, varying-variance derivative,
 Gaussian Stein/averaging and actual replica identification needed for Theorem 3.1;
 the Section 4 nested variations and optimality estimates; Lemmas 5.8--5.9 and
 the remaining interval/sign constructions; the coincident-level reduction.
@@ -902,24 +905,130 @@ warnings. The blueprint compiles without warnings; README layout/status,
 roadmap and provenance are synchronized. No placeholders or axioms were added,
 and no dependency pins or upstream sources were changed.
 
+**Step 23 (2026-09-04): full-depth Hessian, scalar curvature and exact reduction.**
+
+The main agent and all three available agents worked on independent critical-path
+files, reusing the locked Mathlib/RSAT results rather than changing proof routes.
+
+* `Targets/CoupledCascadeSecond.lean` proves the actual mixed disorder Hessian at
+  every independent/shared depth, with bound
+  `(8 + 16 * Σ_{l<j} |m_l|) * uAbs V * uAbs W`. The same induction propagates
+  all tilted covariances and measurability. Continuity of first directions follows
+  from the bound via Mathlib's mean value theorem; measurable line derivatives
+  supply Hessian measurability in disorder. Existing Gaussian-coordinate Stein
+  then gives the coordinate and summed Hessian-trace identities, with every
+  integrability obligation discharged. Variances are held fixed here.
+* `Targets/CoupledCascadeField.lean` instantiates the full-depth calculus with
+  arbitrary separate directions `(A,B)` in the two replica fields. RSAT's
+  finite-state derivatives give the terminal spin means and covariances; exact
+  translation commutation lifts these to the actual spatial derivatives of the
+  cascade. The first derivative is bounded by `l1 A + l1 B`; the mixed Hessian by
+  `(2 + 4 * Σ_{l<j}|m_l|)(l1 A+l1 B)(l1 C+l1 D)`. Both are measurable and
+  field-uniform. Individual and signed-shared coordinate directions are identified
+  with the precise spins used in the existing covariance contractions.
+* `Targets/ParisiVarianceDerivative.lean` proves the actual scalar heat equation
+  `∂v B = (Bxx + m Bx²)/2`, for positive variance and all masses including zero.
+  `Targets/Section4Variance.lean` propagates actual spatial C2 regularity through
+  every Parisi input, giving **(4.4)** without additional analytic assumptions.
+  RSAT's `GoodTriple` gives joint continuity of `B`, `Bx`, `Bxx`; Mathlib's
+  continuous-partials theorem supplies the joint Fréchet derivative and the
+  chain rule at the moving outer field. For `m ∈ [0,1]`, the bound `0 ≤ ∂v B ≤ 1/2` is
+  independent of depth. Nested Section 4 stationarity is not asserted.
+* `Targets/Section4SplitDerivative.lean` closes the actual two-step identity
+  **(4.11)** on `0 < v < a`:
+  `∂v Step(m',a-v,Step(m,v,A)) = (m-m')/2 * E_W[(Bx)²]`.
+  It adapts the existing N-site local-neighborhood chain rule to one coordinate,
+  combines it with the proved joint derivative, and uses normalized scalar Stein
+  to cancel the second-derivative terms. Inner `m ∈ [0,1]`, arbitrary outer `m'`,
+  and both zero-mass branches are included. All structural analytic hypotheses
+  are discharged for every actual `parisiF` input. The immediate nonnegative
+  derivative for `m' ≤ m` is proved. This is not yet the higher mixed identities
+  of (4.16), the remaining outer recursion to `section4T`, or scheme stationarity.
+* `Targets/CoupledLambdaCurvature.lean` proves the invariant
+  `0 ≤ E ≤ 1-D²` through every normalized Gaussian transform of mass in `[0,1]`.
+  This sharpens RSAT's generic depth-dependent bound without redoing its analytic
+  differentiation. It proves **Lemma 5.9** for the actual Section 5 scalar `V`,
+  with constant **1**, uniform in the level count and parameters. Mathlib convexity
+  yields `V(λ) ≤ V(0) + V′(0)λ + λ²/2`; the explicit choice `λ=u-V′(0)` gives
+  the quadratic gain of **(5.33)** with denominator **2**.
+* `Targets/TalagrandLambdaGain.lean` combines that gain with the actual endpoint
+  and zero-lambda baseline. At the original mass,
+  `η(0) ≤ 2(log 2 + A₀(h)) - (V′(0)-u)²/2`. This is unconditional on the
+  stated attainable left interval, but is not yet a time-one pressure bound.
+  Lemma 5.8's identification of `V′(0)` with `U′` is not assumed.
+* `Targets/RSBZeroMassPiSemigroup.lean` proves the N-site zero-mass semigroup
+  using Mathlib's product reindexing and Gaussian convolution.
+  `Targets/RSBSchemeReduction.lean` exactly removes a leading zero mass,
+  preserving the functional, `ψ`, and actual `φ_N(t)`. Zero-variance padding
+  transfers fixed-level minimality. Induction gives a positive-first-mass scheme
+  at a lower or equal level. Consequently **all original Theorem 2.2 quantifiers**
+  follow conditionally from a uniform quadratic bound for positive-first-mass
+  schemes; no strict-overlap condition is inserted into that hypothesis.
+* `Targets/RSBMassPiSemigroup.lean` extends the N-site semigroup to arbitrary
+  masses. `Targets/RSBSchemeMassReduction.lean` uses it to remove any equal
+  adjacent masses, including the first and last pair. Scalar preservation reuses
+  the existing one-site tensorization; correction terms telescope exactly.
+  `exists_strict_mass_reduction` gives an equivalent scheme with every adjacent
+  mass strictly increasing, preserving actual pressure and fixed-level minimality.
+  This is the full **mass-strictness part of (2.19)**, not overlap strictness.
+  The final conditional theorem now needs the uniform quadratic bound only for
+  strictly increasing mass sequences, while retaining all original convergence
+  quantifiers and no extra hypothesis on overlap strictness.
+
+Independent read-only review confirmed the curvature invariant, actual paired
+mass normalization, and the precise scope of the optimized time-zero endpoint.
+The scalar heat/C2/joint-derivative modules also received independent read-only
+review and fresh Lean checks. The original target and strict-mass bridge received
+a separate quantifier/indexing review.
+
+**Boundary:** Theorem 2.2 remains open in its original declaration. The full
+varying-variance derivative of `section5Interpolation`, actual replica-weight
+identification, and endpoint-safe integration are not yet supplied by the
+fixed-variance Hessian/Stein results. Section 4 optimality and Lemma 5.8 still
+have to convert the scalar endpoint gain into a bound in `(u-q_r)²`, uniformly
+in the level count. The other Section 5 interval/sign cases remain to be done.
+
+**Endpoint cautions from independent review:** strict masses still leave
+`m_(r-1)=m_0=0` at `r=1`. The existing nonzero-mass derivative therefore does
+not yet define the needed mass variation there; extend it to zero or supply the
+separate first-interval argument. Likewise the positive-variance heat/split
+derivatives alone do not supply variance-endpoint derivatives for stationarity.
+The spectral Stein left side is still an explicit finite sum; its identification
+with the radial direction `D_Z F(Z)` requires linearity of propagated directions.
+
+**Small scalar follow-up:** closed-interval split-variance monotonicity needs
+continuity on `[0,a]` plus the existing interior derivative sign, not endpoint
+derivatives. Reuse `GTFrame.goodTriple_finiteStep` on the inner family
+`F(p,λ,y)=parisiStep m p A(λ+y.1)`, using the proved joint continuity and C2
+invariant, with outer coefficients `sqrt(a-p),0`. Then apply Mathlib's
+`monotoneOn_of_deriv_nonneg` on `Icc`. Do not redo dominated integration.
+
+Validation: `bash scripts/check.sh` passes (3,829 build jobs), including
+**53 new standard-axiom regression guards** (143 total). All eleven new modules
+compile without new warnings. The four original placeholders are unchanged,
+including `Targets/Talagrand.lean:3274`; no axioms or proof holes were added.
+The blueprint compiles without warnings after layout checking. README module
+layout, status, roadmap, and provenance are synchronized. Dependency pins and
+upstream sources are unchanged.
+
 **Remaining work, following the Annals argument:**
 
 1. Prove the a priori two-replica bound of Theorem 2.4 using §3–§5 and the scheme's
    optimality. The imported RS-level `twoReplica_GT_bound` is not this general result.
-   Next concrete step: extend the fixed-variance first derivative and one-level
-   Hessian from Step 22 to the full nested Hessian and varying-variance derivative
-   of `section5Interpolation`, construct its normalized replica weights, and
+   Next concrete step: use Step 23's full-depth Hessian/Stein calculus to prove
+   the varying-variance derivative of `section5Interpolation`, construct its normalized replica weights, and
    prove the derivative equals the covariance expression from Step 21.
    Then prove the endpoint-safe integration of that derivative. The square
    completion, mass telescoping, and inserted correction of (5.9) are now
    available, as are the scalar mass derivative and baseline identities
-   (4.36), (5.18), (5.19). Develop the Section 4 variation/optimality estimates and the
+   (4.36), (5.18), (5.19), scalar heat equation, Lemma 5.9 and optimized time-zero
+   endpoint. Develop the Section 4 variation/optimality estimates, Lemma 5.8, and the
    remaining Section 5 interval/sign constructions. Do not replace `2ψ(t)`
    with `2φ(t)`.
-2. Apply Step 22's completed conditional Proposition 2.3/convergence deduction
-   once the uniform Theorem 2.4 bound is proved. Handle coincident masses/overlap levels via (2.19), or
-   prove the needed bound directly without strictness. This reduction is not yet
-   formalised merely because the convergence lemma accepts degenerate schemes.
+2. Apply the completed conditional Proposition 2.3/convergence deduction and
+   Step 23's exact equal-mass compression/strict-mass bridge once the uniform
+   Theorem 2.4 bound is proved. Handle coincident overlap levels needed by the
+   scalar stationarity argument via (2.19), or prove the bound without overlap strictness.
 3. Supply the concentration hypothesis and replace the original Theorem 2.2
    placeholder; then audit `parisi_formula` itself.
 

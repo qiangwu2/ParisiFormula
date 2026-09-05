@@ -47,8 +47,9 @@ formula for the Sherrington--Kirkpatrick (SK) model, following Guerra's interpol
 and Talagrand's proof \cite{Tal06}.  Each statement is paired with the name of its
 Lean counterpart where one exists. Statements marked \emph{[formalised]} have checked
 proofs under their stated hypotheses; open targets and conditional deductions are
-identified explicitly. The main files are \texttt{Targets/Milestones.lean} and
-\texttt{Targets/Talagrand.lean}.
+identified explicitly. The active theorem statement is in
+\texttt{Targets/Talagrand.lean}; its supporting modules are mapped in the README.
+\texttt{Targets/Milestones.lean} also contains older, off-path targets.
 
 \textbf{Status (4 September 2026).} The exact-covariance SK version of Theorem~2.1,
 Guerra's RSB upper bound, and its limiting consequence are proved.
@@ -692,8 +693,8 @@ the actual lambda derivative of this $V$ at fixed $m$.
 These endpoint results do not assert the intervening covariance derivative
 bound or interior-time differentiability of $\eta$. The right-interval dual
 construction, negative-overlap case, and Proposition~5.7's additional scheme
-also remain open. In particular Lemma~5.8's identification with $U'$ and the
-uniform second-derivative bound in Lemma~5.9 are not yet proved.
+also remain open. Lemma~5.8's identification with $U'$ remains open;
+the uniform bound of Lemma~5.9 is now proved below.
 
 \begin{lemma}[Constrained terminal derivatives and the SK covariance trace]
 \lean{SpinGlass.Targets.hasDerivAt\_constrainedPairFieldBase\_second}\leanok
@@ -772,8 +773,8 @@ sum is exactly twice the existing Parisi correction.
 \end{proof}
 The quantity $\mathcal B$ above is an explicit algebraic expression, not yet
 identified with $\eta'$. The terminal Hessian is proved, but its propagation
-through the positive-mass Gaussian cascade, the actual replica weights, and
-the nested integration-by-parts identity still require proof. Consequently
+through the varying-variance Gaussian cascade and the actual replica-weight
+identification still require proof. Consequently
 neither Theorem~3.1 nor the pressure inequality (5.9) is marked complete.
 
 \begin{lemma}[Fixed-variance differentiation through the paired cascade]
@@ -797,8 +798,52 @@ is two transforms by Fubini; a shared level is one diagonal-shift transform
 at its actual mass. Propagate measurable growth and the derivative bound
 together, starting from the already proved finite-state calculus.
 \end{proof}
-This does not yet differentiate the varying-variance interpolation or
-perform the full nested Hessian/Stein calculation.
+The following extension supplies the full fixed-variance disorder Hessian and Stein
+calculation, but does not yet differentiate the varying-variance interpolation.
+
+\begin{lemma}[Full-depth mixed disorder Hessian and Gaussian Stein]
+\lean{SpinGlass.Targets.hasDerivAt\_constrainedPairFieldCascade\_second}\leanok
+\lean{SpinGlass.Targets.stein\_constrainedPairFieldCascadeTrace}\leanok
+Let $F_j(U)$ be the actual constrained paired cascade at depth $j$, with
+fixed nonnegative masses and variances. Its actual mixed disorder derivative obeys
+\[
+ |D^2_{V,W}F_j(U)|\le
+ \left(8+16\sum_{\ell<j}|m_\ell|\right)
+ \max_\sigma|V(\sigma)|\max_\sigma|W(\sigma)|.
+\]
+For Gaussian disorder $Z=\sum_i c_i w_i$ with spectral variances $\tau_i$,
+\[
+ \mathbb E\sum_i c_i D_{w_i}F_j(Z)
+ =\mathbb E\sum_i\tau_i D^2_{w_i,w_i}F_j(Z).
+\]
+All integrability and disorder measurability are proved.
+\end{lemma}
+\begin{proof}
+Iterate the existing tilted-observable covariance rule: twice per independent
+level and once per shared level. The uniform Hessian bound implies continuity
+of first directions by Mathlib's mean value theorem. Measurable line derivatives
+give disorder measurability of the Hessian. Apply the existing coordinate Stein
+theorem and exchange the finite spectral sum with expectation.
+\end{proof}
+
+\begin{lemma}[Separate spatial derivatives through the full paired cascade]
+\lean{SpinGlass.Targets.hasDerivAt\_constrainedPairFieldCascade\_field\_second}\leanok
+For a field direction $(A,B)$, the terminal observable is
+$\sum_i A_i\sigma_i+\sum_i B_i\tau_i$. Its actual first derivative and the
+mixed derivative with another direction $(C,D)$ propagate through every level.
+Their absolute values are at most $\|A\|_1+\|B\|_1$ and
+\[
+ \left(2+4\sum_{\ell<j}|m_\ell|\right)
+ (\|A\|_1+\|B\|_1)(\|C\|_1+\|D\|_1),
+\]
+respectively. Both are measurable and uniform in the fields and disorder.
+\end{lemma}
+\begin{proof}
+Embed the separate directions as finite-state spin observables and reuse RSAT's
+terminal differential calculus. Field translations commute with every Gaussian
+step, identifying the propagated parameter derivatives with spatial derivatives.
+Apply the already proved full-depth first and mixed derivative inductions.
+\end{proof}
 
 \begin{lemma}[Scalar mass variation and the zero-lambda baseline]
 \lean{SpinGlass.Targets.hasDerivAt\_parisiStep\_mass\_entropy}\leanok
@@ -829,6 +874,80 @@ mass; its zero-mass expectation branch follows from Gaussian convolution.
 Nested Section~4 mass/variance identities and optimality estimates, as well
 as the identification with $U'$ in Lemma~5.8, remain separate obligations.
 
+\begin{lemma}[The scalar heat equation (4.4) on actual Parisi inputs]
+\lean{SpinGlass.Targets.hasDerivAt\_parisiStep\_parisiF\_variance}\leanok
+\lean{SpinGlass.Targets.hasFDerivAt\_parisiStep\_variance\_spatial}\leanok
+If $A$ is any actual Parisi recursion input and
+$B(v,x)=\operatorname{ParisiStep}(m,v,A)(x)$, then, for $v>0$,
+\[
+ \partial_v B=\tfrac12(B_{xx}+mB_x^2).
+\]
+The formula includes $m=0$. For $m\in[0,1]$, the actual first and second
+spatial derivatives satisfy $0\le B_{xx}\le1-B_x^2$, and hence
+$0\le\partial_v B\le\tfrac12$. Joint variance/spatial differentiation and
+the chain rule for $B(v,x+\sqrt{a-v}\,z)$ hold on $0<v<a$.
+\end{lemma}
+\begin{proof}
+Apply Gaussian Stein to the amplitude derivative and use exponential-growth
+domination. The existing spatial smoothing invariant propagates through all
+Parisi levels, including mass zero. RSAT's general Gaussian transform gives
+joint continuity of $B$, $B_x$, $B_{xx}$; Mathlib's continuous-partials theorem
+then gives the joint derivative needed by the moving-field chain rule.
+\end{proof}
+
+\begin{lemma}[The two-step split-variance identity (4.11)]
+\lean{SpinGlass.Targets.hasDerivAt\_split\_parisiF}\leanok
+Let $A$ be any actual Parisi input and put
+\[
+ \begin{aligned}
+ B(v,x)&=\operatorname{ParisiStep}(m,v,A)(x),\\
+ C(v,x)&=\operatorname{ParisiStep}(m',a-v,B(v,\cdot))(x).
+ \end{aligned}
+\]
+For $m\in[0,1]$, $m'\in\mathbb R$, and $0<v<a$,
+\[
+ \partial_v C(v,x)=\frac{m-m'}2\,\mathbb E_W
+       [B_x(v,x+\sqrt{a-v}\,g)^2],
+\]
+where $W$ is the actual outer normalized tilt. Both zero-mass cases are included.
+The derivative is nonnegative if $m'\le m$.
+\end{lemma}
+\begin{proof}
+Adapt the existing local-neighborhood Gaussian parameter chain rule to one
+coordinate. The joint variance/spatial derivative supplies the moving-inner-field
+derivative. Normalized scalar Stein cancels the two $B_{xx}$ contributions,
+leaving exactly the displayed squared-first-derivative term.
+\end{proof}
+This interior identity does not yet give the higher mixed derivatives, endpoint
+stationarity, or the remaining outer propagation needed in Section~4.
+
+\begin{lemma}[Lemma 5.9 and the optimized scalar endpoint]
+\lean{SpinGlass.Targets.talagrand\_lemma\_5\_9}\leanok
+\lean{SpinGlass.Targets.section5Interpolation\_zero\_lambda\_gain}\leanok
+For the actual Section~5 scalar recursion at the original inserted mass,
+\[
+ 0\le \partial_\lambda^2 V\le1,
+ \qquad
+ \exists\lambda:\quad V(\lambda)-\lambda u
+ \le V(0)-\tfrac12(V'(0)-u)^2.
+\]
+The curvature constant is independent of the number of levels and all parameters.
+Combining the explicit choice $\lambda=u-V'(0)$ with (5.17) and (5.19) gives
+\[
+ \eta(0)\le2(\log2+A_0(h))-\tfrac12(V'(0)-u)^2
+\]
+for attainable overlaps in the constructed left interval.
+\end{lemma}
+\begin{proof}
+At the terminal, the lambda second derivative is $E=1-D^2$.
+A normalized tilt of mass $m\in[0,1]$ sends $D$ to $\mathbb E_WD$ and
+$E$ to $\mathbb E_WE+m\operatorname{Var}_W(D)$. Thus
+$0\le E\le1-D^2$ survives every independent and shared transform.
+RSAT supplies all analytic regularity. Mathlib convexity supplies the tangent
+quadratic bound, followed by the explicit lambda choice and the checked endpoint.
+\end{proof}
+This does not identify $V'(0)$ with $U'$ or transport the gain to $\eta(1)$.
+
 \begin{lemma}[Conditional finite-overlap deduction of Proposition 2.3]
 \lean{SpinGlass.Targets.talagrand\_proposition\_2\_3\_of\_quadratic\_bound}\leanok
 \lean{SpinGlass.Targets.guerraPhi\_uniform\_of\_quadratic\_bound}\leanok
@@ -850,14 +969,46 @@ relative to $2\varphi_N$. Apply Proposition~2.5, finite additivity of the
 actual replica functional, and exponential decay. Reuse the proved
 mass-weighted conversion and endpoint-safe convergence argument.
 \end{proof}
-This certifies the deduction only: the uniform quadratic estimate and
-the reduction removing the positive-first-mass restriction remain unproved.
+This certifies the deduction only: the uniform quadratic estimate remains unproved.
+
+\begin{lemma}[Exact leading-zero-mass reduction]
+\lean{SpinGlass.Targets.exists\_positive\_first\_mass\_reduction}\leanok
+Every admissible scheme has an equivalent scheme of lower or equal level with
+positive first mass. The Parisi functional, $\psi(t)$, and the actual $\varphi_N(t)$
+for $0\le t\le1$ are preserved. Fixed-level minimality transfers exactly.
+Consequently the original Theorem~2.2 quantifiers follow from a uniform quadratic
+bound proved only for positive-first-mass schemes.
+\end{lemma}
+\begin{proof}
+If the first mass vanishes, merge the two outer Gaussian expectations by the
+scalar and N-site semigroup laws. Pad every smaller competitor with a redundant
+zero-variance first interval to transfer fixed-level minimality. Induct on the
+number of levels; at local level zero the first mass is already one.
+\end{proof}
+This reduction does not assert strictness of every overlap increment in (2.19).
+
+\begin{lemma}[Exact equal-mass compression]
+\lean{SpinGlass.Targets.exists\_strict\_mass\_reduction}\leanok
+Every scheme has an exactly equivalent lower-or-equal-level scheme whose
+entire mass sequence is strictly increasing. The functional, $\psi$, actual
+$\varphi_N$, and fixed-level minimality are preserved as above.
+\end{lemma}
+\begin{proof}
+The arbitrary-mass N-site Gaussian semigroup merges adjacent steps of equal
+mass. The scalar endpoint follows by one-site tensorization, and the two
+correction terms telescope. Iterate the exact deletion, using zero-variance
+padding to transfer minimality at each stage.
+\end{proof}
+This completes the mass-strictness part of (2.19), not overlap strictness.
+Thus the final conditional convergence theorem requires the quadratic bound only
+for schemes with strictly increasing masses. The baseline mass at $r=1$ is
+nevertheless $m_0=0$, and still needs its appropriate mass-variation treatment.
 
 The remaining work follows Proposition~2.3 and the coupled-replica concentration
 argument in \S3--\S5 of \cite{Tal06}: prove the a priori bound of Theorem~2.4,
-then apply the checked conditional deduction of Proposition~2.3. The reduction
-for coincident scheme levels in (2.19) also remains to be formalised before
-the concentration hypothesis is available for every admissible scheme.
+then apply the checked conditional deduction of Proposition~2.3 and the exact
+leading-zero-mass reduction. Additional coincident-level reductions may be needed
+by the scalar stationarity argument; they are not implicit in that leading-mass result.
 The active RSAT dependency includes
 \texttt{SpinGlass.AT.twoReplica\_GT\_bound} and Gaussian concentration results;
 these are supporting ingredients, not an existing proof of Theorem~2.2.
