@@ -998,6 +998,50 @@ in (4.37), obtaining exactly (4.46).
 This proves first mass differentiation, not the mixed identities for $U'$ and
 $U''$, uniform higher-mass bounds, or the quantitative stationarity estimates.
 
+\begin{lemma}[Closed-interval bounds for the actual first variation]
+\lean{SpinGlass.Targets.section4U\_sub\_mem\_Icc}\leanok
+\lean{SpinGlass.Targets.section4FirstVariation\_dist\_le}\leanok
+If $m_{r-1}<1$, then on the full closed split interval
+\[
+ 0\le U(w)-U(v)\le w-v\quad(v\le w),\qquad 0\le U(v)\le v.
+\]
+Thus $U$ is nondecreasing and 1-Lipschitz. On $[q_{r-1},q_r]$,
+$|f(u)-f(w)|\le \beta^2|u-w|/2$. Zero baseline mass and coincident overlaps
+are included; the strict-mass reduction supplies $m_{r-1}<1$ on the critical path.
+\end{lemma}
+\begin{proof}
+Apply the already proved full $T$ variance comparison at mass $m_{r-1}+\delta$,
+divide by $\delta>0$, and let $\delta\downarrow0$ using the actual baseline
+mass derivative. The constant baseline $T(v,m_{r-1})=A_0(h)$ cancels.
+Closedness of the comparison interval passes the bounds to the limit.
+The formula for $f$ and $0\le u,w\le1$ give its overlap-Lipschitz bound.
+No derivative of $U$ is used.
+\end{proof}
+
+\begin{lemma}[Normalized squared-slope factor and its integral identity]
+\lean{SpinGlass.Targets.section4VarianceD\_eq\_massGap\_mul}\leanok
+\lean{SpinGlass.Targets.section4TVarianceQ\_mem\_Icc}\leanok
+\lean{SpinGlass.Targets.section4T\_sub\_eq\_massGap\_mul\_integral}\leanok
+Let $Q(m,v)$ be the actual nested normalized mean of the squared spatial
+slope at the split. This definition does not divide by $m-m_{r-1}$ and gives
+$0\le Q(m,v)\le1$ for $0\le m\le1$, including baseline masses zero and one.
+For $m_{r-1}\le m\le1$ and $0\le v\le w\le a$,
+\[
+ T(w,m)-T(v,m)=\frac{m-m_{r-1}}2\int_v^w Q(m,z)\,dz.
+\]
+The corresponding derivative identity holds at interior variance.
+\end{lemma}
+\begin{proof}
+Linearity of each normalized mean factors the already checked full variance
+derivative, and its squared-slope invariant gives the interval bound.
+Mathlib's integrability and fundamental theorem for a nonnegative derivative
+give the displayed identity using endpoint continuity. At equal masses both
+sides vanish; no integrability of $Q$ at that baseline is inferred from the
+vanishing product. For a positive mass gap, division also proves $Q$ integrable.
+\end{proof}
+Continuity of $Q$ at the baseline, the resulting identity $U'=Q$, and $U''$
+remain separate obligations.
+
 \begin{lemma}[Actual inserted functional and optimality inputs]
 \lean{SpinGlass.Targets.parisiFunctional\_insertLevel}\leanok
 \lean{SpinGlass.Targets.section4Phi\_near\_min}\leanok
@@ -1069,7 +1113,7 @@ the normalized parameter rule at every outer level. Measurable forward
 difference quotients give disorder measurability of the actual variance
 derivative; its uniform bound justifies the outer Gaussian differentiation.
 \end{proof}
-The simultaneous finite-parameter chain rule, replica-weight identification,
+The simultaneous outer Gaussian derivative, replica-weight identification,
 and endpoint-safe integration of the full second interpolation remain to be assembled.
 
 \begin{lemma}[Degenerate interpolation variances need no endpoint derivative]
@@ -1083,6 +1127,61 @@ Each variance is $A+(1-w)B$ with $A,B\ge0$. If this vanishes at $w<1$, then
 $A=B=0$. Such a coordinate is constant and can be omitted from the eventual
 chain rule; no two-sided variance derivative at zero is required.
 \end{proof}
+
+\begin{lemma}[Moving coefficients and actual second-interpolation continuity]
+\lean{SpinGlass.Targets.hasDerivAt\_section5InterpolationAmplitude}\leanok
+\lean{SpinGlass.Targets.continuousOn\_constrainedPairFieldCascade\_paths}\leanok
+\lean{SpinGlass.Targets.continuousOn\_section5Interpolation}\leanok
+\lean{SpinGlass.Targets.continuousOn\_section5RightInterpolation}\leanok
+For each actual field variance $v(w)=A+(1-w)B$, its amplitude derivative
+before time one is $-B/(2\sqrt{v(w)})$. A zero face has $A=B=0$, so this
+totalized expression agrees with the derivative of a constant.
+The disorder coefficient $\sqrt{wt}$ is similarly differentiated for $w>0$,
+including $t=0$ by its constant branch.
+
+The actual constrained cascade is continuous along simultaneous continuous
+disorder, field and nonnegative variance paths on compact parameter sets.
+After Gaussian disorder averaging, both physical second interpolations are
+continuous on the entire interval $[0,1]$.
+\end{lemma}
+\begin{proof}
+Generalize the parameter type of the existing Gaussian continuity theorem,
+without changing its proof. Reuse it at variance 1 with moving coefficients
+in the input, using compact-image growth bounds and the existing independent/
+shared packing identities. RSAT's finite-state log partition supplies the
+actual terminal continuity. The disorder Lipschitz estimate gives an affine
+Gaussian-norm dominating function for the outer expectation.
+\end{proof}
+These results do not assert the simultaneous derivative or its covariance bound.
+
+\begin{lemma}[Joint differentiation of the actual moving cascade]
+\lean{SpinGlass.Targets.contDiff\_constrainedPairFieldBase\_joint}\leanok
+\lean{SpinGlass.Targets.differentiableAt\_constrainedFieldCascade\_joint}\leanok
+\lean{SpinGlass.Targets.hasDerivAt\_constrainedFieldCascade\_path\_fderiv}\leanok
+\lean{SpinGlass.Targets.differentiableAt\_section5Interpolation\_integrand}\leanok
+\lean{SpinGlass.Targets.differentiableAt\_section5RightInterpolation\_integrand}\leanok
+Let the disorder and all visited variances follow differentiable paths near
+$w$. Assume the variances are nonnegative nearby and that each visited
+coordinate is positive at $w$ or locally identically zero. The actual
+constrained cascade is jointly differentiable in the path parameter and both
+replica fields. In particular, both physical second-interpolation integrands
+are differentiable for $0<w<1$, at fixed disorder, including zero masses and
+coincident overlaps.
+\end{lemma}
+\begin{proof}
+The absorbed finite-state log partition gives joint terminal smoothness.
+Telescope the individual variance comparisons and combine them with the
+disorder and spatial Lipschitz bounds to obtain an anchored parameter bound,
+uniform in the replica fields. At each Gaussian step differentiate the moving
+shift directly. Its difference bound is affine in the Gaussian $\ell^1$ norm;
+the log-Laplace branch has an integrable exponential-growth bound. Mathlib's
+dominated differentiation therefore applies to the full joint input. Handle
+mass zero as an ordinary expectation and use the actual independent/shared
+packing for induction. The positive-or-constant-zero alternative verifies the
+physical paths' hypotheses.
+\end{proof}
+This does not yet pass the simultaneous derivative through the outer disorder
+average or identify it with the replica covariance expression.
 
 \begin{lemma}[Right-interval endpoints, baseline and scalar gain]
 \lean{SpinGlass.Targets.section5RightInterpolation\_one}\leanok
@@ -1129,7 +1228,20 @@ pieces of $[q_r,q_{r+1}]$. Reflect (4.11) by $v\mapsto a-v$ with inner mass
 $m_r$ and outer mass $m$, then propagate the closed-interval comparison through
 order-preserving outer scalar steps. The last overlap interval is included.
 \end{proof}
-This does not yet give the derivative through all right outer levels or dual stationarity.
+\begin{lemma}[Full right-recursion derivative and closed-interval bound]
+\lean{SpinGlass.Targets.hasDerivAt\_section4RightT\_variance}\leanok
+\lean{SpinGlass.Targets.section4RightT\_variance\_dist\_le}\leanok
+For $0\le m\le m_r$, the full actual dual recursion has interior derivative
+in $[(m-m_r)/2,0]$. Its Lipschitz constant on the closed split interval is
+$(m_r-m)/2$, independent of the number of outer levels. The last overlap
+interval and zero masses are included.
+\end{lemma}
+\begin{proof}
+Propagate the reflected two-step derivative through exactly $r$ normalized
+outer means. Their bound is preserved, and the closed-interval comparison
+gives the sign. Apply the mean-value theorem with endpoint continuity.
+\end{proof}
+Dual mixed mass/variance identities and quantitative stationarity remain open.
 
 \begin{lemma}[Lemma 5.9 and the optimized scalar endpoint]
 \lean{SpinGlass.Targets.talagrand\_lemma\_5\_9}\leanok

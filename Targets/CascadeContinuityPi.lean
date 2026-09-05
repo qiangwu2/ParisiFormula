@@ -13,8 +13,9 @@ namespace SpinGlass.Targets
 
 /-- A cascade smoothing step preserves parameter continuity under uniform
 affine growth, including the zero-mass branch. -/
-theorem continuousOn_parisiStepPi_param {n : ℕ} {A : ℝ → (Fin n → ℝ) → ℝ}
-    {s : Set ℝ} {m v C D : ℝ} (hD : 0 ≤ D)
+theorem continuousOn_parisiStepPi_param {P : Type*} [TopologicalSpace P]
+    [FirstCountableTopology P] {n : ℕ} {A : P → (Fin n → ℝ) → ℝ}
+    {s : Set P} {m v C D : ℝ} (hD : 0 ≤ D)
     (hAm : ∀ u ∈ s, Measurable (A u))
     (hA : ∀ u ∈ s, ∀ y, |A u y| ≤ C + D * l1 y)
     (hcont : ∀ y, ContinuousOn (fun u => A u y) s) (x : Fin n → ℝ) :

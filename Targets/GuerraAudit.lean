@@ -26,8 +26,14 @@ interpolation derivative, higher mixed mass identities, or the uniform quadratic
 The latest guards add averaged disorder and individual variance derivatives,
 constant zero-variance coordinates, the actual nested baseline mass derivative
 and first variation (4.46), and the dual correction/scalar comparison. They do
-not combine the averaged partial derivatives into a simultaneous chain rule,
-identify replica weights, or prove the identities for U' and U''.
+not identify replica weights or prove the identities for U' and U''.
+The current guards additionally certify full joint differentiation of the actual
+moving cascade, its normalized successor derivative and both physical integrands
+at fixed disorder, along with Gaussian-averaged endpoint continuity. They do not
+yet differentiate the outer Gaussian average along the simultaneous path or
+identify the resulting trace/heat/replica expression. Section 4 guards include
+monotonicity of U, Lipschitz bounds for U and f, the normalized squared-slope
+factor and its closed-interval integral identity, and full right variance calculus.
 The full Parisi formula is deliberately not listed: Theorem 2.2 is still open.
 -/
 import Targets.ReplicaMeasure
@@ -60,6 +66,12 @@ import Targets.Section5VarianceFaces
 import Targets.RightInterpolationAlgebra
 import Targets.Section4RightVariation
 import Targets.Section4FirstVariation
+import Targets.Section5InterpolationContinuity
+import Targets.Section4UBounds
+import Targets.Section4RightDerivative
+import Targets.Section4VarianceFactor
+import Targets.ConstrainedJointTerminal
+import Targets.Section5JointInterpolation
 
 /--
 info: 'SpinGlass.Targets.guerra_identity' depends on axioms: [propext, Classical.choice, Quot.sound]
@@ -1684,3 +1696,361 @@ info: 'SpinGlass.Targets.section4FirstVariation_at_upper_overlap' depends on axi
 -/
 #guard_msgs in
 #print axioms SpinGlass.Targets.section4FirstVariation_at_upper_overlap
+
+/--
+info: 'SpinGlass.Targets.continuousOn_parisiStepPi_param' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.continuousOn_parisiStepPi_param
+
+/--
+info: 'SpinGlass.Targets.CoupledContinuousOn.growth_at' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.CoupledContinuousOn.growth_at
+
+/--
+info: 'SpinGlass.Targets.CoupledContinuousOn.linearStep' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.CoupledContinuousOn.linearStep
+
+/--
+info: 'SpinGlass.Targets.CoupledContinuousOn.fieldCascade' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.CoupledContinuousOn.fieldCascade
+
+/--
+info: 'SpinGlass.Targets.hasDerivAt_sqrt_affineVariance' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.hasDerivAt_sqrt_affineVariance
+
+/--
+info: 'SpinGlass.Targets.hasDerivAt_sqrt_mul_time' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.hasDerivAt_sqrt_mul_time
+
+/--
+info: 'SpinGlass.Targets.hasDerivAt_section5InterpolationVariance' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.hasDerivAt_section5InterpolationVariance
+
+/--
+info: 'SpinGlass.Targets.hasDerivAt_section5InterpolationAmplitude' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.hasDerivAt_section5InterpolationAmplitude
+
+/--
+info: 'SpinGlass.Targets.hasDerivAt_section5RightInterpolationVariance' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.hasDerivAt_section5RightInterpolationVariance
+
+/--
+info: 'SpinGlass.Targets.hasDerivAt_section5RightInterpolationAmplitude' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.hasDerivAt_section5RightInterpolationAmplitude
+
+/--
+info: 'SpinGlass.Targets.continuousOn_constrainedPairFieldBase_paths' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.continuousOn_constrainedPairFieldBase_paths
+
+/--
+info: 'SpinGlass.Targets.coupledContinuousOn_constrainedPairFieldBase' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.coupledContinuousOn_constrainedPairFieldBase
+
+/--
+info: 'SpinGlass.Targets.coupledContinuousOn_constrainedPairFieldCascade' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.coupledContinuousOn_constrainedPairFieldCascade
+
+/--
+info: 'SpinGlass.Targets.continuousOn_constrainedPairFieldCascade_paths' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.continuousOn_constrainedPairFieldCascade_paths
+
+/--
+info: 'SpinGlass.Targets.continuousOn_constrainedPairGaussian_path' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.continuousOn_constrainedPairGaussian_path
+
+/--
+info: 'SpinGlass.Targets.continuousOn_section5Interpolation' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.continuousOn_section5Interpolation
+
+/--
+info: 'SpinGlass.Targets.continuousOn_section5RightInterpolation' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.continuousOn_section5RightInterpolation
+
+/--
+info: 'SpinGlass.Targets.section4U_sub_mem_Icc' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.section4U_sub_mem_Icc
+
+/--
+info: 'SpinGlass.Targets.monotoneOn_section4U' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.monotoneOn_section4U
+
+/--
+info: 'SpinGlass.Targets.section4U_dist_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.section4U_dist_le
+
+/--
+info: 'SpinGlass.Targets.lipschitzOnWith_section4U' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.lipschitzOnWith_section4U
+
+/--
+info: 'SpinGlass.Targets.continuousOn_section4U' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.continuousOn_section4U
+
+/--
+info: 'SpinGlass.Targets.section4U_mem_Icc' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.section4U_mem_Icc
+
+/--
+info: 'SpinGlass.Targets.section4FirstVariation_dist_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.section4FirstVariation_dist_le
+
+/--
+info: 'SpinGlass.Targets.continuousOn_section4FirstVariation' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.continuousOn_section4FirstVariation
+
+/--
+info: 'SpinGlass.Targets.abs_section4FirstVariation_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.abs_section4FirstVariation_le
+
+/--
+info: 'SpinGlass.Targets.section4RightVarianceD_props' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.section4RightVarianceD_props
+
+/--
+info: 'SpinGlass.Targets.hasDerivAt_section4RightT_variance' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.hasDerivAt_section4RightT_variance
+
+/--
+info: 'SpinGlass.Targets.abs_deriv_section4RightT_variance_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.abs_deriv_section4RightT_variance_le
+
+/--
+info: 'SpinGlass.Targets.deriv_section4RightT_variance_mem_Icc' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.deriv_section4RightT_variance_mem_Icc
+
+/--
+info: 'SpinGlass.Targets.section4RightT_variance_dist_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.section4RightT_variance_dist_le
+
+/--
+info: 'SpinGlass.Targets.section4VarianceD_eq_massGap_mul' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.section4VarianceD_eq_massGap_mul
+
+/--
+info: 'SpinGlass.Targets.measurable_section4VarianceQ' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.measurable_section4VarianceQ
+
+/--
+info: 'SpinGlass.Targets.section4VarianceQ_mem_Icc' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.section4VarianceQ_mem_Icc
+
+/--
+info: 'SpinGlass.Targets.section4TVarianceD_eq_massGap_mul' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.section4TVarianceD_eq_massGap_mul
+
+/--
+info: 'SpinGlass.Targets.section4TVarianceQ_mem_Icc' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.section4TVarianceQ_mem_Icc
+
+/--
+info: 'SpinGlass.Targets.hasDerivAt_section4T_variance_factor' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.hasDerivAt_section4T_variance_factor
+
+/--
+info: 'SpinGlass.Targets.intervalIntegrable_section4T_variance_factor' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.intervalIntegrable_section4T_variance_factor
+
+/--
+info: 'SpinGlass.Targets.section4T_sub_eq_massGap_mul_integral' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.section4T_sub_eq_massGap_mul_integral
+
+/--
+info: 'SpinGlass.Targets.intervalIntegrable_section4TVarianceQ' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.intervalIntegrable_section4TVarianceQ
+
+/--
+info: 'SpinGlass.Targets.contDiff_constrainedPairFieldBase_joint' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.contDiff_constrainedPairFieldBase_joint
+
+/--
+info: 'SpinGlass.Targets.differentiableAt_constrainedPairFieldBase_joint' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.differentiableAt_constrainedPairFieldBase_joint
+
+/--
+info: 'SpinGlass.Targets.constrainedFieldCascade_variances_dist_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.constrainedFieldCascade_variances_dist_le
+
+/--
+info: 'SpinGlass.Targets.constrainedFieldCascade_path_anchored_bound' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.constrainedFieldCascade_path_anchored_bound
+
+/--
+info: 'SpinGlass.Targets.hasFDerivAt_gaussianLogLaplace' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.hasFDerivAt_gaussianLogLaplace
+
+/--
+info: 'SpinGlass.Targets.hasFDerivAt_jointGaussianStep' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.hasFDerivAt_jointGaussianStep
+
+/--
+info: 'SpinGlass.Targets.differentiableAt_constrainedFieldCascade_joint' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.differentiableAt_constrainedFieldCascade_joint
+
+/--
+info: 'SpinGlass.Targets.hasDerivAt_constrainedFieldCascade_path_fderiv' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.hasDerivAt_constrainedFieldCascade_path_fderiv
+
+/--
+info: 'SpinGlass.Targets.hasFDerivAt_constrainedFieldCascade_joint_succ' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.hasFDerivAt_constrainedFieldCascade_joint_succ
+
+/--
+info: 'SpinGlass.Targets.hasDerivAt_constrainedFieldCascade_path_succ' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.hasDerivAt_constrainedFieldCascade_path_succ
+
+/--
+info: 'SpinGlass.Targets.differentiableAt_section5Interpolation_joint' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.differentiableAt_section5Interpolation_joint
+
+/--
+info: 'SpinGlass.Targets.differentiableAt_section5Interpolation_integrand' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.differentiableAt_section5Interpolation_integrand
+
+/--
+info: 'SpinGlass.Targets.differentiableAt_section5RightInterpolation_joint' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.differentiableAt_section5RightInterpolation_joint
+
+/--
+info: 'SpinGlass.Targets.differentiableAt_section5RightInterpolation_integrand' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.differentiableAt_section5RightInterpolation_integrand

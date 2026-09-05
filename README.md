@@ -104,9 +104,9 @@ their spin-observable formulas, field-uniform bounds, and measurability.
 [`Targets/CoupledCascadeVariance.lean`](Targets/CoupledCascadeVariance.lean) now
 proves the positive-variance heat generator for an additional independent or shared
 level of the actual constrained cascade, including zero mass. Spatial-direction
-linearity and the independent two-field Gaussian packing are checked. Simultaneous
-variation of every level and the disorder, and identification with replica weights,
-are still needed for the full interpolation derivative.
+linearity and the independent two-field Gaussian packing are checked. Identification
+of the simultaneous derivative with the replica covariance expression is still
+needed for the full interpolation inequality.
 [`Targets/CoupledNestedVariance.lean`](Targets/CoupledNestedVariance.lean) now
 propagates a single original level's variance derivative through every unchanged
 outer level of the actual constrained cascade. The varying variance must be
@@ -125,6 +125,27 @@ disorder average, proving the required measurability and domination.
 that any zero variance before time one is an identically zero coordinate in
 either neighbor-interval construction. No positive-variance assumption is
 therefore imposed on coincident overlap increments.
+[`Targets/Section5InterpolationPath.lean`](Targets/Section5InterpolationPath.lean)
+proves the actual square-root coefficient derivatives, including constant zero
+coordinates and zero disorder amplitude. The compact-parameter continuity rules
+in [`Targets/CoupledPathContinuity.lean`](Targets/CoupledPathContinuity.lean) and
+[`Targets/ConstrainedPathContinuity.lean`](Targets/ConstrainedPathContinuity.lean)
+cover simultaneous disorder, field and variance paths of the actual cascade.
+[`Targets/Section5InterpolationContinuity.lean`](Targets/Section5InterpolationContinuity.lean)
+passes this through the Gaussian average, proving continuity on `[0,1]` of both
+actual second interpolations. No derivative inequality is inferred from continuity.
+[`Targets/ConstrainedJointTerminal.lean`](Targets/ConstrainedJointTerminal.lean)
+proves joint smoothness of the actual terminal in disorder and both fields.
+[`Targets/CoupledJointInterpolation.lean`](Targets/CoupledJointInterpolation.lean)
+then proves genuine joint differentiability of the full cascade along a disorder
+path and all variance paths, using dominated differentiation of the moving Gaussian
+shifts. Positive variances and locally constant zero coordinates are covered.
+The successor derivative is its normalized Gaussian expectation of the actual
+inner joint derivative composed with the moving shift, before integration by parts.
+[`Targets/Section5JointInterpolation.lean`](Targets/Section5JointInterpolation.lean)
+specializes this to both actual second-interpolation integrands for `0<w<1`, at
+fixed disorder. The outer Gaussian derivative and replica-weight identification
+are still open; differentiability alone does not prove the covariance inequality.
 [`Targets/ParisiMassDerivative.lean`](Targets/ParisiMassDerivative.lean) reuses
 Mathlib's moment-generating-function calculus for the scalar mass derivative,
 its entropy identity and nonnegativity.
@@ -168,12 +189,24 @@ coincident overlaps. These inputs do not yet prove the uniform variation bounds.
 identifies **(4.46)** with the genuine baseline mass derivative of this `Φ`
 and proves that it vanishes at `u=q_r`. This is not yet stationarity in `u`
 or the identities for `U′` and `U″`.
+[`Targets/Section4UBounds.lean`](Targets/Section4UBounds.lean) proves the actual
+`U` is nondecreasing, 1-Lipschitz, and satisfies `0≤U(v)≤v` on the closed
+variance interval when `m_(r−1)<1`. The strict-mass reduction supplies this
+condition; zero baseline mass and degenerate intervals are included. The actual
+first variation is continuous and `β²/2`-Lipschitz in overlap.
+[`Targets/Section4VarianceFactor.lean`](Targets/Section4VarianceFactor.lean)
+factors `∂vT=(m−m_(r−1))Q/2`, with an actual nested normalized squared-slope
+average `Q∈[0,1]` defined without division by the mass gap. The endpoint-safe
+integral identity is proved, but baseline continuity of `Q` and `U′=Q` are not.
 [`Targets/RightInterpolationAlgebra.lean`](Targets/RightInterpolationAlgebra.lean)
 supplies the exact dual correction, and
 [`Targets/Section4RightVariation.lean`](Targets/Section4RightVariation.lean)
 reuses (4.11) by reflection: the actual dual two-step derivative and full
 closed-interval antimonotonicity are checked for decreased inserted mass.
-The full right-recursion derivative and dual stationarity remain open.
+[`Targets/Section4RightDerivative.lean`](Targets/Section4RightDerivative.lean)
+now propagates the derivative through the full right recursion with
+`|∂vT_right|≤(m_r−m)/2`. Its Lipschitz bound holds on the closed interval,
+including zero masses and the last interval. Dual stationarity remains open.
 [`Targets/CoupledLambdaCurvature.lean`](Targets/CoupledLambdaCurvature.lean) proves
 **Lemma 5.9** with the level-independent bound `0 ≤ ∂²λ V ≤ 1`.
 [`Targets/TalagrandLambdaGain.lean`](Targets/TalagrandLambdaGain.lean) optimizes λ
@@ -266,6 +299,10 @@ finite-overlap/convergence deductions, including the strict-mass bridge.
 The audit also covers the actual Gaussian-averaged disorder and individual
 variance derivatives, degenerate variance coordinates, full baseline mass
 differentiation and first variation, and dual correction/comparison.
+It now checks the actual simultaneous pointwise cascade derivative and its
+normalized recursion, both physical path specializations, Gaussian-averaged
+endpoint continuity, the bounds for `U` and `f`, the normalized variance factor,
+and the full dual variance derivative. There are 311 completed-result guards.
 This does not certify the still-open Theorem 2.4 or Proposition 2.3. CI requires both
 local libraries to build; it does not ignore target or audit failures.
 
@@ -337,6 +374,7 @@ ParisiFormula/
 │   ├── TalagrandRightZero.lean         dual scalar baseline and optimized time-zero lambda gain
 │   ├── RightInterpolationAlgebra.lean exact dual deterministic correction and its baseline
 │   ├── Section4RightVariation.lean    dual split derivative and full closed-interval antimonotonicity
+│   ├── Section4RightDerivative.lean   full dual variance derivative and closed mass-gap Lipschitz bound
 │   ├── ConstrainedFiniteState.lean   RSAT-backed first/second derivatives of the constrained terminal
 │   ├── CoupledCovariance.lean        four-overlap covariance, square completion and terminal Hessian
 │   ├── SecondInterpolationAlgebra.lean  algebraic remainder sign, telescoping and (5.9) correction
@@ -348,11 +386,20 @@ ParisiFormula/
 │   ├── CoupledDisorderInterpolation.lean  actual Gaussian-averaged disorder derivative and radial Stein
 │   ├── CoupledVariancePressure.lean   individual variance derivative through the Gaussian disorder average
 │   ├── Section5VarianceFaces.lean     positive-or-identically-zero alternative for actual level variances
+│   ├── Section5InterpolationPath.lean actual coefficient derivatives, including constant zero coordinates
+│   ├── CoupledPathContinuity.lean     compact-parameter Gaussian continuity through all moving levels
+│   ├── ConstrainedPathContinuity.lean actual constrained-terminal/cascade joint path continuity
+│   ├── ConstrainedJointTerminal.lean actual terminal joint smoothness in disorder and both fields
+│   ├── CoupledJointInterpolation.lean simultaneous cascade/field differentiation by moving Gaussian shifts
+│   ├── Section5JointInterpolation.lean actual left/right pointwise interpolation differentiability
+│   ├── Section5InterpolationContinuity.lean Gaussian averaging and both actual endpoint-continuity theorems
 │   ├── ParisiMassDerivative.lean      scalar mass derivative, entropy and monotonicity via Mathlib
 │   ├── ParisiMassZero.lean            analytic mass-zero extension and half-variance derivative
 │   ├── ParisiMassLocal.lean           local derivative domination and two-sided mass-zero bound
 │   ├── Section4MassDerivative.lean    actual full baseline mass derivative and U, including mass zero
 │   ├── Section4FirstVariation.lean    actual Phi first variation (4.46) and its upper-overlap zero
+│   ├── Section4UBounds.lean           monotonicity of U and closed-interval Lipschitz bounds for U and f
+│   ├── Section4VarianceFactor.lean    normalized squared-slope factor Q and endpoint-safe integral identity
 │   ├── ParisiStepSemigroup.lean       scalar semigroup including zero masses and variances
 │   ├── ParisiVarianceDerivative.lean  Gaussian heat generator and actual scalar variance derivative
 │   ├── Section4Variance.lean          actual Parisi C2, heat equation and joint variance/field calculus

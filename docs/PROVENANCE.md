@@ -45,6 +45,9 @@ transitive dependencies for the standard Lean axioms only.
 | Local `gaussianReal_stein_of_bound`, scalar spatial derivative formulas, and Gaussian exponential-growth integrability | `ParisiVarianceDerivative.lean` proves the positive-variance heat equation, retaining the actual mass-zero expectation. `Section4Variance.lean` applies it to every genuine Parisi input. |
 | RSAT `GTFrame.goodTriple_finiteStep`; Mathlib `hasStrictFDerivAt_uncurry_coprod` | Joint continuity of the scalar step and its spatial derivatives, then joint variance/spatial differentiation in `Section4Variance.lean`; separate partial derivatives are not silently treated as joint differentiability. |
 | RSAT `GoodTriple`; Mathlib `monotoneOn_of_deriv_nonneg`; local `parisiStepPi_mono_growth` | The two-step closed-interval comparison and its propagation through the actual `section4T`. Continuity plus interior derivatives suffice; no variance-endpoint derivatives are assumed. |
+| Local `continuousOn_parisiStepPi_param`, finite-direction Gaussian packing, `stepK_mono_variance`; Mathlib compact-image bounds and dominated continuity | Generalize only the old parameter type (same proof), then `CoupledPathContinuity.lean` reuses the theorem at fixed variance 1 with moving shifts in the input. Actual terminal specialization and Gaussian averaging prove continuity of both physical interpolations at their endpoints. |
+| Local full `T` mass derivative and variance comparison; Mathlib `HasDerivAt.tendsto_slope_zero_right`, `IsClosed.mem_of_tendsto` | `Section4UBounds.lean` derives actual `U` monotonicity and a unit Lipschitz bound by right mass quotients, without a mixed derivative. The baseline must be below 1. |
+| Local normalized Gaussian means and spatial C2 bounds; Mathlib `intervalIntegral.integrableOn_deriv_of_nonneg`, `integral_eq_sub_of_hasDerivAt_of_le` | `Section4VarianceFactor.lean` exposes the genuine squared-slope factor, bounds it in `[0,1]`, and proves the full endpoint-safe variance integral identity. No division by a zero mass gap is used. |
 | Local `section5InterpolationVariance_zero`, `section5Correction_eq`, `section4T_baseline`, `parisiFunctional_mergeEqualMass` | The actual scalar inserted scheme, formula (4.37), and both optimality comparisons (4.30)--(4.31). Reuses checked variance algebra and mass compression instead of duplicating finite-sum/semigroup proofs. |
 | Local `stein_tiltWeightPi`, `hasDerivAt_parisiStepPi_param`; Mathlib measure-preserving finite product reindexing | `CoupledCascadeVariance.lean` proves the heat generator of an added independent/shared level of the actual fixed inner constrained cascade. The full varying-variance nested pressure remains to be assembled. |
 | Local `CoupledParamDeriv.independentStep`, `.sharedStep`, and the checked one-level heat generator | `CoupledNestedVariance.lean` differentiates one original level via `Function.update v ℓ w` and propagates its actual heat seed through every unchanged outer level. Explicit growth and measurable normalized means discharge the local analytic hypotheses. |
@@ -145,7 +148,7 @@ through the outer Gaussian expectation. The square-root chain rule gives
 the correctly normalized `1/(2N)` trace. The amplitude result holds at zero
 as well; composition with the continuous square root gives zero-variance
 continuity without claiming an endpoint variance derivative. The missing
-joint chain rule/replica-weight identification is still explicit.
+simultaneous outer derivative and replica-weight identification remain explicit.
 
 `CoupledVariancePressure.lean` closes the outer-average issue for an individual
 field-variance derivative. It reuses the actual cascade's disorder continuity
@@ -153,12 +156,59 @@ and Mathlib's `measurable_of_tendsto_metrizable'` on forward difference quotient
 This provides disorder measurability of the actual derivative without assuming
 joint differentiability. The uniform derivative bound then discharges the
 dominated-differentiation hypotheses. For simultaneous interpolation, separate
-partials still need a justified joint/finite-parameter chain rule.
+partials do not by themselves justify the chain rule. The pointwise simultaneous
+chain rule is now proved separately as described below; outer averaging and
+identification of its derivative remain open.
 
 `Section5VarianceFaces.lean` preserves degeneracies when applying that eventual
 chain rule: each physical variance is `A+(1-w)B` with `A,B≥0`. Before `w=1`,
 zero variance implies `A=B=0`, so the coordinate is constant. The proof applies
 to both actual neighbor-interval sequences; no strict-overlap restriction is added.
+
+`Section5InterpolationPath.lean` turns this alternative into genuine derivatives
+of the square-root coefficients. At a zero face both frozen and varying parts
+vanish, so the coefficient is constant; the displayed totalized quotient then
+equals zero for a proved reason. The disorder path `sqrt(w*t)` is also handled
+at `t=0`, not by assuming a square-root derivative at zero.
+
+`CascadeContinuityPi.lean` now allows any first-countable parameter space in
+its existing continuity theorem; the proof is unchanged. `CoupledPathContinuity.lean`
+uses that theorem at variance 1 after moving the varying Gaussian coefficients
+into the input. Compact images supply all uniform growth bounds. The existing
+independent/shared finite-direction packing identifies this with the actual
+coupled recursion, including its half-mass convention and zero branches.
+`ConstrainedPathContinuity.lean` absorbs the two fields into RSAT's finite-state
+potential and discharges terminal continuity and compact growth. Finally
+`Section5InterpolationContinuity.lean` compares with zero disorder using the
+proved uniform disorder Lipschitz bound. The resulting affine Gaussian-norm
+domination justifies outer averaging and gives both actual physical pressures'
+closed-interval continuity. This does not itself prove the interpolation derivative.
+
+RSAT's `GoodFam` was inspected for reuse: its auxiliary coefficients are continuous,
+but its supplied derivatives concern lambda, not this simultaneous moving path.
+The direct Fréchet bridge below supplies that genuine mismatch without copying
+upstream code or changing the locked dependency.
+
+`ConstrainedJointTerminal.lean` reuses RSAT's smooth finite-state log partition
+after absorbing the disorder and both replica fields, with Mathlib's `contDiff_piLp`
+handling the energy-space coordinates. `CoupledJointInterpolation.lean` first
+telescopes the existing single-coordinate variance Lipschitz estimates and combines
+them with disorder and spatial Lipschitz estimates. Differentiable parameter paths
+therefore have a local anchored difference bound, uniform in the replica fields.
+Mathlib's anchored dominated differentiation of integrals then proves a joint
+Fréchet derivative for the actual moving Gaussian shift. Linear/exponential growth
+gives Gaussian domination, and measurable Fréchet derivatives give the derivative
+integrand's measurability. The mass-zero expectation is handled separately from
+the nonzero log-Laplace branch. Induction uses the existing independent/shared
+packing, without treating separate partial derivatives as a joint derivative.
+Visited variances must be positive at the base point or locally identically zero.
+The successor identity retains the normalized Gaussian mean of the actual inner
+joint derivative composed with the moving shift derivative. This is a proved
+derivative candidate before integration by parts, not a postulated replica formula.
+`Section5JointInterpolation.lean` discharges these hypotheses for the actual left
+and right paths at `0<w<1`, with fixed disorder and their different cutoffs.
+This proves pointwise integrand differentiability, not yet differentiation of the
+outer Gaussian pressure or identification with Talagrand's replica covariance sum.
 
 ### Scalar variation, baseline, and finite-overlap assembly
 
@@ -223,6 +273,24 @@ zero-baseline indices, semigroup variance and normalization. The positive
 local bound is not uniform as its lower mass endpoint tends to zero. Neither
 uniform second-mass estimates nor the identities for `U′`, `U″` are claimed.
 
+`Section4UBounds.lean` obtains the unit Lipschitz and monotonicity bounds for
+actual `U` from mass difference quotients of the already checked full `T`
+variance bound. The interval of increased masses is nonempty when
+`m_(r−1)<1`; this is supplied by the strict-mass reduction, not silently
+assumed for arbitrary schemes. The limit includes zero baseline mass and both
+variance endpoints. Finite differences also give the `β²/2` overlap-Lipschitz
+bound for the actual first variation, without claiming `U′` exists.
+
+`Section4VarianceFactor.lean` defines `Q` as the nested normalized mean of the
+squared inner spatial derivative. Linearity factors the existing derivative
+as `(m−m_(r−1))Q/2` at every depth. Positivity and normalization give `Q∈[0,1]`,
+including equal masses, without division by the gap. Mathlib's integrability
+and fundamental theorem for a nonnegative derivative yield the endpoint-safe
+integral identity. Integrability of `Q` alone is deduced for a strictly positive
+mass gap; at baseline no continuity or integrability of `Q` is inferred from
+the vanishing product. Proving those facts and passing to the baseline mass
+limit is a concrete route toward `U′=Q`, still uncompleted.
+
 `RightInterpolationAlgebra.lean` reuses `pairCascadeCorrection_eq_split` at
 cutoff `r+1` and supplies only the changed two-interval sum. The exact result
 is `2*parisiCorrection+(m-m_r)*(β²/2)*(u²-q_r²)`. `Section4RightVariation.lean`
@@ -230,6 +298,12 @@ reflects the existing (4.11) by `v↦a-v`, with inner mass `m_r`, outer mass `m`
 Thus the derivative coefficient is `(m-m_r)/2`. The full dual scalar comparison
 for `0≤m≤m_r` follows through order-preserving outer steps. The last interval
 uses the actual terminal input, not an inadmissible scheme with top mass below 1.
+`Section4RightDerivative.lean` now propagates the reflected split derivative
+through exactly `r` unchanged outer levels with the existing one-coordinate
+normalized parameter rule. Its signed range is `[(m−m_r)/2,0]`, and endpoint
+continuity plus Mathlib's mean-value theorem gives the closed-interval
+Lipschitz constant `(m_r−m)/2`. The last interval and zero masses are retained;
+dual mass-variation stationarity is not part of this result.
 
 The zero-lambda formulas were independently checked against pp. 246 and 253
 of the Annals paper: local forward index `p=k+2-j`, total depth `k+3`, and

@@ -52,8 +52,17 @@ and the Gaussian average, proves the averaged disorder Hessian-trace term,
 handles identically zero variance coordinates, and supplies the right correction
 and scalar antimonotonicity. It also differentiates the actual full Section 4
 recursion at every baseline mass, including zero, and identifies the actual
-first variation (4.46). The simultaneous chain rule and replica-weight
-identification must still be proved; partial derivatives alone are not that identity.
+first variation (4.46). Those partial derivatives alone do not establish the
+simultaneous derivative or identify its replica weights.
+Step 26 supplies compact joint-path and actual second-interpolation endpoint
+continuity, the genuine square-root coefficient derivatives, full right scalar
+variance differentiation, and closed-interval bounds for the actual `U` and `f`.
+It proves genuine joint differentiation along simultaneous disorder/variance
+paths and in both fields, then specializes to the physical left/right integrands
+at fixed disorder. Outer averaging and the explicit replica identity remain open.
+It exposes the normalized squared-slope factor in `∂vT` and its endpoint-safe
+integral identity. These do not by themselves prove `U′`, `U″` or the uniform
+quadratic estimate.
 
 **Milestone 1 (Targets 1b, 1c) is *not* on this critical path.**  Target 4 is strictly
 stronger than 1c — convergence to `parisiValue` subsumes existence of a limit — and deriving
@@ -1181,13 +1190,105 @@ source edit was introduced. The updated blueprint compiles to 21 pages with
 no LaTeX warnings. README status/layout, provenance and this checked/open
 checklist are synchronized with the actual proof boundary.
 
+**Step 26 (2026-09-05): joint path differentiation and normalized Section 4 bounds.**
+
+The main agent and three agents continued separate critical-path tasks and
+cross-reviewed the actual Gaussian and mass conventions.
+
+* `Targets/Section5InterpolationPath.lean` proves the actual left/right variance
+  and square-root amplitude derivatives. A constant zero face has derivative
+  zero, justified by Step 25's positive-or-identically-zero alternative.
+  The disorder coefficient `sqrt(w*t)` is differentiated for `w>0`, also at
+  `t=0` by its constant branch. No singular endpoint derivative is asserted.
+* `Targets/CascadeContinuityPi.lean` generalizes only the parameter type of the
+  existing continuity theorem, leaving its proof unchanged.
+  `Targets/CoupledPathContinuity.lean` reuses it at variance 1, placing the
+  moving coefficients in the input and obtaining uniform growth from compact
+  images. Existing finite-direction packing handles both independent and
+  shared steps. `Targets/ConstrainedPathContinuity.lean` discharges the actual
+  constrained terminal's hypotheses via RSAT's finite-state log partition,
+  then proves full-cascade continuity along simultaneous disorder, variance
+  and field paths. Masses, cutoff and the attainable overlap stay fixed.
+* `Targets/Section5InterpolationContinuity.lean` passes this continuity through
+  the actual Gaussian disorder average using the existing disorder Lipschitz
+  estimate and affine Gaussian-norm domination. Both actual physical
+  interpolations are continuous on `[0,1]`, including zero variances, `t=0`
+  and `t=1`. This supplies the endpoint-continuity input for future transport,
+  not the missing covariance derivative inequality.
+* `Targets/ConstrainedJointTerminal.lean` proves full joint smoothness in the
+  actual disorder and both fields, reusing the same finite-state log partition.
+  Composing a differentiable disorder path gives the joint terminal derivative
+  needed by the moving-shift induction; no compactness or Gaussian assumption
+  is needed for this terminal theorem.
+* `Targets/CoupledJointInterpolation.lean` proves full joint differentiability
+  in time and both fields through every actual independent/shared level. A
+  telescoped variance comparison, disorder bound, and spatial bound give local
+  anchored domination. Differentiating the moving Gaussian shift then gives the
+  induction step, including zero mass and locally constant zero variance. This
+  is a proved simultaneous derivative, not an assumption about separate partials.
+  The successor derivative is explicitly the normalized Gaussian mean of the
+  actual inner joint derivative composed with the moving shift, before Stein/IBP.
+  `Targets/Section5JointInterpolation.lean` applies it to both actual physical
+  integrands at fixed disorder for `0<w<1`, with no strict-overlap assumption.
+  The outer Gaussian derivative and its replica covariance identification remain open.
+* `Targets/Section4UBounds.lean` takes right mass difference quotients of the
+  already checked full `T` comparison. The actual `U` is nondecreasing and
+  1-Lipschitz on the closed variance interval, with `0≤U(v)≤v`. The first
+  variation `f` is continuous and `β²/2`-Lipschitz in overlap. This requires
+  `m_(r−1)<1`, supplied on the critical path by strict-mass reduction; it does
+  include zero baseline mass and coincident overlaps. No mixed derivative is used.
+* `Targets/Section4VarianceFactor.lean` defines the actual nested normalized
+  squared-slope mean `Q` without dividing by the mass gap and proves
+  `∂vT=(m−m_(r−1))Q/2` on the interior, with `Q∈[0,1]`. Mathlib's nonnegative-
+  derivative integrability and fundamental theorem give, on closed subintervals,
+  `T(m,w)−T(m,v)=(m−m_(r−1))/2 * ∫_v^w Q(m,z) dz`. The product is integrable
+  even at equal masses. Integrability of `Q` alone is proved for a positive mass
+  gap, not silently inferred at baseline. Continuity of `Q` at the baseline and
+  passage to the mass limit remain the concrete route toward `U′=Q`.
+* `Targets/Section4RightDerivative.lean` propagates the actual reflected split
+  derivative through all `r` outer levels. Its signed range is
+  `[(m−m_r)/2,0]` for `0≤m≤m_r`, with no depth loss. The same mass-gap constant
+  gives a closed-interval Lipschitz estimate, including zero masses, degenerate
+  variance intervals, and the last overlap interval. Dual stationarity is still open.
+
+Independent read-only review checked the general continuity adapter, zero-face
+derivative branches, shared-mass packing, actual left/right cutoffs, and outer
+Gaussian domination. A separate review checked the full joint induction's
+anchored domination, derivative measurability, zero faces, and exact scope.
+Root also reviewed the scalar quotient and normalized-factor
+arguments, including the distinction between product integrability and baseline
+integrability of `Q`. No correctness issues were found in those reviewed results.
+
+**Step 26 checked/open checklist:**
+
+* [x] Genuine physical coefficient derivatives, including constant zero coordinates.
+* [x] Actual joint path continuity and Gaussian-averaged continuity at both endpoints.
+* [x] Actual terminal joint smoothness and path/field differentiation.
+* [x] Full actual cascade joint differentiation and physical pointwise left/right paths.
+* [x] Closed-interval monotonicity of actual `U` and Lipschitz bounds for `U` and `f`.
+* [x] Actual normalized factor `Q`, bounds, and endpoint-safe integral identity.
+* [x] Full right scalar variance derivative and its closed-interval bound.
+* [ ] Full simultaneous pressure derivative, replica identification, and transport bound.
+* [ ] Baseline continuity of `Q`, `U′`, `U″`, uniform optimality, and Lemma 5.8.
+* [ ] Remaining overlap regimes and the uniform Theorem 2.4 bound.
+* [ ] Unconditional Theorem 2.2 and the final Parisi-formula dependency audit.
+
+**Step 26 validation:** `bash scripts/check.sh` passes (3229 supporting-library
+jobs and 3857 target-build jobs), including **54 new standard-axiom guards**
+(311 total). All ten new proof modules pass direct or targeted Lean checks
+without module warnings; independent reviews checked the actual analytic and
+normalization hypotheses. The original four placeholders remain unchanged,
+and no dependency pins or upstream sources were changed. The updated blueprint
+compiles to 23 pages with no LaTeX warnings. README status/layout, provenance,
+blueprint and this checked/open checklist match the verified boundary.
+
 **Remaining work, following the Annals argument:**
 
 1. Prove the a priori two-replica bound of Theorem 2.4 using §3–§5 and the scheme's
    optimality. The imported RS-level `twoReplica_GT_bound` is not this general result.
-   Next concrete step: combine Step 25's averaged variance/disorder partial
-   derivatives by a justified simultaneous finite-parameter chain rule for
-   `section5Interpolation`, construct its normalized replica weights, and
+   Next concrete step: pass Step 26's proved pointwise simultaneous derivative
+   through the outer Gaussian expectation, identify its contributions with
+   Step 25's variance/disorder formulas, construct normalized replica weights, and
    prove the derivative equals the covariance expression from Step 21.
    Then prove the endpoint-safe integration of that derivative. The square
    completion, mass telescoping, and inserted correction of (5.9) are now
