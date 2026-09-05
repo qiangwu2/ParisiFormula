@@ -27,8 +27,10 @@ The unrestricted coupled cascade and both identities in Lemma 2.7 are now proved
 `Targets/CoupledCascade.lean`. `Targets/ReplicaMeasure.lean` identifies the individual
 replica probabilities with the components of the existing remainder. The constrained
 cascade and the deterministic part of Lemma 2.6 are now proved as well (Step 15).
-The next work is Gaussian concentration to complete Lemma 2.6 / Proposition 2.5,
-followed by Theorem 2.4.
+Gaussian concentration and the exponential event estimate in standard Gaussian
+coordinates are now proved (Step 16). Next, transfer their expectations to the abstract
+SK disorder and replica measures to finish Lemma 2.6 / Proposition 2.5, then prove
+Theorem 2.4.
 
 **Milestone 1 (Targets 1b, 1c) is *not* on this critical path.**  Target 4 is strictly
 stronger than 1c — convergence to `parisiValue` subsumes existence of a limit — and deriving
@@ -616,13 +618,49 @@ integrability. Positive bounded observables also have positive tilted integrals.
   also holds after that final average.
 
 All new proofs are placeholder-free, with regression guards in `GuerraAudit`.
-**Lemma 2.6 is not yet complete:** the mean-pressure-gap assumption has not been
-converted into exponential decay. Gaussian concentration, with constants uniform in
-`N` and `t`, and the required disorder/outer-field estimates still have to be supplied.
+At this checkpoint Lemma 2.6 was not yet complete: the mean-pressure-gap assumption
+had not been converted into exponential decay. Step 16 below supplies this estimate
+in standard Gaussian coordinates.
+
+**Step 16 (2026-09-04): Gaussian concentration and exponential expectation decay.**
+
+`Targets/CoupledLipschitz.lean` proves sup-norm nonexpansiveness of the interacting
+two-field cascade, including zero masses and both independent/shared levels.
+The constrained log partition sum is nonexpansive on its nonempty overlap set.
+Translation identities propagate Lipschitz control of the individual Hamiltonians
+to the actual constrained and unrestricted cascades, without a factor from the
+number of configurations.
+
+`Targets/CoupledMeasurability.lean` proves joint measurability of the partition sums,
+cascade levels, and tilted observables in the disorder and both fields.
+
+`Targets/CoupledConcentration.lean` uses the SK spectral coefficients and independent
+standard coordinates for the shared outer field of variance `β² q₁`. For `N > 0`:
+
+* The squared norm of the coefficients of each interpolated Hamiltonian is exactly
+  `t N β²/2 + (1-t) N β² q₁`, hence its Lipschitz constant is at most
+  `(1 + |β|) √N`. This includes `β = 0` and both interpolation endpoints.
+* The constrained/unrestricted pressure gap `D` is `4(1 + |β|) √N`-Lipschitz.
+  The proved Gaussian MGF theorem gives
+  `P(D - E D ≥ a) ≤ exp(-a² / (32 (1 + |β|)² N))`.
+* `gaussianCoupledEvent_small` combines this with the deterministic Lemma 2.6
+  comparison. If `E D ≤ -ε N`, attainable overlap and `s.m 1 > 0` give
+  `E Q₁ ≤ exp(-(s.m 1 * ε / 4) N) + exp(-(ε² / (128 (1 + |β|)²)) N)`.
+  Both rates are positive and independent of `N`, `t`, the overlap, and the split.
+  The gap and event are proved integrable; measurability is not an extra hypothesis.
+* This uses concentration of `D` directly, followed by `Q₁ ≤ exp(n₁ D)` and `Q₁ ≤ 1`.
+  It does not assume concentration of the logarithm of the tilted event.
+
+The new tail, integrability, and expectation results have standard-axiom-only guards.
+**The remaining Lemma 2.6 gap is change of law:** identify these standard-coordinate
+means with the abstract `sk.U` and the outer zero-mass average (for `d ≤ k+1`), then
+use Lemma 2.7 to obtain Proposition 2.5. No theorem has been weakened or placeholder
+relocated; the original Theorem 2.2 remains open.
 
 **Remaining work, following the Annals argument:**
 
-1. Complete Lemma 2.6's Gaussian concentration step and its expectation estimate,
+1. Transport Step 16's Gaussian-coordinate gap and event expectations to the
+   abstract disorder and outer field. Relate the mean gap to `constrainedPhi - 2*guerraPhi`,
    then combine with the proved Lemma 2.7 to obtain Proposition 2.5.
 2. Prove the a priori two-replica bound of Theorem 2.4 using §3–§5 and the scheme's
    optimality. The imported RS-level `twoReplica_GT_bound` is not this general result.

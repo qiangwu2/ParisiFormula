@@ -6,11 +6,12 @@ These guards are part of `lake build Targets`. They reject any reintroduced
 Lemma 2.7, the replica-measure decomposition, the deterministic comparison in
 Lemma 2.6, and the deduction of Theorem 2.2 from an explicit overlap-concentration hypothesis.
 The latter guards certify the implication, not its unproved concentration input.
-The Lemma 2.6 guards do not certify its still-open Gaussian concentration step.
+The Lemma 2.6 guards include Gaussian concentration in standard coordinates;
+the change-of-law connection to the abstract disorder remains open.
 The full Parisi formula is deliberately not listed: Theorem 2.2 is still open.
 -/
 import Targets.ReplicaMeasure
-import Targets.ConstrainedCascade
+import Targets.CoupledConcentration
 
 /--
 info: 'SpinGlass.Targets.guerra_identity' depends on axioms: [propext, Classical.choice, Quot.sound]
@@ -105,3 +106,33 @@ info: 'SpinGlass.Targets.log_coupledEvent_le_gap' depends on axioms: [propext, C
 -/
 #guard_msgs in
 #print axioms SpinGlass.Targets.log_coupledEvent_le_gap
+
+/--
+info: 'SpinGlass.Targets.coupledCascade_dist_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.coupledCascade_dist_le
+
+/--
+info: 'SpinGlass.Targets.gaussianCoupledGap_upper_tail' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.gaussianCoupledGap_upper_tail
+
+/--
+info: 'SpinGlass.Targets.integrable_gaussianCoupledGap' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.integrable_gaussianCoupledGap
+
+/--
+info: 'SpinGlass.Targets.integrable_gaussianCoupledEvent' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.integrable_gaussianCoupledEvent
+
+/--
+info: 'SpinGlass.Targets.gaussianCoupledEvent_small' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.gaussianCoupledEvent_small

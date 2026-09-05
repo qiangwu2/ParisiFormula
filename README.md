@@ -34,8 +34,14 @@ concentration input above.
 overlap-constrained cascade and proves the **deterministic induction in Lemma 2.6**:
 the log tilted event probability is bounded by the mass times the constrained pressure
 gap. Attainable overlap, positivity, and the positive-mass restriction are checked.
-The Gaussian concentration step completing Lemma 2.6 / Proposition 2.5, and the a priori
-bound of Theorem 2.4, remain open.
+[`Targets/CoupledConcentration.lean`](Targets/CoupledConcentration.lean) now proves
+Gaussian concentration and the exponential expectation estimate in **standard Gaussian
+coordinates**, using the SK spectral coefficients and shared outer field. The constants
+are explicit and uniform in `N` and `t`. Joint measurability, integrability, and the
+required `O(√N)` Lipschitz bound are proved, not assumed.
+To finish Lemma 2.6 / Proposition 2.5, these expectations must still be identified with
+the project's abstract disorder and replica measures. The a priori bound of Theorem 2.4
+also remains open.
 
 ## Project milestones
 
@@ -151,6 +157,9 @@ ParisiFormula/
 │   ├── CoupledGrowth.lean           interacting two-field Gaussian integrability and growth
 │   ├── CascadeEventBound.lean       one-step tilted-event comparison and positivity
 │   ├── ConstrainedCascade.lean      constrained pressure; deterministic Lemma 2.6 induction
+│   ├── CoupledLipschitz.lean        nonexpansiveness and Gaussian-input stability of cascades
+│   ├── CoupledMeasurability.lean    joint measurability in disorder and replica fields
+│   ├── CoupledConcentration.lean    Gaussian tail and event decay in standard coordinates
 │   └── GuerraAudit.lean              axiom guards for completed critical-path results
 ├── .lake/packages/              generated dependency checkout; not tracked
 │   ├── mathlib/                      Mathlib v4.32.1

@@ -488,11 +488,42 @@ separately before taking logarithms. The pressure-gap comparison excludes the
 outer zero-mass average; positivity includes it.
 \end{proof}
 
-This does \emph{not} yet prove Lemma~2.6: converting a negative expected pressure
-gap into an exponentially small event probability still requires Gaussian
-concentration with constants independent of $N$ and $t$.
+\begin{lemma}[Concentration in standard Gaussian coordinates]
+\lean{SpinGlass.Targets.gaussianCoupledGap\_upper\_tail}\leanok
+\lean{SpinGlass.Targets.gaussianCoupledEvent\_small}\leanok
+Realise the SK disorder by its spectral coefficients and the shared outer field
+by independent standard Gaussian coordinates $Z$. Let $N>0$, $t\in[0,1]$, and
+$u$ be attainable. The gap $D(Z)=J_{1,u}(Z)-J_1(Z)$ satisfies
+\[
+\mathbb P\{D-\E D\ge a\}
+\le \exp\!\left(-\frac{a^2}{32(1+|\beta|)^2N}\right),\qquad a\ge0.
+\]
+If $m_1>0$, $\varepsilon>0$, and $\E D\le-\varepsilon N$, then
+\[
+\E Q_1\le e^{-m_1\varepsilon N/4}
++\exp\!\left(-\frac{\varepsilon^2N}{128(1+|\beta|)^2}\right).
+\]
+These expectations are over the standard Gaussian coordinates. The constants
+are uniform in $N,t,u$ and the replica split.
+\end{lemma}
+
+\begin{proof}[Formalised concentration and truncation]
+The squared coefficient norm of each interpolated Hamiltonian is
+$tN\beta^2/2+(1-t)N\beta^2q_1\le N\beta^2$.
+The nonempty constrained log partition sum and every smoothing step preserve
+sup-norm differences. Thus $D$ is $4(1+|\beta|)\sqrt N$-Lipschitz.
+The proved Gaussian MGF inequality gives the displayed tail bound.
+Split the expectation at $D=-\varepsilon N/2$, use
+$Q_1\le\min(1,e^{n_1D})$ and $n_1\ge m_1/2$, and apply that tail estimate.
+Joint measurability of the disorder-dependent cascade and integrability of
+the gap and event are proved separately.
+\end{proof}
+
+Lemma~2.6 is not yet complete in the project's abstract disorder formulation:
+the standard-coordinate expectations must still be identified with the law of
+\texttt{sk.U} and the outer zero-mass average.
 The remaining work follows Proposition~2.3 and the coupled-replica concentration
-argument in \S3--\S5 of \cite{Tal06}: complete that concentration step,
+argument in \S3--\S5 of \cite{Tal06}: complete this change of law,
 deduce Proposition~2.5, and prove the a priori bound of Theorem~2.4. The reduction
 for coincident scheme levels in (2.19) also remains to be formalised before
 the concentration hypothesis is available for every admissible scheme.
