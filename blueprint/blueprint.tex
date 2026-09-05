@@ -918,8 +918,115 @@ coordinate. The joint variance/spatial derivative supplies the moving-inner-fiel
 derivative. Normalized scalar Stein cancels the two $B_{xx}$ contributions,
 leaving exactly the displayed squared-first-derivative term.
 \end{proof}
-This interior identity does not yet give the higher mixed derivatives, endpoint
-stationarity, or the remaining outer propagation needed in Section~4.
+\begin{lemma}[Closed-interval comparison and full scalar variance derivative]
+\lean{SpinGlass.Targets.monotoneOn\_section4T}\leanok
+\lean{SpinGlass.Targets.hasDerivAt\_section4T\_variance}\leanok
+\lean{SpinGlass.Targets.abs\_deriv\_section4T\_variance\_le}\leanok
+For $m_{r-1}\le m\le1$, the actual $T(v,m)$ is continuous and nondecreasing
+on $[0,a]$, with $T(0,m)=A_0(h)$. On $0<v<a$, its variance derivative
+is the nested normalized mean of the derivative in (4.11), and
+\[
+ |\partial_v T(v,m)|\le (m-m_{r-1})/2.
+\]
+The bound is independent of the number of outer levels, including those of mass zero.
+On the closed interval this also gives
+$|T(v,m)-T(w,m)|\le(m-m_{r-1})|v-w|/2$.
+\end{lemma}
+\begin{proof}
+RSAT supplies joint continuity of the split transform. Combine the interior
+derivative sign with Mathlib's closed-interval monotonicity theorem. The existing
+Gaussian order-preservation and parameter-derivative rules propagate the
+comparison, derivative and bound through every unchanged outer scalar level.
+\end{proof}
+Higher mixed mass/variance derivatives and endpoint stationarity remain open.
+
+\begin{lemma}[Analytic extension through zero mass]
+\lean{SpinGlass.Targets.analyticAt\_parisiStep\_mass}\leanok
+\lean{SpinGlass.Targets.hasDerivAt\_parisiStep\_mass\_zero}\leanok
+For measurable $A$ of linear growth, put $X=A(x+\sqrt v\,g)$ with $g$ standard
+Gaussian. The actual Parisi step, including its expectation branch, is analytic
+in every real mass, and
+\[
+ \left.\partial_m\operatorname{ParisiStep}(m,v,A)(x)\right|_{m=0}
+   =\tfrac12\mathbb E[(X-\mathbb E X)^2].
+\]
+Together with the entropy sign, this proves mass monotonicity on all of $\mathbb R$.
+\end{lemma}
+\begin{proof}
+All exponential moments exist by the Gaussian linear-growth estimates. Identify
+the actual step with the divided difference at zero of the cumulant-generating
+function. Reuse Mathlib's analytic divided-difference and second CGF derivative
+theorems; the expectation branch agrees exactly with the derivative at zero.
+\end{proof}
+
+\begin{lemma}[Actual inserted functional and optimality inputs]
+\lean{SpinGlass.Targets.parisiFunctional\_insertLevel}\leanok
+\lean{SpinGlass.Targets.section4Phi\_near\_min}\leanok
+\lean{SpinGlass.Targets.section4Phi\_upper\_mass\_min}\leanok
+The inserted masses and overlaps of (4.27)--(4.29) define an admissible scheme.
+Its functional is the actual $\Phi(m,u)$ of (4.37). Near-global minimality and
+fixed-level minimality respectively imply
+\[
+ \begin{aligned}
+ \Phi(m,u)&\ge\Phi(m_{r-1},u)-\varepsilon,\\
+ \Phi(m_r,u)&\ge\Phi(m_{r-1},u)=\mathcal P_k(m,q).
+ \end{aligned}
+\]
+All mass and overlap endpoints are included.
+\end{lemma}
+\begin{proof}
+Identify every inserted scalar prefix with the actual split cascade. Its
+correction follows from the checked paired correction after canceling halved
+shared masses. Apply the global infimum to the inserted competitor. At upper
+inserted mass, merge the equal adjacent masses to obtain a competitor at the
+original level before applying fixed-level minimality.
+\end{proof}
+These are the inputs (4.30)--(4.31), not the remaining uniform optimality estimates.
+
+\begin{lemma}[One-level heat generators for actual constrained cascades]
+\lean{SpinGlass.Targets.hasDerivAt\_sharedStepPi\_constrained\_variance}\leanok
+\lean{SpinGlass.Targets.hasDerivAt\_independentStepPi\_constrained\_variance}\leanok
+For a fixed inner constrained cascade $F$, an added Gaussian level of actual
+mass $m$ and variance $v>0$ has derivative
+\[
+ \tfrac12\mathbb E_W\sum_i\bigl(D_i^2F+m(D_iF)^2\bigr).
+\]
+The shared case uses common replica-field directions; the independent case
+uses the $2N$ separate directions. Zero added mass is included.
+\end{lemma}
+\begin{proof}
+Prove linearity of the propagated spatial directions, apply the existing
+parameter chain rule to the Gaussian amplitude, and use normalized Gaussian
+Stein. The actual cascade's previously checked growth and Hessian bounds
+discharge all analytic assumptions. Mathlib's measure-preserving product
+reindexing packs the independent fields into $2N$ coordinates.
+\end{proof}
+The simultaneous variation of all levels and the disorder, its replica-weight
+identification, and endpoint-safe integration remain to be assembled.
+
+\begin{lemma}[Right-interval endpoints, baseline and scalar gain]
+\lean{SpinGlass.Targets.section5RightInterpolation\_one}\leanok
+\lean{SpinGlass.Targets.section5RightInterpolation\_zero\_le}\leanok
+\lean{SpinGlass.Targets.section5RightInterpolation\_zero\_lambda\_gain}\leanok
+For $q_r\le u\le q_{r+1}$, the dual construction has an inserted shared level
+of paired mass $m/2$ and split variance $t\beta^2(u-q_r)$. Its time-one value
+is the original constrained pressure, and its time-zero value has the scalar
+comparison analogous to (5.17). At the baseline $m=m_r$,
+\[
+ V_{\rm right}(0,m_r,v)=2A_0(h),\qquad
+ \eta_{\rm right}(0)\le2(\log2+A_0(h))
+       -\tfrac12(V_{\rm right}'(0)-u)^2.
+\]
+Both variance endpoints and the last overlap interval are included.
+\end{lemma}
+\begin{proof}
+The inserted frozen variance is zero. Move the sharing cutoff across this
+redundant level and reuse the existing time-one equality. Reuse site
+tensorization for time zero, the scalar semigroup for the baseline, and the
+sharp lambda-curvature invariant for the explicit optimized gain.
+\end{proof}
+This does not identify the lambda derivative with the dual $U'$ or transport
+the scalar gain to time one.
 
 \begin{lemma}[Lemma 5.9 and the optimized scalar endpoint]
 \lean{SpinGlass.Targets.talagrand\_lemma\_5\_9}\leanok
@@ -1002,7 +1109,8 @@ padding to transfer minimality at each stage.
 This completes the mass-strictness part of (2.19), not overlap strictness.
 Thus the final conditional convergence theorem requires the quadratic bound only
 for schemes with strictly increasing masses. The baseline mass at $r=1$ is
-nevertheless $m_0=0$, and still needs its appropriate mass-variation treatment.
+nevertheless $m_0=0$. Its single-step derivative is now covered by the analytic
+extension above; the nested mass-variation estimates remain to be proved.
 
 The remaining work follows Proposition~2.3 and the coupled-replica concentration
 argument in \S3--\S5 of \cite{Tal06}: prove the a priori bound of Theorem~2.4,

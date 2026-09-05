@@ -42,9 +42,11 @@ zero-lambda identities (5.18)--(5.19), and the conditional finite-overlap
 deduction of Proposition 2.3 and convergence. Step 23 extends the disorder
 Hessian to all depths and proves its Gaussian Stein identities, the scalar
 heat equation on actual Parisi inputs, Lemma 5.9 with a level-independent
-constant, and the exact leading-zero-mass reduction. The varying-variance
-interpolation/replica identification, Section 4--5 optimality estimates, and
-remaining interval/sign constructions are still missing.
+constant, and exact mass compression. Step 24 supplies one-level coupled variance
+generators, the analytic scalar mass-zero extension, closed-interval nested
+monotonicity, actual inserted-scheme optimality comparisons, and right-interval
+endpoints. The full varying-variance interpolation/replica identification, uniform
+Section 4--5 optimality estimates, and remaining overlap/sign cases are still missing.
 
 **Milestone 1 (Targets 1b, 1c) is *not* on this critical path.**  Target 4 is strictly
 stronger than 1c — convergence to `parisiValue` subsumes existence of a limit — and deriving
@@ -981,14 +983,14 @@ The scalar heat/C2/joint-derivative modules also received independent read-only
 review and fresh Lean checks. The original target and strict-mass bridge received
 a separate quantifier/indexing review.
 
-**Boundary:** Theorem 2.2 remains open in its original declaration. The full
+**At the Step 23 checkpoint:** Theorem 2.2 remains open in its original declaration. The full
 varying-variance derivative of `section5Interpolation`, actual replica-weight
 identification, and endpoint-safe integration are not yet supplied by the
 fixed-variance Hessian/Stein results. Section 4 optimality and Lemma 5.8 still
 have to convert the scalar endpoint gain into a bound in `(u-q_r)²`, uniformly
 in the level count. The other Section 5 interval/sign cases remain to be done.
 
-**Endpoint cautions from independent review:** strict masses still leave
+**Endpoint cautions at Step 23 (partially resolved in Step 24):** strict masses still leave
 `m_(r-1)=m_0=0` at `r=1`. The existing nonzero-mass derivative therefore does
 not yet define the needed mass variation there; extend it to zero or supply the
 separate first-interval argument. Likewise the positive-variance heat/split
@@ -996,7 +998,7 @@ derivatives alone do not supply variance-endpoint derivatives for stationarity.
 The spectral Stein left side is still an explicit finite sum; its identification
 with the radial direction `D_Z F(Z)` requires linearity of propagated directions.
 
-**Small scalar follow-up:** closed-interval split-variance monotonicity needs
+**Scalar follow-up proposed at Step 23 (completed in Step 24):** closed-interval split-variance monotonicity needs
 continuity on `[0,a]` plus the existing interior derivative sign, not endpoint
 derivatives. Reuse `GTFrame.goodTriple_finiteStep` on the inner family
 `F(p,λ,y)=parisiStep m p A(λ+y.1)`, using the proved joint continuity and C2
@@ -1011,19 +1013,98 @@ The blueprint compiles without warnings after layout checking. README module
 layout, status, roadmap, and provenance are synchronized. Dependency pins and
 upstream sources are unchanged.
 
+**Step 24 (2026-09-04): mass-zero calculus, actual scalar variations, and right endpoints.**
+
+The main agent and all three available agents again worked in parallel on
+disjoint proof modules. The original Theorem 2.2 statement remains unchanged.
+
+* `Targets/CoupledCascadeVariance.lean` proves the N-dimensional heat generator
+  for an added Gaussian transform, then discharges its spatial regularity,
+  growth and integrability assumptions for the actual fixed inner constrained
+  cascade. Both the existing independent and shared level definitions are
+  covered at positive variance and every real added mass, including zero.
+  The derivative is the tilted mean of the diagonal spatial Hessian plus
+  mass times squared spatial first derivatives, divided by two. The shared
+  legacy parameter is correctly `2 * mass`; independent fields use `2N`
+  separate Gaussian coordinates. Actual spatial-direction linearity is proved.
+  This does not yet differentiate all levels and disorder simultaneously.
+* `Targets/ParisiMassZero.lean` expresses the actual scalar step as the divided
+  difference of the cumulant-generating function at zero. Mathlib analyticity
+  and the second CGF derivative give the mass-zero derivative as half the
+  centered second moment, without a singular-limit assumption. The actual step
+  is analytic and monotone in mass on all of `ℝ`, including variance zero.
+  Every `parisiF` input satisfies the hypotheses. This resolves the single-step
+  zero-mass caution in Step 23, not the entire nested mass-variation argument.
+* `Targets/Section4SplitMonotone.lean` uses RSAT joint continuity and the
+  interior derivative sign from (4.11) to prove monotonicity on closed `[0,a]`.
+  `Targets/Section4NestedMonotone.lean` propagates this through every unchanged
+  outer level of the actual `section4T`. It also proves continuity there,
+  `T(m,0)=A₀(h)` for arbitrary mass, and `A₀(h)≤T(m,v)` for increased
+  admissible mass. No endpoint derivative, strict variance or positive mass
+  is silently assumed.
+  `Targets/Section4NestedDerivative.lean` also reuses the existing one-field
+  parameter derivative theorem at one Gaussian coordinate to propagate the
+  actual (4.11) derivative through every outer scalar level. Its normalized
+  mean formula and bound `|∂v T|≤(m-m_(r−1))/2` are checked on the interior
+  interval with a constant independent of depth, including baseline mass zero.
+  Combining this with closed-interval continuity gives the endpoint-safe bound
+  `|T(m,v)-T(m,w)|≤(m-m_(r−1))/2 * |v-w|` on the whole split interval.
+  This is a variance derivative, not the missing mixed mass/variance identities.
+* `Targets/Section4InsertedScheme.lean` constructs the actual admissible
+  `RSBScheme.insertLevel`, identifies all scalar prefixes and the deterministic
+  correction, and proves that its Parisi functional is exactly **(4.37)**.
+  The actual `section4Phi` satisfies **(4.30)** by near-global minimality and
+  **(4.31)** by merging equal masses at the upper inserted mass and applying
+  the original fixed-level minimality. It equals the original functional at
+  the baseline mass and at the original upper overlap. All interval endpoints,
+  coincident overlaps and zero masses are included. Uniform first/second
+  mass-variation estimates and the `U′`, `U″` identities are not assumed.
+* `Targets/CoupledSharedInsertion.lean` proves exact deletion/insertion of a
+  shared zero-variance level and moving the sharing cutoff across that level.
+  `Targets/TalagrandRightInterpolation.lean` uses this to supply the dual
+  construction for `q_r≤u≤q_(r+1)`, including the last interval. Its inserted
+  paired mass is `m/2`, its level is shared, and its split variance is
+  `t β²(u-q_r)`. The masses/overlaps are monotone on the stated admissible
+  ranges, variances nonnegative, the time-zero scalar comparison holds, and
+  time one equals the original constrained pressure with the original cutoff.
+  These endpoints do not assert Propositions 5.2/5.6 or the full pressure bound.
+  `Targets/TalagrandRightZero.lean` defines the actual dual scalar `T_right`,
+  proves `V_right(0,m,v)=2T_right(m,v)` and the baseline at **`m_r`**, and
+  reuses the existing sharp lambda curvature to optimize the actual right
+  time-zero endpoint. Both variance endpoints and the last interval are covered.
+  The dual `U′` identification and transport to time one remain open.
+
+Independent read-only reviews checked the actual inserted functional and its
+correction, mass-zero analyticity, scalar monotonicity and full variance derivative,
+and the dual right cutoff/mass conventions. Right time-one recovery requires
+`1≤r`; the broader scalar/time-zero statements at `r=0` do not remove that
+condition. The paired right mass range is not claimed to be the scalar scheme's
+admissibility range. No endpoint derivative or higher mixed identity is inferred.
+
+Validation: `bash scripts/check.sh` passes (3,838 build jobs), including
+**57 new standard-axiom regression guards** (200 total). All nine new proof
+modules compile without new warnings. The four original placeholders remain
+unchanged, including Theorem 2.2 at `Targets/Talagrand.lean:3274`; no new
+placeholder or axiom was introduced. The updated blueprint compiles with no
+LaTeX warnings, and README status/layout, roadmap and provenance are synchronized.
+Dependency pins and upstream sources are unchanged.
+
 **Remaining work, following the Annals argument:**
 
 1. Prove the a priori two-replica bound of Theorem 2.4 using §3–§5 and the scheme's
    optimality. The imported RS-level `twoReplica_GT_bound` is not this general result.
-   Next concrete step: use Step 23's full-depth Hessian/Stein calculus to prove
-   the varying-variance derivative of `section5Interpolation`, construct its normalized replica weights, and
+   Next concrete step: propagate Step 24's one-level heat generators together
+   with the disorder variation through `section5Interpolation`, construct its normalized replica weights, and
    prove the derivative equals the covariance expression from Step 21.
    Then prove the endpoint-safe integration of that derivative. The square
    completion, mass telescoping, and inserted correction of (5.9) are now
    available, as are the scalar mass derivative and baseline identities
    (4.36), (5.18), (5.19), scalar heat equation, Lemma 5.9 and optimized time-zero
-   endpoint. Develop the Section 4 variation/optimality estimates, Lemma 5.8, and the
-   remaining Section 5 interval/sign constructions. Do not replace `2ψ(t)`
+   endpoint. The actual scalar insertion and optimality input inequalities are
+   now available; prove the nested mass/variance identities and uniform estimates
+   of Section 4, then Lemma 5.8 and the remaining overlap/sign cases. Both neighbor
+   interval endpoint constructions are checked; the right-interval correction
+   adapter must still be assembled. Do not replace `2ψ(t)`
    with `2φ(t)`.
 2. Apply the completed conditional Proposition 2.3/convergence deduction and
    Step 23's exact equal-mass compression/strict-mass bridge once the uniform

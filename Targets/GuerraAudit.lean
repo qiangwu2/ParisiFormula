@@ -18,6 +18,11 @@ Gaussian Stein, scalar mass/variance calculus including (4.11), the zero-lambda
 baseline, Lemma 5.9, and the optimized time-zero endpoint. Exact equal-mass compression
 supplies the original convergence quantifiers from a uniform Theorem 2.4 bound for
 strict masses; the guards do not certify that bound.
+Further guards cover analytic scalar mass-zero differentiation, closed-interval
+scalar comparison and Lipschitz control, the actual full T variance derivative,
+inserted-scheme optimality inputs (4.30)--(4.31), one-level coupled heat generators,
+and right-interval endpoints/baseline/gain. They do not assert the full nested
+interpolation derivative, higher mixed mass identities, or the uniform quadratic bound.
 The full Parisi formula is deliberately not listed: Theorem 2.2 is still open.
 -/
 import Targets.ReplicaMeasure
@@ -39,6 +44,11 @@ import Targets.RSBSchemeReduction
 import Targets.RSBSchemeMassReduction
 import Targets.Section4Variance
 import Targets.Section4SplitDerivative
+import Targets.ParisiMassZero
+import Targets.Section4InsertedScheme
+import Targets.Section4NestedDerivative
+import Targets.CoupledCascadeVariance
+import Targets.TalagrandRightZero
 
 /--
 info: 'SpinGlass.Targets.guerra_identity' depends on axioms: [propext, Classical.choice, Quot.sound]
@@ -933,3 +943,357 @@ info: 'SpinGlass.Targets.deriv_split_parisiStep_nonneg' depends on axioms: [prop
 -/
 #guard_msgs in
 #print axioms SpinGlass.Targets.deriv_split_parisiStep_nonneg
+
+/--
+info: 'SpinGlass.Targets.parisiStep_eq_dslope_cgf' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.parisiStep_eq_dslope_cgf
+
+/--
+info: 'SpinGlass.Targets.analyticAt_parisiStep_mass' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.analyticAt_parisiStep_mass
+
+/--
+info: 'SpinGlass.Targets.hasDerivAt_parisiStep_mass_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.hasDerivAt_parisiStep_mass_zero
+
+/--
+info: 'SpinGlass.Targets.differentiable_parisiStep_mass' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.differentiable_parisiStep_mass
+
+/--
+info: 'SpinGlass.Targets.deriv_parisiStep_mass_nonneg_all' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.deriv_parisiStep_mass_nonneg_all
+
+/--
+info: 'SpinGlass.Targets.monotone_parisiStep_mass' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.monotone_parisiStep_mass
+
+/--
+info: 'SpinGlass.Targets.hasDerivAt_parisiStep_parisiF_mass_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.hasDerivAt_parisiStep_parisiF_mass_zero
+
+/--
+info: 'SpinGlass.Targets.parisiF_insertLevel' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.parisiF_insertLevel
+
+/--
+info: 'SpinGlass.Targets.parisiCorrection_insertLevel' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.parisiCorrection_insertLevel
+
+/--
+info: 'SpinGlass.Targets.parisiFunctional_insertLevel' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.parisiFunctional_insertLevel
+
+/--
+info: 'SpinGlass.Targets.section4Phi_baseline' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.section4Phi_baseline
+
+/--
+info: 'SpinGlass.Targets.section4Phi_at_upper_overlap' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.section4Phi_at_upper_overlap
+
+/--
+info: 'SpinGlass.Targets.section4Phi_near_min' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.section4Phi_near_min
+
+/--
+info: 'SpinGlass.Targets.section4Phi_upper_mass_min' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.section4Phi_upper_mass_min
+
+/--
+info: 'SpinGlass.Targets.continuous_split_parisiStep' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.continuous_split_parisiStep
+
+/--
+info: 'SpinGlass.Targets.monotoneOn_split_parisiStep' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.monotoneOn_split_parisiStep
+
+/--
+info: 'SpinGlass.Targets.monotoneOn_split_parisiF' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.monotoneOn_split_parisiF
+
+/--
+info: 'SpinGlass.Targets.parisiStep_mono_of_growth' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.parisiStep_mono_of_growth
+
+/--
+info: 'SpinGlass.Targets.section4Cascade_split' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.section4Cascade_split
+
+/--
+info: 'SpinGlass.Targets.section4Cascade_monotoneOn' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.section4Cascade_monotoneOn
+
+/--
+info: 'SpinGlass.Targets.monotoneOn_section4T' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.monotoneOn_section4T
+
+/--
+info: 'SpinGlass.Targets.continuousOn_section4T' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.continuousOn_section4T
+
+/--
+info: 'SpinGlass.Targets.section4T_zero_variance' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.section4T_zero_variance
+
+/--
+info: 'SpinGlass.Targets.parisiF_le_section4T' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.parisiF_le_section4T
+
+/--
+info: 'SpinGlass.Targets.section4VarianceD_base_props' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.section4VarianceD_base_props
+
+/--
+info: 'SpinGlass.Targets.section4VarianceD_props' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.section4VarianceD_props
+
+/--
+info: 'SpinGlass.Targets.hasDerivAt_section4T_variance' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.hasDerivAt_section4T_variance
+
+/--
+info: 'SpinGlass.Targets.abs_deriv_section4T_variance_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.abs_deriv_section4T_variance_le
+
+/--
+info: 'SpinGlass.Targets.constrainedPairCascadeSpatialFirst_sum' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.constrainedPairCascadeSpatialFirst_sum
+
+/--
+info: 'SpinGlass.Targets.hasDerivAt_constrainedPairCascadeSpatialLine' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.hasDerivAt_constrainedPairCascadeSpatialLine
+
+/--
+info: 'SpinGlass.Targets.hasDerivAt_constrainedPairCascadeSpatialFirst_line' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.hasDerivAt_constrainedPairCascadeSpatialFirst_line
+
+/--
+info: 'SpinGlass.Targets.hasDerivAt_parisiStepPi_variance' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.hasDerivAt_parisiStepPi_variance
+
+/--
+info: 'SpinGlass.Targets.hasDerivAt_constrainedPairField_linear_variance' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.hasDerivAt_constrainedPairField_linear_variance
+
+/--
+info: 'SpinGlass.Targets.hasDerivAt_sharedStepPi_constrained_variance' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.hasDerivAt_sharedStepPi_constrained_variance
+
+/--
+info: 'SpinGlass.Targets.measurePreserving_pairedGaussianSplit' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.measurePreserving_pairedGaussianSplit
+
+/--
+info: 'SpinGlass.Targets.independentStepPi_eq_packed' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.independentStepPi_eq_packed
+
+/--
+info: 'SpinGlass.Targets.hasDerivAt_independentStepPi_constrained_variance' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.hasDerivAt_independentStepPi_constrained_variance
+
+/--
+info: 'SpinGlass.Targets.sharedStepPi_variance_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.sharedStepPi_variance_zero
+
+/--
+info: 'SpinGlass.Targets.coupledFieldCascade_insert_shared_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.coupledFieldCascade_insert_shared_zero
+
+/--
+info: 'SpinGlass.Targets.coupledFieldCascade_cutoff_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.coupledFieldCascade_cutoff_zero
+
+/--
+info: 'SpinGlass.Targets.section5RightMass_mono' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.section5RightMass_mono
+
+/--
+info: 'SpinGlass.Targets.section5RightRho_mono' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.section5RightRho_mono
+
+/--
+info: 'SpinGlass.Targets.section5RightMass_endpoints' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.section5RightMass_endpoints
+
+/--
+info: 'SpinGlass.Targets.section5RightRho_endpoints' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.section5RightRho_endpoints
+
+/--
+info: 'SpinGlass.Targets.section5RightVariance_nonneg' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.section5RightVariance_nonneg
+
+/--
+info: 'SpinGlass.Targets.section5RightInterpolationVariance_nonneg' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.section5RightInterpolationVariance_nonneg
+
+/--
+info: 'SpinGlass.Targets.section5RightInterpolation_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.section5RightInterpolation_zero
+
+/--
+info: 'SpinGlass.Targets.section5RightInterpolation_one' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.section5RightInterpolation_one
+
+/--
+info: 'SpinGlass.Targets.section5RightInterpolation_zero_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.section5RightInterpolation_zero_le
+
+/--
+info: 'SpinGlass.Targets.section5RightV_zero_eq_two_section4RightT' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.section5RightV_zero_eq_two_section4RightT
+
+/--
+info: 'SpinGlass.Targets.section4RightT_baseline' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.section4RightT_baseline
+
+/--
+info: 'SpinGlass.Targets.section5RightV_zero_baseline' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.section5RightV_zero_baseline
+
+/--
+info: 'SpinGlass.Targets.section5RightV_lambda_gain' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.section5RightV_lambda_gain
+
+/--
+info: 'SpinGlass.Targets.section5RightInterpolation_zero_lambda_gain' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.section5RightInterpolation_zero_lambda_gain
+
+/--
+info: 'SpinGlass.Targets.deriv_section4T_variance_mem_Icc' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.deriv_section4T_variance_mem_Icc
+
+/--
+info: 'SpinGlass.Targets.section4T_variance_dist_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.section4T_variance_dist_le
+
+/--
+info: 'SpinGlass.Targets.pairedIndependentMean_sum' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms SpinGlass.Targets.pairedIndependentMean_sum

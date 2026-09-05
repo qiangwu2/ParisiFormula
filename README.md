@@ -70,8 +70,14 @@ overlap and proves both endpoint results: **(5.8)** `η(1) = Ψ(t,u)` and **(5.1
 nonnegative Gaussian variances, N-site tensorization, and λ-differentiation of
 the actual scalar `V` are checked. The definitions use canonical Gaussian
 coordinates with the combined variances of `Z + √(1−w)y`.
-**Still open:** the derivative inequality between these endpoints, the right-interval
-and negative-overlap constructions, and the §4–§5 optimality estimates. The endpoint
+[`Targets/TalagrandRightInterpolation.lean`](Targets/TalagrandRightInterpolation.lean)
+now supplies the dual right-interval construction and both endpoints, with the
+inserted level shared and its paired mass halved.
+[`Targets/TalagrandRightZero.lean`](Targets/TalagrandRightZero.lean) proves its
+zero-coupling baseline and reuses Lemma 5.9's curvature bound for the optimized
+right-interval time-zero gain.
+**Still open:** the derivative inequality between these endpoints, the negative-overlap
+and other overlap cases, and the §4–§5 optimality estimates. The endpoint
 results alone do not prove Theorem 2.4 or Theorem 2.2.
 
 [`Targets/ConstrainedFiniteState.lean`](Targets/ConstrainedFiniteState.lean) now
@@ -95,11 +101,19 @@ bound, and proves Gaussian-coordinate and summed-trace integration by parts.
 [`Targets/CoupledCascadeField.lean`](Targets/CoupledCascadeField.lean) proves the
 separate replica-field first and mixed second derivatives at every depth, including
 their spin-observable formulas, field-uniform bounds, and measurability.
-The varying-variance derivative and identification with replica weights are still needed.
+[`Targets/CoupledCascadeVariance.lean`](Targets/CoupledCascadeVariance.lean) now
+proves the positive-variance heat generator for an additional independent or shared
+level of the actual constrained cascade, including zero mass. Spatial-direction
+linearity and the independent two-field Gaussian packing are checked. Simultaneous
+variation of every level and the disorder, and identification with replica weights,
+are still needed for the full interpolation derivative.
 [`Targets/ParisiMassDerivative.lean`](Targets/ParisiMassDerivative.lean) reuses
 Mathlib's moment-generating-function calculus for the scalar mass derivative,
-its entropy identity and nonnegativity; nested Section 4 optimality estimates
-are not yet proved.
+its entropy identity and nonnegativity.
+[`Targets/ParisiMassZero.lean`](Targets/ParisiMassZero.lean) identifies the actual
+mass-zero branch with an analytic divided difference: its derivative is half the
+variance, and mass monotonicity now holds on all of `ℝ`. Nested Section 4
+mass-variation estimates are not yet proved.
 [`Targets/TalagrandSection5Zero.lean`](Targets/TalagrandSection5Zero.lean) proves
 **(5.18)** `V(0,m,v)=2T(v,m)` and **(5.19)** `V(0,m_(r−1),v)=2A₀(h)`.
 The baseline uses the Gaussian semigroup with zero mass and zero variance included.
@@ -111,8 +125,21 @@ the moving-field chain rule are checked; the nested optimality estimates remain 
 [`Targets/Section4SplitDerivative.lean`](Targets/Section4SplitDerivative.lean) now
 proves the genuine two-step split-variance identity **(4.11)** for every actual
 Parisi input, including zero masses, on the interior variance interval. Higher
-mixed derivatives, variance-endpoint stationarity, and propagation to the full
-Section 4 optimality estimates remain open.
+mixed derivatives, variance-endpoint stationarity, and the full Section 4
+optimality estimates remain open.
+[`Targets/Section4SplitMonotone.lean`](Targets/Section4SplitMonotone.lean) and
+[`Targets/Section4NestedMonotone.lean`](Targets/Section4NestedMonotone.lean) extend
+the comparison to the closed variance interval and every actual outer level of
+`T`, using continuity rather than assuming endpoint derivatives.
+[`Targets/Section4NestedDerivative.lean`](Targets/Section4NestedDerivative.lean)
+also propagates the actual variance derivative through the full `T`, with
+`|∂v T| ≤ (m−m_(r−1))/2` independent of depth on the interior interval.
+The corresponding Lipschitz bound holds on the closed variance interval.
+[`Targets/Section4InsertedScheme.lean`](Targets/Section4InsertedScheme.lean)
+constructs the admissible inserted scalar scheme and identifies its functional
+with **(4.37)**. The near-global and fixed-level optimality hypotheses now give
+the actual inequalities **(4.30)** and **(4.31)**, including zero masses and
+coincident overlaps. These inputs do not yet prove the uniform variation bounds.
 [`Targets/CoupledLambdaCurvature.lean`](Targets/CoupledLambdaCurvature.lean) proves
 **Lemma 5.9** with the level-independent bound `0 ≤ ∂²λ V ≤ 1`.
 [`Targets/TalagrandLambdaGain.lean`](Targets/TalagrandLambdaGain.lean) optimizes λ
@@ -268,17 +295,26 @@ ParisiFormula/
 │   ├── CoupledReindex.lean          zero-variance insertion/deletion and physical field rescaling
 │   ├── TalagrandSection5.lean       explicit inserted masses/variances and scalar V
 │   ├── TalagrandSecondInterpolation.lean  second-interpolation endpoints (5.8), (5.17), left interval
+│   ├── CoupledSharedInsertion.lean    exact shared zero-variance insertion and cutoff adapter
+│   ├── TalagrandRightInterpolation.lean  dual right-interval construction and both endpoints
+│   ├── TalagrandRightZero.lean         dual scalar baseline and optimized time-zero lambda gain
 │   ├── ConstrainedFiniteState.lean   RSAT-backed first/second derivatives of the constrained terminal
 │   ├── CoupledCovariance.lean        four-overlap covariance, square completion and terminal Hessian
 │   ├── SecondInterpolationAlgebra.lean  algebraic remainder sign, telescoping and (5.9) correction
 │   ├── CoupledCascadeDeriv.lean       fixed-variance nested disorder derivatives and tilted covariance
 │   ├── CoupledCascadeSecond.lean      full-depth mixed disorder Hessian and Gaussian Stein identities
 │   ├── CoupledCascadeField.lean       separate replica-field first/mixed derivatives and spin directions
+│   ├── CoupledCascadeVariance.lean    actual independent/shared one-level heat generators
 │   ├── ParisiMassDerivative.lean      scalar mass derivative, entropy and monotonicity via Mathlib
+│   ├── ParisiMassZero.lean            analytic mass-zero extension and half-variance derivative
 │   ├── ParisiStepSemigroup.lean       scalar semigroup including zero masses and variances
 │   ├── ParisiVarianceDerivative.lean  Gaussian heat generator and actual scalar variance derivative
 │   ├── Section4Variance.lean          actual Parisi C2, heat equation and joint variance/field calculus
 │   ├── Section4SplitDerivative.lean   actual two-step split-variance identity (4.11), including zero masses
+│   ├── Section4SplitMonotone.lean     joint continuity and closed-interval split comparison
+│   ├── Section4NestedMonotone.lean    closed-interval monotonicity through every outer scalar level
+│   ├── Section4NestedDerivative.lean  actual full T variance derivative with depth-independent bound
+│   ├── Section4InsertedScheme.lean    actual inserted functional (4.37), optimality inputs (4.30)--(4.31)
 │   ├── TalagrandSection5Zero.lean     actual scalar T and zero-lambda identities (5.18), (5.19)
 │   ├── CoupledLambdaCurvature.lean    level-independent lambda curvature: Lemma 5.9
 │   ├── TalagrandLambdaGain.lean       optimized scalar and actual second-interpolation time-zero gain

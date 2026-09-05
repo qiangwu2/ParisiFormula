@@ -35,6 +35,7 @@ transitive dependencies for the standard Lean axioms only.
 | `Finset.sum_range_by_parts`, `sum_range_sub` (Mathlib) | Reused in `SecondInterpolationAlgebra.lean` for the mass-weighted telescoping identity. The inserted correction is proved equal to the existing `2 * parisiCorrection` plus the split-level term in (5.9). |
 | `AT.hasDerivAt_gtOrdinaryPressure_ibp`, `gtOrdinaryPressure_one_le_zero_add_shiftedDiagonalGap` (`Bound/Comparison.lean`) | Generic finite-state covariance interpolation, but for the ordinary expected log partition, not an arbitrary nested positive-mass cascade. Reuse where its pressure matches; extend only the missing cascade layer. |
 | `hasDerivAt_mgf`, `integrable_pow_mul_exp_of_mem_interior_integrableExpSet` (Mathlib `MGFAnalytic`) | `ParisiMassDerivative.lean` proves the actual scalar mass derivative. Existing Gaussian linear-growth integrability makes the exponential-integrability domain all of `ℝ`; no new dominated-differentiation proof. |
+| Mathlib `analyticAt_cgf`, `has_fpower_series_dslope_fslope`, `iteratedDeriv_two_cgf_eq_integral` | `ParisiMassZero.lean` identifies the existing zero-mass expectation with the analytic divided difference and proves its half-variance derivative. It does not redefine the transform or assume a limit. |
 | `Real.self_sub_one_le_mul_log` (Mathlib) | Nonnegativity of the genuine normalized tilt's entropy, hence scalar mass monotonicity. Integrability and density normalization are checked. |
 | Local `Parisi.T_add_of_hasLinearGrowth`, Mathlib `integral_conv`, `gaussianReal_conv_gaussianReal` | `ParisiStepSemigroup.lean` adapts the existing nonzero-mass semigroup and proves the actual expectation branch at mass zero. Both variance endpoints are allowed. |
 | Local `independentStepPi_add`, `sharedStepPi_diag`, `parisiStepPi_sum`, `coupledFieldCascade_eq_sum` | `TalagrandSection5Zero.lean` derives the actual zero-lambda factorization (5.18); the semigroup then restores the original recursion for (4.36), (5.19). |
@@ -42,6 +43,9 @@ transitive dependencies for the standard Lean axioms only.
 | Mathlib mean value theorem and `measurable_lineDeriv`; local `stein_coord_of_hasDerivAt`, Gaussian affine-growth integrability | `CoupledCascadeSecond.lean` derives disorder continuity/measurability from the proved mixed Hessian, then proves actual coordinate and summed-trace Stein identities without extra analytic hypotheses. |
 | Local `gaussianReal_stein_of_bound`, scalar spatial derivative formulas, and Gaussian exponential-growth integrability | `ParisiVarianceDerivative.lean` proves the positive-variance heat equation, retaining the actual mass-zero expectation. `Section4Variance.lean` applies it to every genuine Parisi input. |
 | RSAT `GTFrame.goodTriple_finiteStep`; Mathlib `hasStrictFDerivAt_uncurry_coprod` | Joint continuity of the scalar step and its spatial derivatives, then joint variance/spatial differentiation in `Section4Variance.lean`; separate partial derivatives are not silently treated as joint differentiability. |
+| RSAT `GoodTriple`; Mathlib `monotoneOn_of_deriv_nonneg`; local `parisiStepPi_mono_growth` | The two-step closed-interval comparison and its propagation through the actual `section4T`. Continuity plus interior derivatives suffice; no variance-endpoint derivatives are assumed. |
+| Local `section5InterpolationVariance_zero`, `section5Correction_eq`, `section4T_baseline`, `parisiFunctional_mergeEqualMass` | The actual scalar inserted scheme, formula (4.37), and both optimality comparisons (4.30)--(4.31). Reuses checked variance algebra and mass compression instead of duplicating finite-sum/semigroup proofs. |
+| Local `stein_tiltWeightPi`, `hasDerivAt_parisiStepPi_param`; Mathlib measure-preserving finite product reindexing | `CoupledCascadeVariance.lean` proves the heat generator of an added independent/shared level of the actual fixed inner constrained cascade. The full varying-variance nested pressure remains to be assembled. |
 | RSAT `GoodTriple`, `stepMD_le`, `stepMVar_nonneg`, and terminal `fLbaseDD = 1-fLbaseD²` | `CoupledLambdaCurvature.lean` supplies only the strengthened invariant `E ≤ 1-D²`. All analytic regularity is inherited. This gives Lemma 5.9 with constant 1, not RSAT's coarse depth-dependent bound. |
 | Mathlib `convexOn_univ_of_deriv2_nonneg`, `ConvexOn.isMinOn_of_rightDeriv_eq_zero` | Tangent-quadratic estimate and explicit lambda optimization; `TalagrandLambdaGain.lean` applies this to the actual time-zero second-interpolation endpoint. |
 | Local `talagrand_proposition_2_5`, replica-weighted-tail conversion, and endpoint-safe convergence; Mathlib exponential asymptotics | `TalagrandOverlapTail.lean` sums over at most `N+1` attainable Ising overlaps and proves the conditional concentration/convergence deduction. `RSBSchemeReduction.lean` removes its positive-first-mass restriction by exact equivalence; the uniform quadratic bound remains unproved. |
@@ -78,8 +82,17 @@ of a zero-variance step. `TalagrandSecondInterpolation.lean` proves (5.8) and
 (5.17) for this canonical construction. All are covered by axiom guards.
 Theorem 3.1's nested-cascade derivative estimate is still missing; the ordinary
 RSAT covariance comparison cannot be applied to this pressure without that extension.
-The right-interval, negative-overlap, and general out-of-neighbor-interval
-constructions remain separate work, as do the Section 4 optimality estimates.
+The right-interval endpoints are now checked in `TalagrandRightInterpolation.lean`.
+This dual construction follows the final paragraph of Section 4 (p. 250), used
+in Propositions 5.2 and 5.6: insert the overlap after `q_r`, put mass `m/2` at
+the new shared level, and split off variance `t β²(u-q_r)`. The frozen variance
+there is zero, so the new cutoff adapter reuses the existing time-one identity.
+`TalagrandRightZero.lean` reuses the zero-lambda diagonal factorization and
+scalar semigroup to identify its actual dual scalar recursion and restore the
+baseline at `m_r` (not `m_(r-1)`). The same sharp lambda-curvature invariant
+gives the optimized time-zero gain; the dual `U′` is not yet identified.
+Negative-overlap and general out-of-neighbor-interval cases remain separate work,
+as do the uniform Section 4 optimality estimates.
 
 ### Covariance calculation and the remaining analytic gap
 
@@ -134,8 +147,26 @@ the inner step at the moving outer field. Normalized scalar Stein then cancels
 the `Bxx` terms and proves **(4.11)** for the actual two-step recursion, with
 the correct `(m-m')/2` coefficient. Both mass-zero branches are included, and
 actual `parisiF` specialization discharges all analytic input hypotheses.
-Only `0<v<a` is covered; endpoint derivatives, higher mixed identities and
-the remaining outer propagation to `section4T` are not claimed.
+Only `0<v<a` is covered by that derivative theorem. The subsequent
+`Section4SplitMonotone.lean` and `Section4NestedMonotone.lean` reuse RSAT's joint
+continuity and local Gaussian order preservation to obtain the closed-interval
+comparison for the full actual `section4T`. Endpoint derivatives and higher
+mixed identities are not inferred from this monotonicity.
+`Section4NestedDerivative.lean` then reuses `CoupledParamDeriv.secondStep`
+at one coordinate to differentiate the full actual outer scalar recursion.
+The derivative is an explicit nested normalized mean of (4.11); its bound
+`(m-m_(r-1))/2` survives every outer step without a depth factor. Compact
+joint continuity and unit spatial Lipschitz bounds discharge the neighborhood
+growth assumptions. This is not a proof of the higher mixed mass derivatives.
+
+`Section4InsertedScheme.lean` was checked against (4.27)--(4.37), pp. 245--246.
+The insertion is a genuine admissible scheme at one more level. Its variance
+bridge is the existing Section 5 endpoint algebra at `t=1`; its correction is
+half the already proved paired correction, after canceling the halved shared
+masses. Near-global minimality gives (4.30). At the upper inserted mass, the
+existing exact equal-mass merge produces a same-level competitor and gives
+(4.31). Thus the optimality hypotheses are connected to the actual variation,
+without postulating its first or second derivatives.
 
 The zero-lambda formulas were independently checked against pp. 246 and 253
 of the Annals paper: local forward index `p=k+2-j`, total depth `k+3`, and
@@ -177,8 +208,11 @@ the lambda-curvature/gain modules against the actual paired mass convention.
 The final strict-mass conditional bridge reduces the uniform quadratic estimate
 to that smaller comparison class without assuming overlap strictness. Strict
 masses do not eliminate the baseline mass zero at `r=1`; later mass variation
-must handle that case separately. The current variance derivatives are interior
-ones, so endpoint stationarity is not silently inferred from them.
+must handle that case. `ParisiMassZero.lean` now supplies the actual single-step
+zero-mass derivative via Mathlib's analytic divided difference and CGF variance
+formula. Its propagation through the nested Section 4 mass variation is still
+required. The current variance derivatives are interior ones, so endpoint
+stationarity is not silently inferred from them.
 
 ## Historical copies and local ports
 
