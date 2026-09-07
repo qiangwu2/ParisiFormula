@@ -867,6 +867,62 @@ and its optimality deficit; it cannot simply assume those variable-mass
 families agree. The signed and outside-neighbor constructions and subsequent
 compactness remain open. No dependency pins or upstream sources changed.
 
+## Step 37: the actual right mass variation and far-right improvement
+
+`Section4RightInsertedScheme.lean` constructs a genuine right insertion in
+the original scheme and identifies its scalar recursion and correction.
+The existing equal-mass merge gives a same-level competitor at the lower
+mass endpoint. Thus only original fixed-level minimality is used, including
+the first and terminal intervals; no minimality of a padded scheme is added.
+
+`Section4RightMassDerivative.lean` applies the existing scalar mass calculus
+to the actual fixed inner transform, then uses `CoupledParamDeriv.secondStep`
+through the unchanged outer levels. `Section4RightMassSecond.lean` reuses
+the scalar local-uniform bounds and `pairedSecondCovariance_mass_invariant`,
+giving the same depth-uniform Taylor constant as for the left insertion.
+`quadratic_remainder_of_second_bound` and
+`firstVariation_sq_le_of_quadratic_comparisons` are exposed for reuse, with
+their statements and proofs unchanged. The dual optimality proof applies the
+latter to the negative of the actual right first variation; it does not
+duplicate the mean-value or quadratic optimization arguments.
+
+`Section5RightMassGain.lean` uses the existing actual right interpolation
+endpoint bound and zero-lambda scalar identity. Its admissible inserted
+scalar mass extends to twice the original mass, because the corresponding
+paired mass is halved. A negative corrected derivative therefore gives a
+strict gain by increasing the mass, even when the original mass is one.
+`Section5RightScalarGain.lean` combines this with the already identified
+right lambda square gain. Its deficit is chosen before system size and
+disorder, not extracted separately from a finite-size strict inequality.
+
+These two directions must remain distinct: scalar optimality decreases the
+inserted mass, whereas the coupled-pressure improvement increases it.
+Baseline lambda reflection does not identify the variable-mass scalar
+families.
+
+`Section4RightVarianceFactor.lean` removes the prefactor from the actual
+right variance derivative without dividing by the mass gap. The existing
+`guerraGrowth_one` and `pairedTiltMean_mem_Icc` helpers are exposed unchanged
+to prove the normalized range. `Section4RightVarianceBaseline.lean` identifies
+the normalized baseline recursion itself by scalar mass-array equality and
+the existing variance reflection. This algebra includes the terminal interval
+directly. Fixed-variance mass continuity then allows bounded dominated
+convergence in `Section4RightUPrime.lean`. The limit is taken from below, so
+positive baseline mass suffices even at mass one. A clamped continuous
+extension of the factor supplies the inward endpoint derivative by FTC.
+
+`Section4RightConvexity.lean` uses the existing all-level `Q_+' = R_+` and
+nonnegative Hessian-square factor, with Mathlib's derivative criterion for
+convexity. `Section5FarRight.lean` combines its supporting line with actual
+dual optimality and the mass-or-lambda gain. The existing far-left smallness
+arithmetic is exposed unchanged, and the same beta-only constant suffices.
+The result is Proposition 5.6 in the exact-covariance SK setting, with a
+positive scalar deficit chosen before system size and disorder. Uniformity
+over time/overlap and the other signed/outside-neighbor cases remain separate.
+The statement and the dual proof route were checked against
+[Talagrand, pp. 251 and 257](https://annals.math.princeton.edu/wp-content/uploads/annals-v163-n1-p04.pdf#page=31).
+No dependency revision or upstream source is changed.
+
 ## Historical copies and local ports
 
 All vendored files are Apache-2.0.  Original headers are retained unchanged.

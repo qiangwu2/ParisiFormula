@@ -13,7 +13,7 @@ open Real
 
 namespace SpinGlass.Targets
 
-private theorem firstVariation_sq_le_of_quadratic_comparisons
+theorem firstVariation_sq_le_of_quadratic_comparisons
     {C a b ε f : ℝ} (hC : 0 < C) (hab : a < b) (hf : f < 0)
     (hupper : 0 ≤ f * (b - a) + C * (b - a) ^ 2)
     (hnear : ∀ δ ∈ Set.Icc (0 : ℝ) (b - a), -ε ≤ f * δ + C * δ ^ 2) :

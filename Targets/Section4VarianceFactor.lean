@@ -59,14 +59,14 @@ theorem measurable_section4VarianceQ {k : ℕ} (s : RSBScheme k) (β : ℝ)
     · exact (scalarFieldCascade_props _ _ _).1.comp ((measurable_pi_apply 0).comp measurable_snd)
     · exact ih
 
-private theorem guerraGrowth_one {A : ℝ → ℝ} (hA : HasLinearGrowth A) (hAm : Measurable A) :
+theorem guerraGrowth_one {A : ℝ → ℝ} (hA : HasLinearGrowth A) (hAm : Measurable A) :
     GuerraGrowth (fun y : Fin 1 → ℝ => A (y 0)) := by
   obtain ⟨C, D, _, hD, hb⟩ := hA
   refine ⟨hAm.comp (measurable_pi_apply 0), C, D, hD, ?_⟩
   intro y
   simpa [l1] using hb (y 0)
 
-private theorem pairedTiltMean_mem_Icc {n : ℕ} {A G : (Fin n → ℝ) → ℝ}
+theorem pairedTiltMean_mem_Icc {n : ℕ} {A G : (Fin n → ℝ) → ℝ}
     (hA : GuerraGrowth A) (hG : Measurable G) (hG01 : ∀ y, G y ∈ Set.Icc 0 1)
     (m v : ℝ) (x : Fin n → ℝ) : pairedTiltMean m v A G x ∈ Set.Icc 0 1 := by
   refine ⟨?_, (le_abs_self _).trans (pairedTiltMean_abs_le hA hG (fun y => ?_) x)⟩

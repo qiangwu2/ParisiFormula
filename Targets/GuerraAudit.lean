@@ -80,6 +80,13 @@ right comparator, its squared-slope endpoint derivative, and one-sided curvature
 The local-right estimate now covers every level of a reduced scheme, including
 both boundary cases. Other overlap/sign regimes and the uniform Theorem 2.4
 assembly remain open.
+Further guards certify actual right insertion, genuine first/second mass
+derivatives, depth-uniform Taylor control, and dual quantitative optimality.
+The normalized right factor is mass-continuous and identified at baseline;
+a mass limit proves the actual U'=Q with inward endpoints, and convexity
+gives the dual supporting line. The actual mass-or-lambda gain now proves
+Proposition 5.6, including terminal mass one, with a deficit chosen before
+system size and disorder. Compactness over time/overlap is not certified.
 The full Parisi formula is deliberately not listed: Theorem 2.2 is still open.
 -/
 import Targets.ReplicaMeasure
@@ -173,6 +180,9 @@ import Targets.Section5LocalRight
 import Targets.Section5RightUniform
 import Targets.Section4ZeroOverlap
 import Targets.Section5RightBoundary
+import Targets.Section4RightOptimality
+import Targets.Section5RightScalarGain
+import Targets.Section5FarRight
 
 /-! The new critical-path results are checked against the same three standard
 axioms as the explicit print guards below. Checking the allowed set also
@@ -180,6 +190,68 @@ accepts results which need fewer of those axioms. -/
 run_cmd do
   let allowed := #[``propext, ``Classical.choice, ``Quot.sound]
   for name in [
+    ``SpinGlass.Targets.section4RightVarianceQ_mass_continuous_paths,
+    ``SpinGlass.Targets.continuousOn_section4RightTVarianceQ_mass,
+    ``SpinGlass.Targets.section4RightVarianceD_eq_massGap_mul,
+    ``SpinGlass.Targets.measurable_section4RightVarianceQ,
+    ``SpinGlass.Targets.section4RightVarianceQ_mem_Icc,
+    ``SpinGlass.Targets.section4RightTVarianceD_eq_massGap_mul,
+    ``SpinGlass.Targets.section4RightTVarianceQ_mem_Icc,
+    ``SpinGlass.Targets.section4Mass_baseline_eq_next,
+    ``SpinGlass.Targets.section4RightCascade_baseline_eq_reflected_next,
+    ``SpinGlass.Targets.section4RightVarianceQ_baseline_eq_reflected_next,
+    ``SpinGlass.Targets.section4RightTVarianceQ_baseline_eq,
+    ``SpinGlass.Targets.guerraGrowth_one,
+    ``SpinGlass.Targets.pairedTiltMean_mem_Icc,
+    ``SpinGlass.Targets.hasDerivAt_section4RightT_variance_factor,
+    ``SpinGlass.Targets.intervalIntegrable_section4RightT_variance_factor,
+    ``SpinGlass.Targets.section4RightT_sub_eq_massGap_mul_integral,
+    ``SpinGlass.Targets.intervalIntegrable_section4RightTVarianceQ_closed,
+    ``SpinGlass.Targets.continuousOn_integral_section4RightTVarianceQ,
+    ``SpinGlass.Targets.section4RightU_sub_eq_integral,
+    ``SpinGlass.Targets.section4RightU_eq_integral,
+    ``SpinGlass.Targets.hasDerivWithinAt_section4RightU,
+    ``SpinGlass.Targets.section4RightR_nonneg,
+    ``SpinGlass.Targets.convexOn_section4RightU,
+    ``SpinGlass.Targets.section4RightU_ge_supportingLine,
+    ``SpinGlass.Targets.section4RightU_interpolation_slope_upper_bound,
+    ``SpinGlass.Targets.section4RightU_interpolation_slope_upper_bound_of_factor_eq,
+    ``SpinGlass.Targets.section5FarLeft_smallness,
+    ``SpinGlass.Targets.exists_constrainedPhi_right_gap_uniform_in_size,
+    ``SpinGlass.Targets.constrainedPhi_lt_two_guerraPsi_of_right_gap,
+    ``SpinGlass.Targets.exists_constrainedPhi_far_right_uniform_in_size,
+    ``SpinGlass.Targets.constrainedPhi_lt_two_guerraPsi_of_far_right,
+    ``SpinGlass.Targets.section4_right_inserted_variance,
+    ``SpinGlass.Targets.parisiF_insertRightLevel,
+    ``SpinGlass.Targets.parisiCorrection_insertRightLevel,
+    ``SpinGlass.Targets.parisiFunctional_insertRightLevel,
+    ``SpinGlass.Targets.section4RightPhi_baseline,
+    ``SpinGlass.Targets.section4RightPhi_at_lower_overlap,
+    ``SpinGlass.Targets.section4RightPhi_near_min,
+    ``SpinGlass.Targets.section4RightPhi_lower_mass_min,
+    ``SpinGlass.Targets.scalarMass_coupledParamDeriv,
+    ``SpinGlass.Targets.section4RightMassD_base_props,
+    ``SpinGlass.Targets.section4RightMassD_props,
+    ``SpinGlass.Targets.hasDerivAt_section4RightT_mass,
+    ``SpinGlass.Targets.hasDerivAt_section4RightT_mass_baseline,
+    ``SpinGlass.Targets.section4RightU_zero_variance,
+    ``SpinGlass.Targets.measurable_section4RightMassD,
+    ``SpinGlass.Targets.section4RightMassD_abs_le_uniform,
+    ``SpinGlass.Targets.measurable_section4RightMassE,
+    ``SpinGlass.Targets.section4RightMassE_invariant,
+    ``SpinGlass.Targets.section4RightMassE_deriv_props,
+    ``SpinGlass.Targets.hasDerivAt_deriv_section4RightT_mass,
+    ``SpinGlass.Targets.abs_second_deriv_section4RightT_mass_le_uniform,
+    ``SpinGlass.Targets.section4RightT_mass_taylor_bound,
+    ``SpinGlass.Targets.quadratic_remainder_of_second_bound,
+    ``SpinGlass.Targets.firstVariation_sq_le_of_quadratic_comparisons,
+    ``SpinGlass.Targets.hasDerivAt_section4RightPhi_mass_baseline,
+    ``SpinGlass.Targets.section4RightPhi_mass_taylor_baseline,
+    ``SpinGlass.Targets.section4RightFirstVariation_upper_bound,
+    ``SpinGlass.Targets.constrainedPhi_le_two_guerraPsi_right_mass_variation,
+    ``SpinGlass.Targets.exists_section5RightMass_improvement,
+    ``SpinGlass.Targets.exists_constrainedPhi_right_mass_gap_uniform_in_size,
+    ``SpinGlass.Targets.exists_constrainedPhi_right_scalar_gain_uniform_in_size,
     ``SpinGlass.Targets.stepD1_initial_totalVariance,
     ``SpinGlass.Targets.stepD2_initial_totalVariance,
     ``SpinGlass.Targets.section5LocalLeftConstant_bounds,

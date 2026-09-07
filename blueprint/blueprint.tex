@@ -67,8 +67,10 @@ interior third derivative and closed-interval Taylor control now supply
 Proposition~4.10 without an assumed regularity bound. The local-left and initial
 estimates (Propositions~5.1 and~5.3) are checked. The local-right estimate
 (Proposition~5.2) is checked for every level of a reduced scheme, including
-zero first overlap and the terminal interval. The remaining overlap/sign
-cases and uniform assembly into Theorem~2.4 remain open.
+zero first overlap and the terminal interval. The far-right strict improvement
+(Proposition~5.6) is also checked, with a deficit chosen before system size
+and disorder. The signed initial and outside-neighbor cases
+(Propositions~5.4 and~5.7), and uniform assembly into Theorem~2.4, remain open.
 
 Dependencies are Mathlib and the pinned RSAT library
 (\texttt{njimaMath/research\_public}), with local ports originating in
@@ -1624,8 +1626,125 @@ calculus and lambda gain with zero curvature error. When $q_2=0$, the right
 interval is a singleton and the non-strict pressure bound suffices.
 The terminal replica-symmetric case uses the existing terminal auxiliary base.
 \end{proof}
-The signed and remaining far-overlap cases, compactness, and the uniform
-assembly into Theorem~2.4 are still open.
+The signed initial and outside-neighbor cases, compactness, and the uniform
+assembly into Theorem~2.4 are still open; the far-right case is proved below.
+
+\begin{lemma}[The actual right mass variation and its optimality bound]
+\lean{SpinGlass.Targets.parisiFunctional\_insertRightLevel}\leanok
+\lean{SpinGlass.Targets.hasDerivAt\_section4RightT\_mass\_baseline}\leanok
+\lean{SpinGlass.Targets.section4RightT\_mass\_taylor\_bound}\leanok
+\lean{SpinGlass.Targets.section4RightFirstVariation\_upper\_bound}\leanok
+Let $1\le r\le k+1$, $a=\beta^2(q_{r+1}-q_r)$, and let $T_+(m,v)$
+be the actual right scalar cascade. Its split is
+\[
+ P_{m,v}\bigl(P_{m_r,a-v}A\bigr),
+\]
+followed by the unchanged outer levels, where $P$ is the scalar Parisi step.
+The inserted outer mass varies; the original inner mass remains fixed.
+The genuine derivative exists on a two-sided neighborhood of every mass in
+$[0,1]$, including both physical variance endpoints. Define
+\[
+ U_+(v)=2\partial_mT_+(m_r,v),\qquad
+ f_+(u)=\frac12U_+\bigl(\beta^2(u-q_r)\bigr)
+       -\frac{\beta^2}{4}(u^2-q_r^2).
+\]
+For an original fixed-level minimizer within $\varepsilon$ of the infimum,
+with $m_{r-1}<m_r$ and $q_r\le u\le q_{r+1}$,
+\[
+ f_+(u)\le O_\beta\sqrt\varepsilon.
+\]
+Here $O_\beta$ is the same depth-independent constant used in Proposition~4.6.
+Zero lower mass and the terminal mass $m_r=1$ are included.
+\end{lemma}
+\begin{proof}
+Insert the overlap $u$ and a mass $m\in[m_{r-1},m_r]$ into the original
+scheme. Its actual functional is
+\[
+ \log2+T_+\bigl(m,\beta^2(u-q_r)\bigr)
+ -\operatorname{corr}(s)
+ +(m_r-m)\frac{\beta^2}{4}(u^2-q_r^2).
+\]
+At $m=m_r$ this is the original functional. At $m=m_{r-1}$, merge the
+adjacent equal masses to obtain a same-level competitor; original minimality
+applies without assuming minimality of a padded scheme. Near-global
+minimality applies to every intermediate insertion. Reuse the scalar mass
+derivatives and the normalized second-derivative covariance invariant through
+the fixed outer cascade. This yields the same uniform quadratic Taylor
+remainder as on the left. Apply the existing quadratic comparison lemma to
+$-f_+$, since the admissible scalar variation decreases the mass.
+\end{proof}
+
+\begin{lemma}[Right pressure improvement from a negative mass derivative]
+\lean{SpinGlass.Targets.constrainedPhi\_le\_two\_guerraPsi\_right\_mass\_variation}\leanok
+\lean{SpinGlass.Targets.exists\_constrainedPhi\_right\_mass\_gap\_uniform\_in\_size}\leanok
+For $m_r>0$, $0\le t\le1$, and $q_r\le u\le q_{r+1}$, set
+\[
+ v=t\beta^2(u-q_r),\qquad
+ D_+=U_+(v)-t\frac{\beta^2}{2}(u^2-q_r^2).
+\]
+If $D_+<0$, there is $c>0$, chosen before $N$ and the disorder, such that
+\[
+ \Phi_N(t,u)\le2\psi(t)-c
+\]
+for every positive system size at which $u$ is attainable.
+\end{lemma}
+\begin{proof}
+The actual paired interpolation admits scalar masses up to $2m_r$;
+its inserted paired mass is $m/2$. The corrected scalar trial function has
+derivative $D_+$ at $m_r$, so an admissible \emph{increase} in mass gives a
+strict improvement, even at $m_r=1$. Transport that scalar deficit using the
+proved right endpoint bound and zero-lambda identity. If the lambda slope is
+nonzero, the existing lambda square gain already gives a positive deficit.
+The mass-or-lambda dichotomy reduces the remaining case to the actual scalar
+derivative sign proved below.
+\end{proof}
+
+\begin{lemma}[Right supporting line and the far-right case, Proposition 5.6]
+\lean{SpinGlass.Targets.section4RightU\_sub\_eq\_integral}\leanok
+\lean{SpinGlass.Targets.hasDerivWithinAt\_section4RightU}\leanok
+\lean{SpinGlass.Targets.convexOn\_section4RightU}\leanok
+\lean{SpinGlass.Targets.exists\_constrainedPhi\_far\_right\_uniform\_in\_size}\leanok
+For $m_r>0$, the actual right mass derivative satisfies
+\[
+ U_+(w)-U_+(v)=\int_v^w Q_+(z)\,dz
+ \quad(0\le v\le w\le a),
+\]
+so $U_+'=Q_+$, including inward derivatives at both endpoints.
+Since $Q_+'=R_+\ge0$, $U_+$ is convex. For
+$v=\beta^2(u-q_r)$ this yields
+\[
+ \begin{split}
+ D_+\le{}&2f_+(u)-(1-t)\frac{\beta^2}{2}(u-q_r)^2\\
+ &-(1-t)v\bigl(Q_+(tv)-u\bigr).
+ \end{split}
+\]
+Consequently Proposition~5.6 holds for every physical interval of a reduced
+scheme, with $L_3(\beta)=4O_\beta$. Specifically, for $\beta\ne0$, $L_1>0$,
+$0\le t\le t_0<1$, original fixed-level minimality and $\varepsilon$-near
+global minimality, the conditions
+\[
+ \begin{gathered}
+ q_r\le u\le q_{r+1},\quad L_1(u-q_r)\ge1-t_0,\\
+ L_3(\beta)\sqrt\varepsilon\le
+ (1-t_0)\frac{\beta^2}{2}\left(\frac{1-t_0}{L_1}\right)^2
+ \end{gathered}
+\]
+give a strictly positive constrained-free-energy deficit chosen before $N$
+and the disorder. This includes $r=k+1$ and $m_r=1$.
+\end{lemma}
+\begin{proof}
+Remove the mass-gap prefactor from the actual right variance derivative to
+obtain a bounded normalized observable. At baseline, identify its full
+recursion with the existing reflected $Q_+$, not just their products with a
+zero mass gap. Mass continuity and bounded dominated convergence justify a
+left mass difference quotient of the variance integral identity. The positive
+baseline mass permits this limit even at mass one. A continuous extension of
+$Q_+$ proves the inward endpoint derivative by the fundamental theorem of
+calculus. Apply the convex supporting line and the proved upper bound on
+$f_+$. If $Q_+(tv)=u$, the smallness condition makes $D_+<0$; otherwise the
+lambda square gain is strict. Apply the preceding mass-or-lambda result.
+No compactness over time and overlap is claimed in this proposition.
+\end{proof}
 
 \begin{lemma}[Closed-interval concavity and the supporting line (5.34)]
 \lean{SpinGlass.Targets.concaveOn\_section4U}\leanok
@@ -2122,9 +2241,11 @@ argument in \S3--\S5 of \cite{Tal06}: prove the a priori bound of Theorem~2.4,
 then apply the checked conditional deduction of Proposition~2.3 and the exact
 mass/interior-overlap reduction. Uniform Hessian regularity, curvature and
 the local-left/initial quadratic estimates are now checked. The dual local
-estimate is checked away from its terminal and zero-first-overlap boundaries.
-Extend it to those boundaries, then complete the remaining far-overlap and
-signed cases and their uniform assembly. The scalar stationarity reduction is
+estimate includes both its terminal and zero-first-overlap boundaries, and
+the actual dual mass variation now proves the far-right Proposition~5.6.
+Complete the signed initial case (Proposition~5.4), the interleaved-mass
+outside-neighbor construction (Proposition~5.7), and their compact-uniform
+assembly. The scalar stationarity reduction is
 already checked and does not impose new restrictions on Theorem~2.2.
 The active RSAT dependency includes
 \texttt{SpinGlass.AT.twoReplica\_GT\_bound} and Gaussian concentration results;

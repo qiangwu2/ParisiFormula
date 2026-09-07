@@ -21,7 +21,7 @@ noncomputable def section5FarLeftBound (β : ℝ) : ℝ :=
 theorem section5FarLeftBound_pos (β : ℝ) : 0 < section5FarLeftBound β :=
   mul_pos (by norm_num) (section4OptimalityBound_pos β)
 
-private theorem section5FarLeft_smallness {β ε L₁ t₀ t d : ℝ}
+theorem section5FarLeft_smallness {β ε L₁ t₀ t d : ℝ}
     (hβ : β ≠ 0) (hL : 0 < L₁) (ht₀ : t₀ < 1) (ht : t ≤ t₀)
     (hfar : 1 - t₀ ≤ L₁ * d)
     (hsmall : section5FarLeftBound β * Real.sqrt ε ≤

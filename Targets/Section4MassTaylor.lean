@@ -12,7 +12,7 @@ open MeasureTheory ProbabilityTheory Real Filter Topology
 
 namespace SpinGlass.Targets
 
-private theorem quadratic_remainder_of_second_bound {f : ℝ → ℝ} {C : ℝ}
+theorem quadratic_remainder_of_second_bound {f : ℝ → ℝ} {C : ℝ}
     (hC : 0 ≤ C) (hf : ∀ x ∈ Set.Icc (0 : ℝ) 1, DifferentiableAt ℝ f x)
     (hf' : ∀ x ∈ Set.Icc (0 : ℝ) 1, DifferentiableAt ℝ (deriv f) x)
     (hb : ∀ x ∈ Set.Icc (0 : ℝ) 1, |deriv (deriv f) x| ≤ C)

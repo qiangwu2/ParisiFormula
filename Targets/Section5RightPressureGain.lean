@@ -7,8 +7,9 @@ import Targets.TalagrandRightZero
 The proved right-interpolation endpoint bound and optimized lambda estimate
 combine at baseline mass `m_r`. Their original correction cancels to give a
 bound relative to `2 ψ(t)`, with the squared error in the actual right lambda
-derivative. This is not yet a uniform quadratic bound in `u - q_r`: the
-comparison of the derivative error with that overlap difference remains open.
+derivative. The local comparison with `u - q_r` is proved separately in
+`Section5LocalRight` and `Section5RightBoundary`; the far-right mass variation
+is treated in `Section5FarRight`.
 -/
 
 open MeasureTheory ProbabilityTheory Real

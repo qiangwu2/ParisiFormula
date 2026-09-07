@@ -74,7 +74,7 @@ At the end of Step 27, replica identification, `U″`, uniform optimality estima
 and the remaining overlap regimes were still missing. Steps 29--30 close the
 derivative and interpolation gaps described in the current frontier below.
 
-**Current checked frontier (Step 36):** Proposition 4.6, closed-interval
+**Current checked frontier (Step 37):** Proposition 4.6, closed-interval
 concavity, both transported lambda gains and the positive-baseline far-left
 strict bound are checked. Stationarity now includes the final compulsory-mass
 level. Exact mass/interior-overlap reduction supplies its inward directions
@@ -95,7 +95,14 @@ the possibly nontrivial interval `[q_(k+1),1]` without assuming minimality of th
 padded scheme. One-sided optimality now supplies curvature at zero first overlap,
 closing the other boundary case. Proposition 5.2 is checked in the project's
 exact-covariance SK setting for the reduced schemes used by the convergence
-deduction. The remaining overlap/sign cases,
+deduction. The actual right insertion now supplies the genuine mass derivative,
+the same depth-uniform second-mass/Taylor bound, and the dual first-variation
+upper bound from original fixed-level and near-global minimality. A negative
+corrected right mass derivative gives a scalar deficit chosen before system
+size and disorder, including baseline mass one. The actual normalized right
+factor is now identified and mass-continuous; a mass limit proves `U_+'=Q_+`
+up to inward endpoints. Its convex supporting line closes Proposition 5.6
+at every physical level. The remaining overlap/sign cases,
 uniform Theorem 2.4 assembly, Theorem 2.2 and the final formula remain open.
 
 **Milestone 1 (Targets 1b, 1c) is *not* on this critical path.**  Target 4 is strictly
@@ -1885,17 +1892,78 @@ new warnings. No placeholders, project axioms, dependency changes or weakened
 target statements were introduced; the same four original placeholders remain.
 The updated blueprint compiles to 39 pages without LaTeX warnings.
 
+**Step 37 (2026-09-06): actual right mass calculus and Proposition 5.6.**
+
+The genuine scalar right insertion is now connected to the original scheme's
+functional. The inserted mass ranges from `m_(r-1)` to `m_r`, with overlap
+in `[q_r,q_(r+1)]`. Equal-mass compression of its lower-mass endpoint produces
+a same-level competitor. This proves both needed optimality comparisons from
+the original assumptions, not from minimality of an auxiliary padded scheme.
+
+The new `Section4RightMassDerivative` and `Section4RightMassSecond` modules
+reuse the checked scalar calculus and normalized covariance invariant on the
+actual inner transform. They prove two-sided mass differentiation, including
+zero and one, and a depth-uniform quadratic Taylor bound with the same
+beta-only constant as on the left. `Section4RightOptimality` then proves the
+dual first-variation **upper** bound `f_+(u) ≤ O_β sqrt ε`.
+
+`Section5RightMassGain` transports an actual scalar mass variation to the
+original constrained free energy. The paired construction permits scalar
+mass up to `2*m_r`; a negative corrected derivative gives a strict improvement
+by increasing the mass, even at terminal mass one. The deficit is selected
+before system size and disorder. `Section5RightScalarGain` combines this with
+the existing right lambda square gain, leaving only the mass derivative sign
+to prove in the zero-lambda-slope case. Scalar optimality decreases mass;
+paired-pressure improvement increases it. No variable-mass reflection is used.
+
+The normalized factor is now defined without division by the mass gap and
+identified with the original reflected factor at baseline. Its fixed-variance
+mass continuity allows dominated convergence in the variance integral. The
+mass difference quotient is taken from below, so positive baseline mass
+suffices, including mass one. This proves the actual `U_+'=Q_+`, including
+inward derivatives at both variance endpoints. The checked `Q_+'=R_+≥0`
+then gives convexity and the dual supporting line. Actual dual optimality
+makes the corrected mass slope negative when the lambda slope is zero and
+the overlap is far enough from `q_r`.
+
+`Section5FarRight` assembles Proposition 5.6 with the same beta-only constant
+and smallness arithmetic as the far-left case. It covers `1≤r≤k+1`, including
+zero first overlap and terminal mass one, with only the original strict mass
+gap and minimizing-scheme assumptions. Its positive deficit is chosen before
+system size/disorder; compact-uniformity over time and overlap is not claimed.
+
+**Step 37 checked/open checklist:**
+
+- [x] Actual right insertion and both original-scheme optimality comparisons.
+- [x] Genuine right mass derivatives and depth-uniform quadratic Taylor bound.
+- [x] Dual quantitative first-variation bound from original minimality.
+- [x] Normalized right factor, mass continuity, actual `U_+'=Q_+`, and convexity.
+- [x] Actual mass-or-lambda gain, including terminal mass one.
+- [x] Far-right Proposition 5.6, with a deficit chosen before system size.
+- [ ] Signed initial interval, Proposition 5.4.
+- [ ] Outside-neighbor construction and strict improvement, Proposition 5.7.
+- [ ] Compactness and uniform Theorem 2.4 assembly; then Theorem 2.2 and the formula.
+
+**Step 37 validation:** `bash scripts/check.sh` passes (3229 supporting-library
+jobs and 3941 target jobs). The 62 additional regression guards bring the total
+to 816, including the final far-right result and the reused helper lemmas.
+All eleven new proof modules compile without warnings. Existing target
+statements and dependency pins are unchanged; no new axioms or placeholders
+were added, and the same four original placeholders remain. The updated blueprint compiles to 41 pages
+without LaTeX warnings.
+
 **Remaining work, following the Annals argument:**
 
 1. Prove the a priori two-replica bound of Theorem 2.4 using §3–§5 and the scheme's
    optimality. The imported RS-level `twoReplica_GT_bound` is not this general result.
-   Next concrete step: the far-right strict improvement (Proposition 5.6),
-   reusing the existing right interpolation, lambda gain and actual right
-   scalar variation. Identify the mass derivative and its optimality deficit;
-   equality of the baseline lambda family alone does not identify variations
-   in the inserted mass. The negative initial interval (Proposition 5.4),
-   remaining outside-neighbor cases (Proposition 5.7), and compactness over
-   time/overlap also remain. Steps 35--36 close both local-right boundary cases;
+   Next concrete step: the negative initial interval (Proposition 5.4), reusing
+   the initial curvature and scalar Gaussian calculus with the signed paired
+   field. Then construct the interleaved mass sequences and strict comparison
+   for the outside-neighbor cases (Proposition 5.7), followed by compactness
+   over time/overlap. Step 37 closes the far-right strict improvement
+   (Proposition 5.6), including its actual mass derivative and optimality input;
+   do not repeat that work or identify the full variable-mass families by
+   baseline reflection. Steps 35--36 close both local-right boundary cases;
    do not repeat terminal padding or zero-overlap curvature. Uniform regularity,
    Proposition 4.10 and the left/initial estimates are now checked in Step 33;
    do not redo those arguments or the stationarity reduction.
@@ -1911,7 +1979,7 @@ The updated blueprint compiles to 39 pages without LaTeX warnings.
    estimate is superseded on actual inputs by Step 33's uniform bounds.
    The full nested second mass bound and its depth-uniform invariant are
    checked in Step 30; do not redo the scalar cumulant or nested derivative
-   theory. Complete the dual and remaining overlap/sign cases. Step 31
+   theory. Complete the remaining signed and outside-neighbor cases. Step 31
    transports both lambda gains and proves the positive-baseline far-left
    strict bound; Step 33 adds the local-left quadratic bound, but compactness
    remains open. Both neighbor
