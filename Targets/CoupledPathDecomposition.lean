@@ -72,9 +72,9 @@ theorem constrainedFieldCascade_multi_anchored_bound
   nlinarith [mul_le_mul_of_nonneg_left haU
     (show 0 ≤ 2 * (Fintype.card (Config n) : ℝ) by positivity)]
 
-private abbrev ParamFields (P : Type*) (n : ℕ) := P × ((Fin n → ℝ) × (Fin n → ℝ))
+abbrev ParamFields (P : Type*) (n : ℕ) := P × ((Fin n → ℝ) × (Fin n → ℝ))
 
-private noncomputable def paramShift {r : ℕ} (b : P → ℝ)
+noncomputable def paramShift {r : ℕ} (b : P → ℝ)
     (A B : Fin r → Fin n → ℝ) (q : ParamFields P n) (z : Fin r → ℝ) : ParamFields P n :=
   q + b q.1 • (0, pairedFieldLinear A z, pairedFieldLinear B z)
 
@@ -114,7 +114,7 @@ private theorem l1_norm_bound (x : Fin n → ℝ) : l1 x ≤ n * ‖x‖ := by
 private theorem l1_smul_bound (c : ℝ) (x : Fin n → ℝ) : l1 (c • x) = |c| * l1 x :=
   l1_const_smul c x
 
-private theorem differentiableAt_multiGaussianStep {r : ℕ}
+theorem differentiableAt_multiGaussianStep {r : ℕ}
     (F : ParamFields P n → ℝ) {b : P → ℝ} {p : P} (hb : DifferentiableAt ℝ b p)
     (mass : ℝ) (A B : Fin r → Fin n → ℝ)
     (hFdiff : ∀ x y, DifferentiableAt ℝ F (p, x, y))
@@ -219,7 +219,7 @@ private theorem differentiableAt_multiGaussianStep {r : ℕ}
     nlinarith [hg0 z]
 
 omit [FiniteDimensional ℝ P] [MeasurableSpace P] [BorelSpace P] in
-private theorem multiGaussianStep_eq_linearStep {r : ℕ}
+theorem multiGaussianStep_eq_linearStep {r : ℕ}
     (F : ParamFields P n → ℝ) (mass : ℝ) (v : P → ℝ)
     (A B : Fin r → Fin n → ℝ) (q : ParamFields P n) :
     parisiStepPi r mass 1 (fun z => F (paramShift (fun a => Real.sqrt (v a)) A B q z)) 0 =
@@ -287,11 +287,11 @@ end MultiParameter
 
 /-! Independent coordinates on the active variance face. -/
 
-private noncomputable def faceVariance (j : ℕ) (v : ℕ → ℝ)
+noncomputable def faceVariance (j : ℕ) (v : ℕ → ℝ)
     (c : Fin j → ℝ) (l : ℕ) : ℝ :=
   if hl : l < j then if 0 < v l then c ⟨l, hl⟩ else 0 else 0
 
-private theorem faceVariance_base (j : ℕ) (v : ℕ → ℝ) (hv : ∀ l, 0 ≤ v l)
+theorem faceVariance_base (j : ℕ) (v : ℕ → ℝ) (hv : ∀ l, 0 ≤ v l)
     (l : ℕ) (hl : l < j) : faceVariance j v (fun i => v i) l = v l := by
   simp only [faceVariance, dif_pos hl]
   split_ifs with hp
@@ -381,7 +381,7 @@ private theorem faceCascade_disorder_fderiv
   simp only [zero_smul, add_zero] at HD
   exact HH.unique HD
 
-private theorem faceVariance_update (j : ℕ) (v : ℕ → ℝ) (hv : ∀ l, 0 ≤ v l)
+theorem faceVariance_update (j : ℕ) (v : ℕ → ℝ) (hv : ∀ l, 0 ≤ v l)
     (l : Fin j) (a : ℝ) (k : ℕ) (hk : k < j) :
     faceVariance j v (Function.update (fun i : Fin j => v i) l a) k =
       if 0 < v l then Function.update v (l : ℕ) a k else v k := by

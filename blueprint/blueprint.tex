@@ -74,8 +74,10 @@ for reduced schemes by exact SK reflection and conditioning, preserving the
 original shared field and free energy. For Proposition~5.7, strict scalar
 interchange and sorting, the mixed paired comparison, sorted scalar
 identification, the original-free-energy endpoint and the time-zero deficit
-are checked. The mixed-pressure inequality and uniform assembly into
-Theorem~2.4 remain open.
+are checked. The actual mixed-pressure derivative inequality and its transport
+to the original free energy are now checked. The final trial interval and
+remaining first-level boundary cases of Proposition~5.7, followed by uniform
+assembly into Theorem~2.4, remain open.
 
 Dependencies are Mathlib and the pinned RSAT library
 (\texttt{njimaMath/research\_public}), with local ports originating in
@@ -708,9 +710,10 @@ the actual lambda derivative of this $V$ at fixed $m$.
 These endpoint results alone do not assert the intervening covariance derivative
 bound. The right-interval construction and both actual interior-time pressure
 derivatives and the negative initial-overlap case are proved in the subsequent
-modules. Proposition~5.7's mixed-pressure inequality remains open;
-its tagged construction, strict scalar sorting and actual endpoints are checked below, as is the uniform
-bound of Lemma~5.9.
+modules. Proposition~5.7's actual tagged mixed-pressure inequality is now
+checked below, together with strict scalar sorting and endpoint transport;
+its remaining boundary assembly is still open. The uniform bound of
+Lemma~5.9 is also checked.
 
 \begin{lemma}[Constrained terminal derivatives and the SK covariance trace]
 \lean{SpinGlass.Targets.hasDerivAt\_constrainedPairFieldBase\_second}\leanok
@@ -2220,14 +2223,108 @@ outer opposite level. The actual zero-endpoint bound transports the strict
 scalar deficit to $\eta(0)$.
 \end{proof}
 
-Proposition~5.7 itself remains open. The actual simultaneous mixed-pressure
-derivative must still be assembled from these contributions and identified
-with the signed covariance expression before applying closed-interval
-transport. In particular, separate partial derivatives alone do not justify
-this chain rule. The final trial interval, positive-overlap breakpoint
-selection, and first-physical-level sign cases still require boundary assembly.
-The separate physical-time-zero estimate above already covers every attainable
-overlap. The component lemmas are not the full Proposition~5.7 inequality.
+\begin{lemma}[Actual simultaneous mixed derivative and disorder average]
+\lean{SpinGlass.Targets.hasDerivAt\_mixedConstrainedCascade\_path\_decomposition}\leanok
+\lean{SpinGlass.Targets.mixedConstrainedGaussian\_path\_derivative}\leanok
+\lean{SpinGlass.Targets.hasDerivAt\_mixedConstrainedGaussian\_path\_trace}\leanok
+For the actual mixed cascade, independent disorder and active variance
+coordinates are jointly differentiable. Along a differentiable path with
+positive or locally constant zero variances, the time derivative is the
+disorder direction plus the sum of original-level variance derivatives.
+An anchored increment bound, affine in the disorder norm on a single time
+neighborhood, justifies passage through the Gaussian expectation.
+Radial Stein identifies the disorder contribution with its original spectral
+Hessian trace, multiplied by $a'(w)a(w)$ for disorder amplitude $a(w)$.
+Inactive zero variances contribute zero; no ordinary variance derivative
+at zero is assumed.
+\end{lemma}
+\begin{proof}
+Reuse the finite-dimensional Gaussian parameter theorem, then restrict to
+the active variance face and apply the genuine chain rule. Difference
+quotients give disorder measurability of the derivative. The anchored
+bound is integrable under the actual Gaussian law. Proved integrability
+of the disorder direction and individual heat terms permits splitting the
+expectation before applying the existing radial Stein identity.
+\end{proof}
+
+\begin{lemma}[Actual mixed heat, covariance inequality and endpoint transport]
+\lean{SpinGlass.Targets.mixedLevelVarianceD\_overlap}\leanok
+\lean{SpinGlass.Targets.mixedConstrained\_trace\_sub\_heat\_eq\_covariance}\leanok
+\lean{SpinGlass.Targets.hasDerivAt\_section5InterleavedInterpolation\_replica}\leanok
+\lean{SpinGlass.Targets.deriv\_section5InterleavedInterpolation\_le}\leanok
+\lean{SpinGlass.Targets.section5InterleavedInterpolation\_endpoint\_bound}\leanok
+For the actual tagged construction, $1\le j\le k+1$ and
+$q_{j-1}\le |u|\le q_j$, the simultaneous mixed free-energy derivative is
+the signed covariance expression under the genuine split law, averaged
+over the original disorder. In the exact-covariance SK setting, for
+$N>0$, $0\le t\le1$ and $0<w<1$,
+\[
+ \eta'(w)\le -2t\,\mathrm{correction}(s,\beta).
+\]
+For $1\le r\le k+1$, closed-interval continuity and the actual endpoint
+identity therefore imply
+\[
+ \Psi(t,u)\le\eta(0)-2t\,\mathrm{correction}(s,\beta)
+ \le 2\psi(t)-\delta_{r,j}(t,u),
+\]
+where $\delta_{r,j}=2A_0(h)-V_{r,j}(0)$ is the already constructed scalar
+deficit and has no system-size or disorder argument.
+\end{lemma}
+\begin{proof}
+Uniqueness of genuine perturbation derivatives identifies packed Gaussian
+means with the actual mixed normalized means. Contracting the spatial
+heat directions gives correlations $0,1,-1$ and the factor $N/2$.
+Unchanged outer levels preserve the same original split law as the SK
+trace. The finite covariance telescope combines them after normalization
+by $1/N$. Zero visited variances have zero actual velocity, by uniqueness
+of the derivative of their constant paths, so the active-face indicator
+can be removed without a boundary derivative. Signed square completion
+and the tagged correction identity give the derivative bound. Apply the
+closed-interval mean-value inequality and the checked endpoints.
+\end{proof}
+
+\begin{lemma}[Strict original-free-energy deficits in the current trial range]
+\lean{SpinGlass.Targets.exists\_constrainedPhi\_interleaved\_gap\_left\_outside}\leanok
+\lean{SpinGlass.Targets.exists\_constrainedPhi\_interleaved\_gap\_right\_outside}\leanok
+\lean{SpinGlass.Targets.exists\_constrainedPhi\_interleaved\_gap\_negative}\leanok
+The left and right outside-index scalar deficits with their stated positive
+witness variances now give $\Psi(t,u)\le2\psi(t)-\delta$ for a fixed
+$\delta>0$ chosen before all system sizes and SK disorders. The same holds
+for the negative-overlap scalar deficits at $r\ge2$, $m_1>0$,
+$q_1<q_2$, $\beta\ne0$ and $0<t<1$, within $1\le j\le k+1$.
+The first physical level is also covered when $q_1>0$ and $|u|>q_1$,
+under the corresponding strict negative-endpoint hypotheses.
+\end{lemma}
+\begin{proof}
+Use the previously proved positivity of the explicit scalar deficit and
+the actual endpoint bound above, without changing the deficit or its
+quantifier order.
+\end{proof}
+
+\begin{lemma}[Breakpoint-safe positive outside-neighbor bounds]
+\lean{SpinGlass.Targets.section5OutsideLeft\_exists\_interval}\leanok
+\lean{SpinGlass.Targets.section5OutsideRight\_exists\_interval}\leanok
+\lean{SpinGlass.Targets.exists\_constrainedPhi\_gap\_left\_outside}\leanok
+\lean{SpinGlass.Targets.exists\_constrainedPhi\_gap\_right\_outside}\leanok
+For $\beta\ne0$, $0<t<1$, strictly ordered masses and the relevant
+positive physical overlap gap, the strict original-free-energy bound holds
+for $0\le u<q_{r-1}$ and for $q_{r+1}<u\le q_{k+1}$, including exact
+breakpoint overlaps. No trial index or positivity of auxiliary witness
+variances is assumed in these final wrappers. The deficit is chosen before
+system size and disorder.
+\end{lemma}
+\begin{proof}
+Choose the first index with $u<q_j$ on the left, so that
+$q_{j-1}\le u<q_j$. On the right choose the first index with $u\le q_j$,
+so that $q_{j-1}<u\le q_j$. Scheme monotonicity locates the index outside
+the neighboring range; the strict endpoint of the selected interval gives
+the required active witness variance. Apply the transported strict bound.
+\end{proof}
+
+Proposition~5.7 itself remains open: the final trial interval and remaining
+first-physical-level sign cases require boundary assembly. The separate
+physical-time-zero estimate above already covers every attainable overlap.
+The actual mixed-pressure inequality is now checked, not an assumed input.
 
 \begin{lemma}[Closed-interval concavity and the supporting line (5.34)]
 \lean{SpinGlass.Targets.concaveOn\_section4U}\leanok
@@ -2730,7 +2827,8 @@ Proposition~5.4 is now checked by exact reflection and frozen-field conditioning
 Strict scalar interchange and sorting, the mixed paired recursion, sorted
 scalar identification, cumulative tagged overlaps, the original-pressure
 endpoint and the time-zero deficit for Proposition~5.7 are checked.
-Complete the actual mixed-pressure derivative/transport and all positive-time
+The actual mixed-pressure derivative inequality and endpoint transport are
+now checked. Complete the remaining final-trial-interval and first-level
 boundary/sign cases, then the compact-uniform assembly. The scalar stationarity reduction is
 already checked and does not impose new restrictions on Theorem~2.2.
 The active RSAT dependency includes

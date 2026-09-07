@@ -103,9 +103,15 @@ rigidity; and non-strict scalar interchange and finite sorting. Step 41 adds
 strict scalar interchange and sorting, exact sorted scalar identification,
 full mixed paired comparison, cumulative tagged overlaps, and both actual
 interleaved endpoints, together with the all-overlap time-zero deficit.
-They do not assert the missing mixed-pressure derivative inequality or
-Proposition 5.7 itself. The full Parisi formula is deliberately not listed:
-Theorem 2.2 is still open.
+Step 42 adds the actual mixed derivatives, replica laws, signed covariance
+algebra and continuity. Step 43 certifies their genuine simultaneous Gaussian
+average, actual trace-plus-heat covariance identity, derivative inequality and
+original-free-energy endpoint transport. Outside-neighbor strict gaps now
+include positive breakpoint overlaps in the current trial range. Negative
+gaps include physical levels at least two and the stated first-level case.
+The final trial interval and remaining first-level assembly are not certified,
+so Proposition 5.7 itself and Theorem 2.2 remain open. The full Parisi formula
+is deliberately not listed.
 -/
 import Targets.ReplicaMeasure
 import Targets.CoupledReplicaHessian
@@ -242,6 +248,18 @@ import Targets.Section5InterleavedNegative
 import Targets.Section5MixedReflection
 import Targets.MixedJointInterpolation
 import Targets.Section5InterleavedDifferentiability
+import Targets.Section5OutsideBound
+import Targets.Section5OutsideIntervals
+import Targets.MixedPathDecomposition
+import Targets.MixedPathPressure
+import Targets.MixedPathPressureFormula
+import Targets.MixedReplicaField
+import Targets.MixedReplicaMoments
+import Targets.MixedReplicaPressure
+import Targets.MixedVariancePressure
+import Targets.Section5InterleavedBound
+import Targets.Section5InterleavedPressure
+import Targets.Section5TaggedVelocity
 
 /-! The new critical-path results are checked against the same three standard
 axioms as the explicit print guards below. Checking the allowed set also
@@ -249,6 +267,72 @@ accepts results which need fewer of those axioms. -/
 run_cmd do
   let allowed := #[``propext, ``Classical.choice, ``Quot.sound]
   for name in [
+    ``SpinGlass.Targets.exists_constrainedPhi_gap_left_outside,
+    ``SpinGlass.Targets.exists_constrainedPhi_gap_right_outside,
+    ``SpinGlass.Targets.exists_nat_adjacent_Ico,
+    ``SpinGlass.Targets.exists_nat_adjacent_Ioc,
+    ``SpinGlass.Targets.section5OutsideLeft_exists_interval,
+    ``SpinGlass.Targets.section5OutsideRight_exists_interval,
+    ``SpinGlass.Targets.hasDerivAt_section5InterleavedInterpolation_replica,
+    ``SpinGlass.Targets.integrable_section5InterleavedReplicaCovariance,
+    ``SpinGlass.Targets.deriv_section5InterleavedInterpolation_le,
+    ``SpinGlass.Targets.section5InterleavedInterpolation_endpoint_bound,
+    ``SpinGlass.Targets.constrainedPhi_le_guerraPsi_sub_interleavedDeficit,
+    ``SpinGlass.Targets.exists_constrainedPhi_interleaved_gap_left_outside,
+    ``SpinGlass.Targets.exists_constrainedPhi_interleaved_gap_right_outside,
+    ``SpinGlass.Targets.exists_constrainedPhi_interleaved_gap_negative,
+    ``SpinGlass.Targets.exists_constrainedPhi_interleaved_gap_negative_first,
+    ``SpinGlass.Targets.mixedConstrainedCascade_amplitude_path_anchored_bound,
+    ``SpinGlass.Targets.measurable_mixedConstrainedCascadePathD,
+    ``SpinGlass.Targets.integrable_mixedConstrainedCascade_amplitude,
+    ``SpinGlass.Targets.mixedConstrainedGaussian_path_derivative,
+    ``SpinGlass.Targets.hasDerivAt_mixedConstrainedGaussian_path,
+    ``SpinGlass.Targets.mixedReplicaHeatExpression_const_mul,
+    ``SpinGlass.Targets.mixedConstrained_trace_sub_heat_eq_covariance,
+    ``SpinGlass.Targets.section5ReversePathVariance_nonneg,
+    ``SpinGlass.Targets.section5InterleavedInterpolation_eq_reverse,
+    ``SpinGlass.Targets.section5ReverseMass_eq_massNat,
+    ``SpinGlass.Targets.section5ReverseMode_covariance_increment,
+    ``SpinGlass.Targets.section5Interleaved_actualCovariance_le,
+    ``SpinGlass.Targets.section5Interleaved_averagedCovariance_le,
+    ``SpinGlass.Targets.section5Interleaved_actualTraceHeat_le,
+    ``SpinGlass.Targets.section5TaggedPathVariance_pos_or_velocity_zero,
+    ``SpinGlass.Targets.section5TaggedPathVelocity_eq_zero_of_nonpos,
+    ``SpinGlass.Targets.section5TaggedPathVelocity_mul_ite,
+    ``SpinGlass.Targets.coupledLinearStep_mixedMode,
+    ``SpinGlass.Targets.coupledLinearMean_mixedMode,
+    ``SpinGlass.Targets.mixedSpatialHeat_bounded,
+    ``SpinGlass.Targets.mixedLevelHeat_eq_linear,
+    ``SpinGlass.Targets.mixedLevelHeat_eq_mean,
+    ``SpinGlass.Targets.mixedLevelVarianceD_eq_outerMean,
+    ``SpinGlass.Targets.mixedOuterMean_level_sum,
+    ``SpinGlass.Targets.mixedLevelVarianceD_eq_replica,
+    ``SpinGlass.Targets.mixedReplicaHeat_contraction,
+    ``SpinGlass.Targets.pairFieldPotential_mixedMode_contraction,
+    ``SpinGlass.Targets.mixedLevelVarianceD_overlap,
+    ``SpinGlass.Targets.integrable_mixedReplicaHeatExpression,
+    ``SpinGlass.Targets.integral_mixedReplicaHeatExpression,
+    ``SpinGlass.Targets.integrable_mixedLevelVarianceD_all_variances,
+    ``SpinGlass.Targets.integral_mixedLevelVarianceD_overlap,
+    ``SpinGlass.Targets.integrable_mixedReplicaMoment,
+    ``SpinGlass.Targets.integral_mixedReplicaMoment,
+    ``SpinGlass.Targets.integrable_mixedConstrainedSecond_SK_trace,
+    ``SpinGlass.Targets.integral_mixedConstrainedSecond_SK_trace,
+    ``SpinGlass.Targets.mixedConstrainedDirection_smul,
+    ``SpinGlass.Targets.integrable_mixedConstrainedDirection_radial,
+    ``SpinGlass.Targets.hasDerivAt_mixedConstrainedGaussian_path_trace,
+    ``SpinGlass.Targets.measurable_mixedLevelVarianceD_disorder,
+    ``SpinGlass.Targets.integrable_mixedLevelVarianceD,
+    ``SpinGlass.Targets.hasDerivAt_mixedConstrainedGaussian_variance,
+    ``SpinGlass.Targets.mixedConstrainedCascade_multi_anchored_bound,
+    ``SpinGlass.Targets.differentiableAt_mixedConstrainedCascade_multi,
+    ``SpinGlass.Targets.differentiableAt_mixedConstrainedCascade_activeFace,
+    ``SpinGlass.Targets.hasDerivAt_mixedConstrainedCascade_path_decomposition,
+    ``SpinGlass.Targets.mixedConstrainedCascade_path_fderiv_eq_decomposition,
+    ``SpinGlass.Targets.differentiableAt_multiGaussianStep,
+    ``SpinGlass.Targets.multiGaussianStep_eq_linearStep,
+    ``SpinGlass.Targets.faceVariance_base,
+    ``SpinGlass.Targets.faceVariance_update,
     ``SpinGlass.Targets.mixedLevelHeatBound_nonneg,
     ``SpinGlass.Targets.mixedConstrainedCascade_variance_dist_le,
     ``SpinGlass.Targets.mixedVectorCascade_congr_variance,

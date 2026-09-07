@@ -74,7 +74,7 @@ At the end of Step 27, replica identification, `U″`, uniform optimality estima
 and the remaining overlap regimes were still missing. Steps 29--30 close the
 derivative and interpolation gaps described in the current frontier below.
 
-**Current checked frontier (Step 42):** Proposition 4.6, closed-interval
+**Current checked frontier (Step 43):** Proposition 4.6, closed-interval
 concavity, both transported lambda gains and the positive-baseline far-left
 strict bound are checked. Stationarity now includes the final compulsory-mass
 level. Exact mass/interior-overlap reduction supplies its inward directions
@@ -120,11 +120,17 @@ interpolation's closed-interval continuity. Signed trial-matrix increments now
 match the true tagged modes, including frozen physical tags. The negative
 field endpoint is strict at every physical level `r ≥ 2` in the current trial
 index range, including zero first overlap and overlap breakpoints.
-The full mixed pressure derivative inequality still needs assembly; the
-explicit formula for the simultaneous averaged derivative is not yet proved.
-Genuine joint differentiability and its specialization to the actual tagged
-integrand are now also checked, including active zero faces; its explicit
-disorder-plus-heat decomposition and outer expectation are still needed.
+Step 43 identifies the simultaneous derivative with its actual disorder and
+level-heat terms, passes it through the Gaussian expectation, and matches the
+signed covariance expression under the genuine split law. The full mixed
+derivative inequality and closed-interval endpoint transport are now checked
+for `1 ≤ j ≤ k+1`. The original constrained free energy inherits the actual
+scalar deficit, chosen before system size and disorder. The explicit
+outside-index and negative-overlap strict endpoints now give genuine
+free-energy bounds, not just bounds at the auxiliary zero-time endpoint.
+First-crossing interval selection includes positive breakpoint overlaps:
+the left bound covers `0 ≤ u < q_(r-1)`, and the right bound covers
+`q_(r+1) < u ≤ q_(k+1)`, with strict masses and the relevant physical gap.
 Proposition 5.7's full outside-neighbor bound, uniform
 Theorem 2.4 assembly, Theorem 2.2 and the final formula remain open.
 
@@ -2380,18 +2386,106 @@ statements and dependency pins are unchanged. Three existing generic helpers
 were made public without changing their proofs. The updated blueprint
 compiles to 50 pages without LaTeX or box warnings.
 
+### Step 43 — actual mixed pressure inequality and strict free-energy bounds
+
+The missing simultaneous interpolation connection is now proved. This is a
+bound for the actual constrained free energy, not a theorem with a pressure
+derivative or replica-law identity assumed as a hypothesis. **Proposition 5.7
+still has boundary assembly remaining.**
+
+**Derivative and Gaussian expectation.** `MixedPathDecomposition.lean`
+uses the existing finite-dimensional Gaussian parameter theorem to identify
+the actual joint time derivative as the disorder direction plus the active
+original-level variance derivatives. `MixedPathPressure.lean` supplies one
+common anchored neighborhood with a bound affine in the disorder norm,
+measurability by difference quotients, and the actual differentiated Gaussian
+expectation. `MixedVariancePressure.lean` proves measurability/integrability
+of the individual variance derivative and its Gaussian-averaged derivative.
+`MixedPathPressureFormula.lean` splits the expectation into its genuine
+spectral Hessian trace and finite sum of heat contributions. Locally fixed
+zero variances require no derivative at the boundary of the variance domain.
+
+**Actual overlap identity.** `MixedReplicaMoments.lean` supplies the genuine
+averaged moments and SK trace. `MixedReplicaField.lean` identifies packed
+Gaussian means with the actual mixed normalized means by derivative
+uniqueness, transports the heat seed through the unchanged outer levels,
+and contracts all three modes to their signed overlap kernels. The factor
+is exactly `N/2`; the heat expression at zero variance is algebraic only.
+`MixedReplicaPressure.lean` combines the actual SK trace and original-level
+heat terms under the same split law using the existing finite covariance
+telescope. It does not introduce an arbitrary substitute replica law.
+
+**Actual tagged derivative and endpoints.** `Section5TaggedVelocity.lean`
+proves that every nonpositive visited variance has zero actual velocity.
+`Section5InterleavedPressure.lean` specializes the complete simultaneous
+formula to the true reversed tagged arrays. Its derivative is the signed
+covariance expression averaged over the original disorder, and satisfies
+
+`eta'(w) ≤ -2 * t * parisiCorrection s β`.
+
+This holds for both overlap signs, `N>0`, `0≤t≤1`, `0<w<1`,
+`1≤j≤k+1` and `|u|∈[q_(j-1),q_j]`, including beta zero, zero masses and
+zero unchanged variances. `Section5InterleavedBound.lean` uses the already
+proved closed-interval continuity and actual endpoint equality, for physical
+`1≤r≤k+1`, to obtain
+
+`constrainedPhi ≤ 2 * guerraPsi - section5InterleavedScalarDeficit`.
+
+The scalar deficit is unchanged and is chosen before system size and disorder.
+The strict left/right witness estimates and all negative-overlap estimates
+at physical `r≥2` in the current trial range are therefore now actual
+free-energy estimates. The latter require `β≠0`, `0<t<1`, `m_1>0`,
+`q_1<q_2` and include `q_1=0` and trial breakpoints. The first physical level
+is also covered when `q_1>0` and `|u|>q_1`, with trial index at least two.
+
+**Positive breakpoint assembly.** `Section5OutsideIntervals.lean` selects
+`[q_(j-1),q_j)` on the left and `(q_(j-1),q_j]` on the right, using Mathlib's
+first-crossing `Nat.find` facts. No distinct-breakpoint assumption is needed
+for selection. `Section5OutsideBound.lean` discharges the supplied trial index
+and witness variances, proving a positive deficit before all `N` and SK
+disorders for `0≤u<q_(r-1)` and for `q_(r+1)<u≤q_(k+1)`. These strict
+conclusions require `β≠0`, `0<t<1`, strict masses and the relevant positive
+physical overlap gap. Exact breakpoint overlaps are included, not excluded
+by an extra hypothesis.
+
+**Checked/open after Step 43:**
+
+- [x] Actual simultaneous mixed derivative and its Gaussian average.
+- [x] Same-law signed overlap identification, derivative inequality and
+      closed-interval original-free-energy transport.
+- [x] Positive outside-neighbor strict bounds including breakpoints in the
+      stated trial range; no supplied trial-index or heat-velocity hypotheses.
+- [x] Negative strict original-free-energy bounds at `r≥2`, and the stated
+      nondegenerate first-level case, in the current trial range.
+- [ ] Final trial interval `|u|>q_(k+1)` (local index `j=k+2`), including its
+      signed boundary cases. Reuse exact terminal padding where possible;
+      do not assume strict masses or minimality of a redundantly padded scheme.
+- [ ] Remaining first-physical-level sign/degeneracy assembly and integration
+      with the already proved initial signed estimate. In particular, the
+      first-level negative wrapper does not cover `q_1=0`.
+- [ ] A single complete Proposition 5.7, uniform compactness for Theorem 2.4,
+      Theorem 2.2 and the final Parisi formula.
+
+**Step 43 validation:** `bash scripts/check.sh` passes (3229 supporting jobs
+and 4007 target jobs). All 12 new modules compile without warnings. The 66
+new allowed-set guards bring the total to 1321 (865 allowed-set and 456
+explicit print guards). Independent read-only reviews checked actual means,
+shared/opposite signs and raw masses, the `N/2` factor, reversed split indices,
+inactive velocities, endpoint correction and deficit quantifiers. No axiom or
+proof placeholder was added; the same four original placeholders remain.
+Original target statements and dependency pins are unchanged. The updated
+blueprint compiles to 52 pages without LaTeX or box warnings.
+
 **Remaining work, following the Annals argument:**
 
 1. Prove the a priori two-replica bound of Theorem 2.4 using §3–§5 and the scheme's
    optimality. The imported RS-level `twoReplica_GT_bound` is not this general result.
-   Next concrete step: identify the proved joint time derivative explicitly
-   from the actual Gaussian disorder and field-variance contributions.
-   Pass this identity through the disorder expectation to obtain the full
-   simultaneous mixed pressure derivative.
-   Match the signed tagged covariance expression using the actual split law,
-   then use the proved closed-interval continuity to transport between the
-   actual endpoints and close every positive-time
-   boundary/sign case. Follow with compactness over time/overlap.
+   Next concrete step: complete the remaining final-trial-interval and
+   first-physical-level boundary/sign assembly, then compactness over
+   time/overlap. Step 43 proves the actual simultaneous Gaussian-averaged
+   mixed derivative, its signed covariance identity and inequality, and
+   closed-interval transport to the original constrained free energy.
+   Do not rebuild this pressure chain or assume a replacement derivative.
    Step 41 already supplies strict interchange and sorting, mixed paired
    comparison, sorted scalar identification, cumulative overlaps, exact
    zero-variance deletion and the original free-energy endpoint; do not

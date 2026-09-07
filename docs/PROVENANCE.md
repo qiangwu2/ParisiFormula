@@ -1149,6 +1149,61 @@ endpoint deficit; transporting it to the original free energy remains part
 of the simultaneous mixed-pressure assembly. Generic RSAT results still do
 not supply that missing full path statement unchanged.
 
+## Step 43: the actual mixed interpolation inequality and transported gaps
+
+This checkpoint completes the analytic connection in Talagrand's second
+interpolation for the actual tagged Section 5 construction. The source is
+the [2006 Annals paper](https://annals.math.princeton.edu/wp-content/uploads/annals-v163-n1-p04.pdf),
+Theorem 3.1 and pp. 257--262. The paper leaves the positive trial-breakpoint
+equality cases to the reader on p. 261; the new first-crossing selectors
+handle these explicitly. The local final trial interval and remaining
+first-level degeneracies are still recorded as open, not silently excluded
+from a theorem called Proposition 5.7.
+
+The finite-parameter proof reuses `differentiableAt_multiGaussianStep`,
+`multiGaussianStep_eq_linearStep`, `faceVariance_base` and
+`faceVariance_update` from `CoupledPathDecomposition`. These four theorems
+and three associated definitions/types were made public without changing
+their statements or proofs. The existing active-face strategy applies to
+the actual mixed operators; it does not replace their joint derivative by
+independent partial derivatives. Gaussian averaging follows the existing
+anchored-domination argument and Mathlib's
+`hasFDerivAt_integral_of_dominated_loc_of_lip'`. Bottom-up integrability is
+a short adapter of the already proved actual mixed list result. Existing
+radial Stein supplies the spectral trace, rather than a new Gaussian IBP
+framework.
+
+The field identification reuses `CoupledBounded.perturbation`, the existing
+arbitrary-matrix linear Gaussian parameter derivative, and the actual mixed
+parameter derivative. Their uniqueness proves equality of normalized means.
+The old independent/shared field contractions are reused, and the opposite
+directions are contracted using the existing signed covariance algebra.
+`MixedReplicaHeat`, `MixedReplicaTrace`, `MixedReplicaAverage` and the finite
+`MixedCovarianceTelescope` then identify all terms under the same original
+split law, including their real disorder average. The `N/2` heat factor and
+`1/N` free-energy normalization are explicit.
+
+`Section5TaggedVelocity` uses uniqueness of the derivative of an actually
+constant variance path to remove inactive terms; it does not claim an
+ordinary derivative at zero variance. The actual tagged amplitude and
+variance functions satisfy every hypothesis of the proved Gaussian path
+formula, including `t=0`, beta zero and zero masses. Signed square completion
+gives the original deterministic correction, with frozen physical sharing
+unchanged. Mathlib's closed-interval mean-value inequality transports this
+to the original constrained free energy and `2ψ`, retaining the explicit
+scalar deficit before system size and disorder.
+
+The breakpoint selectors reuse Mathlib `Nat.find_spec`, `Nat.find_min` and
+`Nat.find_min'`. The first strict crossing on the left and first weak
+crossing on the right preserve the positive witness variances even at exact
+breakpoints; repeated overlaps do not invalidate the selectors. The final
+strict wrappers retain only the relevant positive physical gap and strict
+masses, not a supplied trial index or an assumed pressure comparison.
+
+No dependency revision changed. The locked RSAT one-cutoff GT theorem is
+still not the entire mixed Proposition 5.7; the new actual specialization
+supplies the previously missing pressure identity in the stated trial range.
+
 ## Historical copies and local ports
 
 All vendored files are Apache-2.0.  Original headers are retained unchanged.
