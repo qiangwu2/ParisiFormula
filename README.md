@@ -8,8 +8,9 @@ Sherrington–Kirkpatrick (SK) model with exact covariance.
 
 - **Proved:** the SK version of Theorem 2.1 and Guerra's RSB upper bound,
   including its thermodynamic upper-bound consequence.
-- **In progress:** Theorem 2.2. The main remaining work is the interpolation
-  and optimality estimates needed for Theorem 2.4, then applying the checked convergence deduction.
+- **In progress:** Theorem 2.2. The Section 5 interpolation bounds and uniform
+  mass-derivative estimates are checked; the main remaining work is quantitative
+  optimality and the remaining overlap cases for Theorem 2.4, then the checked convergence deduction.
 
 **The full Parisi formula is not yet formalised.** Completed results have
 build-time axiom checks; open proof placeholders remain. A successful build
@@ -30,7 +31,7 @@ curl https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -sSf 
 Restart your terminal, then:
 
 ```bash
-git clone --branch worktree-parisi-phase1 https://github.com/qiangwu2/ParisiFormula.git
+git clone https://github.com/qiangwu2/ParisiFormula.git
 cd ParisiFormula
 lake exe cache get
 bash scripts/check.sh

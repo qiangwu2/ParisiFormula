@@ -270,8 +270,8 @@ space. Finite sum/integral interchange gives the averaged moment identities,
 normalization and nonnegative completed-square remainder.
 `CoupledReplicaTrace.lean` reuses the exact SK spectral covariance contraction
 and constrained diagonal to identify the full genuine Hessian trace and its
-outer expectation, with the exact factor `N`. This proves the disorder term,
-not yet the combined trace-plus-heat interpolation covariance identity.
+outer expectation, with the exact factor `N`. This supplies the disorder term
+used by the combined trace-plus-heat identity completed in Step 30 below.
 
 `CoupledReplicaHeat.lean` reuses the exact level-addition identity and bounded
 transport linearity to carry inner Hessian and heat expressions through the
@@ -282,10 +282,10 @@ bounded perturbations, reusing the checked equality of potentials. Both actual
 `constrainedLevelVarianceD` generators are identified with their coordinate
 sums of replica expressions divided by two, through all remaining outer levels.
 The algebraic identities include zero variances; they do not assert a variance
-derivative there. Coordinate contraction into overlaps, outer averaging of
-the heat terms and the full physical coefficient sum with the disorder trace
-remain to be assembled. The desired interpolation inequality is not inferred
-merely from the square completion.
+derivative there. Step 30 below completes coordinate contraction into overlaps,
+outer averaging of the heat terms and the physical coefficient sum with the
+disorder trace. The desired interpolation inequality is not inferred merely
+from the square completion; the actual derivative is first identified.
 
 ### Scalar variation, baseline, and finite-overlap assembly
 
@@ -330,13 +330,10 @@ separate theorem for arbitrary random variables. `Section4MassUniform.lean`
 uses normalized outer means and the already proved actual mass differentiation
 to give the first half of Lemma 4.5 for full `T` and inserted `Φ`, including zero
 mass and closed variance/overlap endpoints, with constants depending only on `β`.
-The full nested second mass derivative and Proposition 4.6 remain open.
-
-A concrete reuse candidate for the latter is `CoupledParamDeriv.tiltSecond`:
-it already differentiates a normalized mean with its covariance term. After
-connecting actual scalar second-mass regularity, the invariant
-`|E|+D²≤K₂+K₁²` may preserve a depth-uniform second bound for outer masses in
-`[0,1]`. This route is not yet implemented or claimed as a result.
+Step 30 completes the nested second mass derivative using
+`CoupledParamDeriv.tiltSecond`, actual scalar second-mass regularity and the
+now-checked invariant `|E|+D²≤K₂+K₁²` for outer masses in `[0,1]`.
+Proposition 4.6 remains open.
 
 `ParisiMassDerivative.lean` differentiates one mass while its input function
 is fixed, including every actual `parisiF` input. It does not assert the nested
@@ -537,6 +534,42 @@ Mathlib's analytic divided difference and CGF variance formula;
 above. Higher mixed mass/variance identities remain open after the checked
 first identity `U′=Q`. Closed-interval inward derivatives are now also proved,
 but the remaining endpoint stationarity is not silently inferred from them.
+
+## Step 30: actual covariance interpolation and nested mass estimates
+
+The field contractions reuse the local spin-contraction identities, which in
+turn reuse RSAT's overlap sums. Actual split-weight measurability and normalized
+moments justify the disorder average. `Section5ReplicaDerivative.lean` reuses
+the checked trace-plus-heat derivative rather than reproving Gaussian
+differentiation. The zero-variance alternative supplies zero actual velocity.
+
+`CoupledCovarianceTelescope.lean` uses Mathlib's `sum_Ico_Ico_comm'`,
+`sum_range_by_parts`, `sum_Ico_reflect` and `sum_range_reflect` to combine the
+backward heat and disorder expressions. The physical increment is exactly the
+difference of adjacent trial-field covariance kernels. The actual averaged
+split at backward index `κ-p` is the paper's measure at forward index `p+1`.
+The endpoint masses are explicit; positivity and normalization are used only
+when applying the existing square-completion inequality. The final Section 5
+bounds use the allowed inserted-mass intervals and the existing mean-value
+and endpoint-continuity results. This proves the SK positive-overlap instances
+used in (5.9) and its dual, not a new proof of the general signed Theorem 3.1.
+
+The nested mass argument reuses the existing scalar cumulant bounds, mass
+reflection, normalized-tilt linearity/integrability, and
+`CoupledParamDeriv.tiltSecond`. Field dilation and reflection extend local
+scalar domination to an open neighborhood of `[0,1]`. The invariant
+`|E|+D²≤K₂+K₁²` propagates without depth loss because the fixed outer masses
+lie in `[0,1]`. This proves genuine second derivatives of the actual `T` and
+inserted `Φ`, including both mass and physical variance endpoints. Mathlib's
+mean-value bound, applied twice, gives a quadratic Taylor error with constant
+`K₂(β²)+K₁(β²)²` (not optimized by a factor of two). The baseline uses the
+existing `U/2` and first-variation identifications.
+
+Independent reviews checked the normalization, index reversal, zero cases,
+actual derivative identifications and uniform constants. Quantitative
+optimality, the initial/remaining overlap and sign cases, Theorem 2.4 and
+unconditional Theorem 2.2 remain separate obligations. No dependency pins or
+upstream sources were changed.
 
 ## Historical copies and local ports
 

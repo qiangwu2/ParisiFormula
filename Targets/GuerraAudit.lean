@@ -8,11 +8,13 @@ interior times, and the deduction of Theorem 2.2 from an explicit overlap-concen
 The latter guards certify the implication, not its unproved concentration input.
 The Lemma 2.6 guards include Gaussian concentration and its change of law to
 the abstract disorder, not just a conditional or standard-coordinate estimate.
-The Section 5 guards cover both endpoints of the positive-overlap left-interval
-second interpolation, including (5.8) and (5.17), but not its covariance
-derivative inequality (Theorem 3.1) or Theorem 2.4.
-The terminal Hessian and covariance-algebra guards do not identify the
-algebraic expression with the derivative of the full nested pressure.
+The Section 5 guards cover both endpoints, the actual covariance derivative
+inequality and endpoint transport for the positive-overlap left/right
+constructions, including (5.9). The general signed version of Theorem 3.1
+and the uniform improvement of Theorem 2.4 are not certified.
+The terminal Hessian and covariance-algebra guards alone do not identify the
+algebraic expression with the derivative of the full nested pressure; the new
+actual averaged covariance identity makes that connection.
 The newer guards cover full-depth disorder and separate-field mixed derivatives,
 Gaussian Stein, scalar mass/variance calculus including (4.11), the zero-lambda
 baseline, Lemma 5.9, and the optimized time-zero endpoint. Exact equal-mass compression
@@ -21,8 +23,8 @@ strict masses; the guards do not certify that bound.
 Further guards cover analytic scalar mass-zero differentiation, closed-interval
 scalar comparison and Lipschitz control, the actual full T variance derivative,
 inserted-scheme optimality inputs (4.30)--(4.31), one-level coupled heat generators,
-and right-interval endpoints/baseline/gain. They do not assert the full nested
-interpolation derivative, higher mixed mass identities, or the uniform quadratic bound.
+and right-interval endpoints/baseline/gain. These earlier guards alone do not
+assert the full nested interpolation derivative or the uniform quadratic bound.
 Earlier guards add averaged disorder and individual variance derivatives,
 constant zero-variance coordinates, the actual nested baseline mass derivative
 and first variation (4.46), and the dual correction/scalar comparison. They do
@@ -38,9 +40,9 @@ moments/contractions. New guards identify the actual full disorder/spatial Hessi
 with the replica telescope, and the actual SK trace with its outer disorder
 expectation under the normalized averaged split law. The original-level
 independent/shared heat generators now have their actual replica
-expressions through all outer levels. The full combined
-trace-plus-heat covariance identity and interpolation inequality are not yet
-certified. Section 4 guards include
+expressions through all outer levels. The full combined trace-plus-heat
+covariance identity, its inequality and endpoint transport are now checked
+for the actual positive-overlap Section 5 paths. Section 4 guards include
 monotonicity of U, Lipschitz bounds for U and f, the normalized squared-slope
 factor and its closed-interval integral identity, and full right variance calculus.
 They now include actual joint mass/variance continuity, baseline integrability
@@ -50,8 +52,10 @@ actual slope variance/joint calculus with uniform interior domination, and the
 actual Lemma 5.8 identity and identified Q gain. New guards prove (4.16), the
 full actual Q' and U'' negative-square identity, and U'' in [-1,0] on interior
 variance. They also certify zero-inclusive uniform first/second scalar mass
-bounds and the first mass bound for full T and Phi. The full nested second
-mass bound and remaining stationarity conditions are still open.
+bounds and the first mass bound for full T and Phi. New guards certify the
+full nested second mass bound and uniform quadratic Taylor expansion,
+including baseline mass zero and all physical variance endpoints. Remaining
+quantitative optimality and stationarity conditions are still open.
 The full Parisi formula is deliberately not listed: Theorem 2.2 is still open.
 -/
 import Targets.ReplicaMeasure
@@ -106,6 +110,74 @@ import Targets.ConstrainedJointTerminal
 import Targets.Section5JointInterpolation
 import Targets.Section5PressureDerivative
 import Targets.Section4UPrime
+import Targets.Section5InterpolationBound
+import Targets.Section4MassSecond
+import Targets.Section4MassTaylor
+
+/-! The new critical-path results are checked against the same three standard
+axioms as the explicit print guards below. Checking the allowed set also
+accepts results which need fewer of those axioms. -/
+run_cmd do
+  let allowed := #[``propext, ``Classical.choice, ``Quot.sound]
+  for name in [
+    ``SpinGlass.Targets.pairFieldPotential_independent_contraction,
+    ``SpinGlass.Targets.pairFieldPotential_shared_contraction,
+    ``SpinGlass.Targets.pairFieldCovariance_diagonal,
+    ``SpinGlass.Targets.constrainedReplicaHeat_contraction,
+    ``SpinGlass.Targets.constrainedLevelVarianceD_independent_overlap,
+    ``SpinGlass.Targets.constrainedLevelVarianceD_shared_overlap,
+    ``SpinGlass.Targets.integrable_constrainedReplicaHeatExpression,
+    ``SpinGlass.Targets.integral_constrainedReplicaHeatExpression,
+    ``SpinGlass.Targets.integral_constrainedLevelVarianceD_independent_overlap,
+    ``SpinGlass.Targets.integral_constrainedLevelVarianceD_shared_overlap,
+    ``SpinGlass.Targets.normalized_trace_heat_eq_replica,
+    ``SpinGlass.Targets.section5InterpolationVelocity_zero_of_not_pos,
+    ``SpinGlass.Targets.section5RightInterpolationVelocity_zero_of_not_pos,
+    ``SpinGlass.Targets.hasDerivAt_section5Interpolation_replica,
+    ``SpinGlass.Targets.hasDerivAt_section5RightInterpolation_replica,
+    ``SpinGlass.Targets.replicaHeatSum_telescope,
+    ``SpinGlass.Targets.replicaHeatSum_telescope_fin,
+    ``SpinGlass.Targets.replicaHeatSum_weighted_fin,
+    ``SpinGlass.Targets.replicaCovariance_mass_telescope,
+    ``SpinGlass.Targets.replicaTrace_sub_heatSum,
+    ``SpinGlass.Targets.replicaTrace_sub_weighted_heat_fin,
+    ``SpinGlass.Targets.pairFieldCovariance_split_increment,
+    ``SpinGlass.Targets.replicaHeatTail_reverse_increments,
+    ``SpinGlass.Targets.pairFieldCovariance_split_increment_kernel,
+    ``SpinGlass.Targets.replicaHeatTail_pairFieldCovariance,
+    ``SpinGlass.Targets.sum_pairField_heat_diagonal,
+    ``SpinGlass.Targets.replicaMassGap_reverse,
+    ``SpinGlass.Targets.pairCovarianceExpression_eq_trace_sub_heat,
+    ``SpinGlass.Targets.averagedReplicaPressureDerivative_eq_covariance,
+    ``SpinGlass.Targets.averagedReplicaPressureDerivative_le,
+    ``SpinGlass.Targets.deriv_section5Interpolation_le,
+    ``SpinGlass.Targets.section5Interpolation_endpoint_bound,
+    ``SpinGlass.Targets.deriv_section5RightInterpolation_le,
+    ``SpinGlass.Targets.section5RightInterpolation_endpoint_bound,
+    ``SpinGlass.Targets.pairedTiltMean_sq_le,
+    ``SpinGlass.Targets.pairedSecondCovariance_mass_invariant,
+    ``SpinGlass.Targets.parisiStep_mass_derivatives_local_uniform,
+    ``SpinGlass.Targets.measurable_second_deriv_parisiStep_mass,
+    ``SpinGlass.Targets.measurable_section4MassE,
+    ``SpinGlass.Targets.section4MassSecondBound_nonneg,
+    ``SpinGlass.Targets.section4MassE_invariant,
+    ``SpinGlass.Targets.section4MassE_abs_le_uniform,
+    ``SpinGlass.Targets.section4MassE_deriv_props,
+    ``SpinGlass.Targets.hasDerivAt_section4TMassD,
+    ``SpinGlass.Targets.hasDerivAt_deriv_section4T_mass,
+    ``SpinGlass.Targets.section4T_second_mass_derivative_uniform,
+    ``SpinGlass.Targets.abs_second_deriv_section4T_mass_le_uniform,
+    ``SpinGlass.Targets.section4Phi_second_mass_derivative_uniform,
+    ``SpinGlass.Targets.abs_second_deriv_section4Phi_mass_le_uniform,
+    ``SpinGlass.Targets.section4T_mass_derivative_lipschitz,
+    ``SpinGlass.Targets.section4T_mass_taylor_bound,
+    ``SpinGlass.Targets.section4Phi_mass_derivative_lipschitz,
+    ``SpinGlass.Targets.section4Phi_mass_taylor_bound,
+    ``SpinGlass.Targets.section4T_mass_taylor_baseline,
+    ``SpinGlass.Targets.section4Phi_mass_taylor_baseline] do
+    for ax in ← Lean.collectAxioms name do
+      unless allowed.contains ax do
+        throwError "{name} depends on disallowed axiom {ax}"
 
 /--
 info: 'SpinGlass.Targets.guerra_identity' depends on axioms: [propext, Classical.choice, Quot.sound]

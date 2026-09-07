@@ -4,7 +4,8 @@
 
 **Goal: Talagrand's proof of the Parisi formula (Ann. of Math. 163 (2006)) — Target 4.**
 
-Target 4 is `Tendsto (fun N => s_N) atTop (𝓝 (parisiValue β h))`, which follows from
+Target 4 states that the free energy `F_N = (1/N) E log Z_N` converges to
+the value given by the Parisi formula (`parisi_formula` in Lean). It follows from
 
 * **limsup ≤** — Target 3', proved from Target 3 (Guerra's RSB bound) and the now-complete
   SK-model Theorem 2.1; and
@@ -69,8 +70,18 @@ The finite-dimensional chain rule and termwise Gaussian Stein now identify
 those derivatives with their explicit Hessian-trace and level-heat contributions.
 Joint mass/variance continuity of the actual normalized factor now gives its baseline integrability and the
 identity `U′=Q`, including baseline mass zero when the baseline is below one.
-Replica identification, `U″`, uniform optimality estimates and the remaining
-overlap regimes still stand between these results and Theorem 2.2.
+At the end of Step 27, replica identification, `U″`, uniform optimality estimates
+and the remaining overlap regimes were still missing. Steps 29--30 close the
+derivative and interpolation gaps described in the current frontier below.
+
+**Current checked frontier (Step 30):** the actual averaged replica covariance
+identity, the derivative inequality and endpoint transport for both positive-overlap
+Section 5 constructions are proved, including the left estimate (5.9). The full
+nested first/second mass estimates of Lemma 4.5 and uniform quadratic Taylor
+bounds for the inserted functional are also proved. The next task is to combine
+these with scheme optimality for the quantitative estimates of Sections 4--5,
+then treat the initial/remaining overlap and sign cases needed by Theorem 2.4.
+Theorem 2.2 and the final Parisi formula remain open.
 
 **Milestone 1 (Targets 1b, 1c) is *not* on this critical path.**  Target 4 is strictly
 stronger than 1c — convergence to `parisiValue` subsumes existence of a limit — and deriving
@@ -470,7 +481,7 @@ proof structure in Lean was the wrong order.  Talagrand's §2 is now formalised 
 | (2.1)–(2.4) `φ(t)` | `guerraPhi` (base `guerraBase` pushed through `cascadeT`) | defined |
 | (2.18) `ψ(t)` | `guerraPsi`; `ψ(1) = 𝒫_k` on the nose | proved |
 | (2.14) `φ(0) = log 2 + X_0` | `guerraPhi_zero` | proved, axiom-clean |
-| `φ(1) =` free entropy | `guerraPhi_one` | proved, axiom-clean |
+| `φ(1) =` free energy | `guerraPhi_one` | proved, axiom-clean |
 | **Theorem 2.1** Guerra's identity (SK) | `guerra_identity` | **proved, axiom-clean** |
 | **Theorem 2.2** | `talagrand_theorem_2_2` | **`sorry`** — core 2 |
 | (2.12)–(2.15) Target 3 | `guerra_rsb_bound` | proved, axiom-clean |
@@ -1508,16 +1519,64 @@ The original four placeholders, target statements, dependency pins and upstream
 sources remain unchanged. The updated blueprint compiles to 30 pages without
 LaTeX warnings. README status/layout, provenance and the checklist are synchronized.
 
+**Step 30 (2026-09-06): covariance interpolation bound and full nested mass estimates.**
+
+* `CoupledReplicaField.lean` contracts the genuine original-level heat terms
+  into two independent or four shared cross-overlaps, with exact factor `N/2`.
+  The same actual split weights justify all outer expectations.
+* `Section5ReplicaDerivative.lean` identifies both physical pressure derivatives
+  under those weights. Vanishing variances contribute zero because their actual
+  velocities vanish, not because a variance derivative at zero is assumed.
+* `CoupledCovarianceTelescope.lean` reuses Mathlib finite interval summation,
+  summation by parts and reflection. It retains both endpoint mass coefficients,
+  contracts the physical field increments and reverses the split indices.
+* `Section5CovarianceIdentity.lean` identifies the full actual averaged
+  derivative with the covariance expression and applies the checked square
+  completion. `Section5InterpolationBound.lean` specializes to the allowed
+  left/right mass intervals and transports the derivative bound to the endpoints
+  by the mean-value theorem and checked closed-interval continuity. Thus (5.9)
+  and its dual hold for the actual SK constructions, including repeated levels.
+  The general signed-field version of Theorem 3.1 is not claimed.
+* `Section4MassSecondInvariant.lean`, `Section4MassSecondLocal.lean` and
+  `Section4MassSecond.lean` prove the previously proposed invariant
+  `|E| + D² ≤ K₂ + K₁²` and genuine nested second-mass differentiation.
+  The bound depends only on `β`, not depth, field or adjacent mass gaps.
+  An open mass neighborhood includes both zero and one; the whole physical
+  variance interval is covered. Together with Step 29 this completes the
+  first/second mass estimates of Lemma 4.5 for the actual inserted functional.
+* `Section4MassTaylor.lean` gives uniform Lipschitz first derivatives and
+  quadratic Taylor errors for the actual `T` and inserted `Φ`, including the
+  baseline expansion in the checked first variation. The error constant is
+  `C(β)`, without optimizing it to `C(β)/2`; no optimality conclusion is assumed.
+
+**Step 30 checked/open checklist:**
+
+* [x] Actual field contractions, outer averaging and full covariance identity.
+* [x] Covariance derivative inequality and endpoint transport for both positive-overlap Section 5 constructions.
+* [x] Full nested second mass bound and endpoint-inclusive Lemma 4.5 estimates.
+* [x] Uniform quadratic Taylor estimate at the actual baseline mass.
+* [ ] Quantitative optimality estimates and remaining stationarity conditions.
+* [ ] Initial/remaining overlap and signed-field cases; uniform Theorem 2.4 bound relative to `2ψ`.
+* [ ] Unconditional Theorem 2.2 and final Parisi-formula dependency audit.
+
+**Step 30 validation:** `bash scripts/check.sh` passes (3229 supporting-library
+jobs and 3887 target-build jobs). All nine new modules check without module
+warnings. The 55 new standard-axiom dependency guards pass, for 511 guarded
+results in total. Independent read-only reviews checked the covariance and
+endpoint arguments, genuine mass derivatives, zero cases and Taylor estimates.
+The original four placeholders and target statements are unchanged. The updated
+blueprint compiles to 31 pages without LaTeX warnings; README, blueprint,
+provenance and this checklist use the same checked/open boundary.
+
 **Remaining work, following the Annals argument:**
 
 1. Prove the a priori two-replica bound of Theorem 2.4 using §3–§5 and the scheme's
    optimality. The imported RS-level `twoReplica_GT_bound` is not this general result.
-   Next concrete step: contract Step 29's actual heat replica expressions into
-   overlap kernels, justify their outer averaging using the checked weights,
-   and combine the physical variance coefficients with the checked averaged SK
-   trace to obtain the covariance expression from Step 21.
-   Then prove the endpoint-safe integration of that derivative. The square
-   completion, mass telescoping, and inserted correction of (5.9) are now
+   Next concrete step: combine the checked baseline Taylor estimate with
+   inserted-scheme optimality and the actual first variation to prove the
+   quantitative Section 4 estimates (including the remaining stationarity).
+   The actual positive-overlap interpolation estimate (5.9), its dual,
+   square completion, mass telescoping and endpoint transport are now
    available, as are the actual nested baseline mass derivative, first variation,
    and baseline identities
    (4.36), (5.18), (5.19), scalar heat equation, Lemma 5.9 and optimized time-zero
@@ -1525,10 +1584,8 @@ LaTeX warnings. README status/layout, provenance and the checklist are synchroni
    now available, as are `U′=Q`, its inward endpoint form and Lemma 5.8. Use
    the checked `Q′`/`U″` negative-square identities and uniform mass bounds
    to prove the remaining Section 4 optimality estimates. The full nested
-   second mass bound is still needed: reuse `CoupledParamDeriv.tiltSecond`
-   after connecting actual scalar second-mass regularity, and test the
-   depth-uniform invariant `|E|+D²≤K₂+K₁²` for normalized outer masses in
-   `[0,1]`; this is a proposed proof route, not a checked result. Then complete
+   second mass bound and its depth-uniform invariant are checked in Step 30;
+   do not redo the scalar cumulant or nested derivative theory. Then complete
    the initial/dual scalar cases and remaining overlap/sign cases. Both neighbor
    interval endpoint constructions and both correction adapters are checked.
    Do not replace `2ψ(t)`

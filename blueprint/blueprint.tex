@@ -104,7 +104,7 @@ With external field $h\in\R$,
 \[
 Z_N=\sum_{\sigma\in\Sig}\exp\Big(U(\sigma)+h\sum_{i\le N}\sigma_i\Big),
 \qquad
-s_N(\beta,h)=\frac1N\,\E\log Z_N .
+F_N(\beta,h)=\frac1N\,\E\log Z_N .
 \]
 \end{definition}
 
@@ -124,7 +124,7 @@ remaining component of Theorem~2.1.
 
 \begin{lemma}[Annealed bound]\label{lem:annealed}
 \lean{SpinGlass.Targets.free\_entropy\_le\_annealed}\leanok
-For all $N\ge1$, $s_N(\beta,h)\le\log2+\frac{\beta^2}{4}+|h|$.
+For all $N\ge1$, $F_N(\beta,h)\le\log2+\frac{\beta^2}{4}+|h|$.
 \end{lemma}
 \begin{proof}
 By Jensen, $\E\log Z_N\le\log\E Z_N$.  Since $\E\exp U(\sigma)=\exp(N\beta^2/4)$ and
@@ -146,7 +146,7 @@ K_t(\gamma)=\sqrt t\,U_{N+M}(\gamma)+\sqrt{1-t}\,\big(U_N(\alpha)+U_M(\sigma)\bi
 
 \begin{lemma}[Endpoints]
 \lean{SpinGlass.Z\_interpol\_one, SpinGlass.Z\_interpol\_zero}\leanok
-$\Phi(1)=(N+M)\,s_{N+M}$ and $\Phi(0)=N s_N+M s_M$.
+$\Phi(1)=(N+M)\,F_{N+M}$ and $\Phi(0)=N F_N+M F_M$.
 \end{lemma}
 
 \begin{lemma}[Covariance comparison]\label{lem:cov}
@@ -203,7 +203,7 @@ subintervals).
 \begin{theorem}[Guerra--Toninelli superadditivity]
 \lean{SpinGlass.guerra\_toninelli\_superadditive}
 \uses{prop:mono}
-$(N+M)s_{N+M}\ge Ns_N+Ms_M$.
+$(N+M)F_{N+M}\ge NF_N+MF_M$.
 The checked theorem takes monotonicity as a hypothesis; the unconditional result
 remains dependent on Proposition~\ref{prop:mono}.
 \end{theorem}
@@ -211,11 +211,11 @@ remains dependent on Proposition~\ref{prop:mono}.
 \begin{theorem}[Thermodynamic limit]
 \lean{SpinGlass.Targets.free\_entropy\_tendsto, SpinGlass.free\_entropy\_tendsto\_of\_bddAbove}
 \uses{lem:annealed, prop:mono}
-$\lim_{N\to\infty}s_N(\beta,h)$ exists.
+$\lim_{N\to\infty}F_N(\beta,h)$ exists.
 \end{theorem}
 \begin{proof}
-$N\mapsto Ns_N$ is superadditive and $s_N$ is bounded above (Lemma~\ref{lem:annealed});
-Fekete's lemma (\texttt{Subadditive.tendsto\_lim} in Mathlib) applied to $-Ns_N$ gives the
+$N\mapsto NF_N$ is superadditive and $F_N$ is bounded above (Lemma~\ref{lem:annealed});
+Fekete's lemma (\texttt{Subadditive.tendsto\_lim} in Mathlib) applied to $-NF_N$ gives the
 limit. This assembly step is already formalised with monotonicity and boundedness
 hypotheses; \texttt{free\_entropy\_tendsto} itself remains a placeholder.
 \end{proof}
@@ -298,7 +298,7 @@ H_t(\sigma)=\sqrt t\,U(\sigma)+\sum_{i\le N}\sigma_i
 Apply the finite backward log-exponential recursion to the log partition function,
 using ordinary expectation at zero mass, and then average over the SK disorder
 and divide by $N$. This defines $\varphi_N(t)$ in \texttt{guerraPhi}.
-For $N\ge1$, the proved endpoint identities give $\varphi_N(1)=s_N$ and
+For $N\ge1$, the proved endpoint identities give $\varphi_N(1)=F_N$ and
 $\varphi_N(0)=\log2+F_0(h)$. Set
 \[
 C_s=\frac{\beta^2}{4}\sum_{p=1}^{k+1}m_p(q_{p+1}^2-q_p^2),
@@ -334,7 +334,7 @@ and total mass one give the remainder bounds. This proof is in
 \lean{SpinGlass.Targets.guerra\_rsb\_bound}\leanok
 \uses{thm:identity}
 For every $N\ge1$, every $(\beta,h)$ and every $k$-step scheme,
-$s_N(\beta,h)\le\mathcal P_k(m,q)$.
+$F_N(\beta,h)\le\mathcal P_k(m,q)$.
 \end{theorem}
 
 \begin{proof}
@@ -346,7 +346,7 @@ giving $\varphi_N(1)\le\psi_s(1)=\mathcal P_k(m,q)$.
 \begin{theorem}[Upper bound in the limit]
 \lean{SpinGlass.Targets.limsup\_free\_entropy\_le\_parisiValue}\leanok
 \uses{thm:guerra}
-$\limsup_N s_N\le\mathcal P(\beta,h):=\inf_k\inf_{(m,q)}\mathcal P_k(m,q)$.
+$\limsup_N F_N\le\mathcal P(\beta,h):=\inf_k\inf_{(m,q)}\mathcal P_k(m,q)$.
 The Lean statement uses eventual $\varepsilon$ upper bounds, without assuming
 existence of a limit. Nonemptiness and boundedness below of the defining set of
 \texttt{parisiValue} are proved in \texttt{Targets/Milestones.lean}.
@@ -407,7 +407,7 @@ explicit concentration hypothesis. Its proof has no placeholder dependencies.
 \begin{theorem}[Parisi formula; conditional deduction \cite{Tal06}]
 \lean{SpinGlass.Targets.parisi\_formula}
 \uses{thm:identity, thm:two-two, thm:guerra}
-For $\beta>0$, $\lim_N s_N(\beta,h)=\mathcal P(\beta,h)$.
+For $\beta>0$, $\lim_N F_N(\beta,h)=\mathcal P(\beta,h)$.
 The deduction is written and checked, but still depends on the placeholder
 in Theorem~\ref{thm:two-two}; it is not an unconditional formalised result.
 \end{theorem}
@@ -771,11 +771,10 @@ The two split increments combine into the original increment plus the
 displayed correction. Above the split, shift the index by one. The original
 sum is exactly twice the existing Parisi correction.
 \end{proof}
-The quantity $\mathcal B$ above is an explicit algebraic expression, not yet
-identified with $\eta'$. The genuine full nested disorder/spatial Hessians
-and disorder-averaged SK trace are now identified with actual replica weights
-below. Combining the full trace and heat contributions still requires proof. Consequently
-neither Theorem~3.1 nor the pressure inequality (5.9) is marked complete.
+The quantity $\mathcal B$ above is now identified with the actual derivative
+for both positive-overlap Section~5 constructions below. The covariance
+inequality and endpoint transport give (5.9) and its dual. The general
+signed-field version of Theorem~3.1 and Theorem~2.4 remain open.
 
 \begin{lemma}[Fixed-variance differentiation through the paired cascade]
 \lean{SpinGlass.Targets.hasDerivAt\_constrainedPairFieldCascade}\leanok
@@ -1022,8 +1021,8 @@ Zero variance is constant in mass. Finally differentiate the affine correction
 in (4.37), obtaining exactly (4.46).
 \end{proof}
 This proves first mass differentiation. The identities for $U'$ and $U''$
-and uniform first mass bounds are proved below; the full nested second mass
-bound and quantitative stationarity estimates remain open.
+and uniform first/second mass bounds are proved below; quantitative
+optimality and the remaining stationarity estimates remain open.
 
 \begin{lemma}[Uniform scalar mass bounds and the first half of Lemma 4.5]
 \lean{SpinGlass.Targets.parisiStep\_parisiF\_mass\_derivatives\_uniform}\leanok
@@ -1054,8 +1053,36 @@ $M(m)=T_{m,v}A(x)$ and $K(m)=mM(m)$,
 Integrating these weighted identities removes the apparent singularities
 at zero mass. Normalized outer means preserve the first bound without a
 depth factor; the already checked full mass derivative and affine correction
-give the two nested first bounds. The full nested second derivative bound
-in Lemma~4.5 is not yet proved.
+give the two nested first bounds. The next lemma completes the nested second
+derivative bound in Lemma~4.5.
+\end{proof}
+
+\begin{lemma}[Full nested second mass bound and baseline Taylor estimate]
+\lean{SpinGlass.Targets.section4T\_second\_mass\_derivative\_uniform}\leanok
+\lean{SpinGlass.Targets.section4Phi\_second\_mass\_derivative\_uniform}\leanok
+\lean{SpinGlass.Targets.section4Phi\_mass\_taylor\_baseline}\leanok
+On the full physical variance/overlap interval, for every $m\in[0,1]$,
+the genuine second mass derivatives of $T$ and $\Phi$ are bounded in absolute
+value by $C(\beta)=K_2(\beta^2)+K_1(\beta^2)^2$. In particular, writing
+$f(u)=\partial_m\Phi(m_{r-1},u)$, for $m_{r-1}\le m\le1$,
+\[
+ |\Phi(m,u)-\mathcal P_k(m_\bullet,q_\bullet)-f(u)(m-m_{r-1})|
+ \le C(\beta)(m-m_{r-1})^2.
+\]
+The constant is independent of depth, field and adjacent mass gaps.
+\end{lemma}
+\begin{proof}
+Reflection and dilation of the already controlled scalar input give uniform
+local mass domination on a two-sided neighborhood of $[0,1]$. Apply the
+existing normalized observable derivative rule twice. If $D,E$ denote the
+inner first and second mass derivatives, the invariant
+$|E|+D^2\le K_2+K_1^2$ is preserved by every fixed outer mass in $[0,1]$;
+the variance term is absorbed by the squared first derivative. Thus no factor
+accumulates with depth. The correction defining $\Phi$ is affine in mass.
+Two applications of the mean-value theorem give the displayed Taylor bound,
+without optimizing its constant to $C/2$. The checked baseline value and
+first-variation identities give the expansion. This does not yet apply
+scheme optimality or prove the quantitative improvement in Theorem~2.4.
 \end{proof}
 
 \begin{lemma}[Closed-interval bounds for the actual first variation]
@@ -1160,8 +1187,8 @@ from below by zero. Pass to the checked baseline mass derivative.
 The restriction $r\ge2$ preserves the compulsory mass $m_0=0$; this argument
 is not claimed for the initial interval.
 \end{proof}
-The identity for $U''$ is proved below. The full nested second mass bound and
-remaining endpoint stationarity conditions are still open.
+The identity for $U''$ is proved below and the full nested second mass bound
+is proved above. Remaining endpoint stationarity conditions are still open.
 
 \begin{lemma}[Actual inserted functional and optimality inputs]
 \lean{SpinGlass.Targets.parisiFunctional\_insertLevel}\leanok
@@ -1310,11 +1337,41 @@ each product's original split index. Identify packed independent Gaussian means
 with nested equal-mass means by uniqueness of their genuine bounded-perturbation
 derivatives. Then apply the checked original-level heat-generator identities
 and finite linearity. The algebra includes zero variances but does not claim
-a derivative at zero variance. Contracting the field directions into overlaps,
-averaging the heat terms and combining their physical coefficients with the
-SK trace remain to be assembled.
+a derivative at zero variance. The next result contracts the field directions,
+justifies the disorder average and combines their physical coefficients.
 \end{proof}
-The full combined interpolation covariance identity and inequality remain open.
+
+\begin{lemma}[Actual covariance identity and Section 5 endpoint inequalities]
+\lean{SpinGlass.Targets.integral\_constrainedLevelVarianceD\_independent\_overlap}\leanok
+\lean{SpinGlass.Targets.integral\_constrainedLevelVarianceD\_shared\_overlap}\leanok
+\lean{SpinGlass.Targets.averagedReplicaPressureDerivative\_eq\_covariance}\leanok
+\lean{SpinGlass.Targets.section5Interpolation\_endpoint\_bound}\leanok
+\lean{SpinGlass.Targets.section5RightInterpolation\_endpoint\_bound}\leanok
+The actual field heat terms contract to the independent kernel
+$R_{11}+R_{22}$ or the shared kernel $\sum_{a,b}R_{ab}$, with factor $N/2$.
+After disorder averaging and summation over levels, both physical Section~5
+derivatives equal the covariance expression $\mathcal B$ above. Consequently,
+for the allowed left mass interval $m_{r-1}/2\le m\le m_r$,
+\[
+ \eta(1)\le\eta(0)-t\left(2\mathcal C_s+
+ (m-m_{r-1})\frac{\beta^2}{2}(q_r^2-u^2)\right),
+\]
+where $\mathcal C_s$ is the original Parisi correction and
+$\eta(1)$ is the actual constrained pressure. This is (5.9).
+For the dual right interval, $m_{r-1}\le m\le2m_r$, the added correction is
+$(m-m_r)\beta^2(u^2-q_r^2)/2$.
+\end{lemma}
+\begin{proof}
+The constrained diagonals are $2$ and $2(1+u)$. Actual normalized split
+weights justify all finite moment interchanges. The remaining field
+increments telescope to the trial covariance at the original split, while
+summation by parts retains and then cancels the endpoint mass coefficients.
+Reverse indices to the paper's convention and use the checked square
+completion. At zero variance the actual velocity is zero. Finally use
+closed-interval continuity and the mean-value theorem; no derivative at an
+interpolation endpoint is required. These are the exact-covariance SK,
+attainable nonnegative-overlap constructions, not the general signed case.
+\end{proof}
 
 \begin{lemma}[One-level heat generators for actual constrained cascades]
 \lean{SpinGlass.Targets.hasDerivAt\_sharedStepPi\_constrained\_variance}\leanok
@@ -1363,8 +1420,8 @@ the normalized parameter rule at every outer level. Measurable forward
 difference quotients give disorder measurability of the actual variance
 derivative; its uniform bound justifies the outer Gaussian differentiation.
 \end{proof}
-The full replica-covariance identification and endpoint-safe integration of the desired
-derivative inequality remain to be assembled.
+The full replica-covariance identification and endpoint-safe integration for
+the physical positive-overlap paths are now proved above.
 
 \begin{lemma}[Degenerate interpolation variances need no endpoint derivative]
 \lean{SpinGlass.Targets.section5InterpolationVariance\_pos\_or\_eq\_zero}\leanok
@@ -1473,8 +1530,8 @@ Gaussian integrable; split the expectation and apply the existing radial
 Stein identity. The physical coefficient satisfies $a'a=t/2$, including
 $t=0$ by its constant branch. The heat normalization is already contained in $H_l$.
 \end{proof}
-Identification of these trace and heat terms with the replica-overlap expression
-and its inequality remains open.
+The actual replica-overlap identification, covariance inequality and endpoint
+transport for both physical positive-overlap paths are now proved above.
 
 \begin{lemma}[Right-interval endpoints, baseline and scalar gain]
 \lean{SpinGlass.Targets.section5RightInterpolation\_one}\leanok
