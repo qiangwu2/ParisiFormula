@@ -17,12 +17,11 @@ Sherrington–Kirkpatrick (SK) model with exact covariance.
   including the terminal mass and a deficit independent of system size.
   The negative initial interval (Proposition 5.4) is now checked for reduced
   schemes, preserving the original shared field and free energy.
-  For Proposition 5.7, the actual mixed interpolation's derivative inequality
-  and transport to the original free energy are now checked. They give strict
-  outside-neighbor and negative-overlap bounds in the current trial range,
-  with a deficit independent of system size. The final trial interval and
-  remaining first-level boundary cases still need assembly; Proposition 5.7
-  and the uniform bound of Theorem 2.4 remain open.
+  Proposition 5.7's outside-neighbor bound is now checked for the reduced
+  near-minimizing schemes used in the proof, including both signs, all trial
+  intervals, zero first overlap and time zero. Its positive deficit is
+  independent of system size. The next step is the uniform bound of
+  Theorem 2.4; Theorem 2.2 and the final formula remain open.
 
 **The full Parisi formula is not yet formalised.** Completed results have
 build-time axiom checks; open proof placeholders remain. A successful build

@@ -75,9 +75,11 @@ original shared field and free energy. For Proposition~5.7, strict scalar
 interchange and sorting, the mixed paired comparison, sorted scalar
 identification, the original-free-energy endpoint and the time-zero deficit
 are checked. The actual mixed-pressure derivative inequality and its transport
-to the original free energy are now checked. The final trial interval and
-remaining first-level boundary cases of Proposition~5.7, followed by uniform
-assembly into Theorem~2.4, remain open.
+to the original free energy are now checked. Proposition~5.7's outside-neighbor
+bound is checked for the reduced near-minimizing schemes used in the proof,
+including all trial intervals, both signs, zero first overlap and time zero.
+Its deficit is independent of system size; uniform assembly into
+Theorem~2.4 remains open.
 
 Dependencies are Mathlib and the pinned RSAT library
 (\texttt{njimaMath/research\_public}), with local ports originating in
@@ -2321,10 +2323,80 @@ the neighboring range; the strict endpoint of the selected interval gives
 the required active witness variance. Apply the transported strict bound.
 \end{proof}
 
-Proposition~5.7 itself remains open: the final trial interval and remaining
-first-physical-level sign cases require boundary assembly. The separate
-physical-time-zero estimate above already covers every attainable overlap.
-The actual mixed-pressure inequality is now checked, not an assumed input.
+\begin{lemma}[Exact terminal padding and full outside trial ranges]
+\lean{SpinGlass.Targets.constrainedPhi\_padOneLast}\leanok
+\lean{SpinGlass.Targets.guerraPsi\_padOneLast}\leanok
+\lean{SpinGlass.Targets.exists\_constrainedPhi\_gap\_right\_outside\_full}\leanok
+\lean{SpinGlass.Targets.exists\_constrainedPhi\_gap\_negative\_all\_trials}\leanok
+Redundant terminal mass-one padding leaves the original constrained free
+energy and $\psi$ unchanged, after shifting the independent cutoff by one.
+The positive outside-neighbor bound therefore covers
+$q_{r+1}<u\le1$. The negative bound at $r\ge2$ covers every
+$-1\le u<0$, including zero first overlap and all trial breakpoints,
+under its original first-mass and first-interior-overlap gap hypotheses.
+\end{lemma}
+\begin{proof}
+Delete the extra innermost zero-variance Gaussian step; the added correction
+summand is zero. For positive strictness, the actual order obstruction needs
+only $m_r<m_{j-1}$, a pair of original masses. It does not require strict
+monotonicity of the padded mass sequence. The negative strict comparison
+already needs only $m_1>0$ and $q_1<q_2$. Apply the proved mixed interpolation
+to the padded scheme, select the trial interval by first crossing, and
+transport back exactly. No minimality of the padded scheme is used.
+\end{proof}
+
+\begin{lemma}[The zero-first-overlap signed boundary]
+\lean{SpinGlass.Targets.field\_eq\_zero\_of\_initial\_overlap\_zero\_min}\leanok
+\lean{SpinGlass.Targets.constrainedPhi\_initial\_zero\_reflection\_of\_min}\leanok
+\lean{SpinGlass.Targets.exists\_constrainedPhi\_negative\_initial\_zero\_neighbor}\leanok
+At $q_1=0$, original fixed-level minimality, $\beta\ne0$, a positive
+first mass and $q_2>0$ imply $h=0$. The actual first-level constrained
+free energy is then invariant under $u\mapsto-u$. The previously checked
+positive local-right and far-right bounds give a strictly positive
+size-independent deficit on $[-q_2,0)$, under the same far-right
+near-optimality smallness condition.
+\end{lemma}
+\begin{proof}
+The actual initial scalar slope vanishes by stationarity. It is strictly
+increasing and vanishes at zero by evenness, so $h=0$. The sole outer
+shared variance is zero and deletes exactly. Reflect the second replica
+through the independent Gaussian cascade using SK disorder evenness.
+This is an identity for the original free energy, not a replacement field
+model. Apply the existing positive estimates at $-u$.
+\end{proof}
+
+\begin{proposition}[Proposition 5.7 for reduced near-minimizers in the SK proof]
+\lean{SpinGlass.Targets.exists\_section5\_common\_accuracy}\leanok
+\lean{SpinGlass.Targets.exists\_constrainedPhi\_gap\_outside\_of\_reduced\_min}\leanok
+\lean{SpinGlass.Targets.talagrand\_proposition\_5\_7}\leanok
+For $\beta\ne0$ and $t_0<1$, there is an $\varepsilon>0$, depending
+only on $\beta,t_0$, with the following property. Let $s$ be a fixed-level
+minimizer within $\varepsilon$ of the infimum, with strictly increasing
+masses and strictly increasing interior overlaps. Boundary overlaps
+$q_1=0$ and $q_{k+1}=1$ are allowed. For every $1\le r\le k+1$,
+$0\le t\le t_0$ and $-1\le u\le1$ such that
+$u<q_{r-1}$ or $u>q_{r+1}$, there is a $\delta>0$ satisfying
+\[
+  \Psi(t,u)\le 2\psi(t)-\delta
+\]
+for every $N>0$, every SK disorder, and every attainable such overlap.
+The choice of $\delta$ precedes $N$ and the disorder.
+\end{proposition}
+\begin{proof}
+Continuity of the sixth root and square root at zero supplies one positive
+accuracy satisfying both Section~5 smallness conditions before the scheme
+is chosen. For $t>0$, use the full positive outside-neighbor comparisons
+and negative interleaved bounds. At the first physical level, Proposition~5.4
+includes the endpoint $u=-q_1$; the strict mixed bound covers $u<-q_1$
+when $q_1>0$. When $q_1=0$, use the exact reflection above, the neighboring
+negative bound, and the full positive outside bound. At $t=0$, the previously
+proved quadratic deficit applies and the outside condition ensures $u\ne q_r$.
+\end{proof}
+
+The compact uniform quadratic bound of Theorem~2.4 remains open.
+The pointwise deficit above may depend on $(t,u)$: a finite-cover argument
+requires continuous scalar upper comparisons independent of $N$, not an
+unproved continuity assertion for the changing finite-size overlap constraint.
 
 \begin{lemma}[Closed-interval concavity and the supporting line (5.34)]
 \lean{SpinGlass.Targets.concaveOn\_section4U}\leanok

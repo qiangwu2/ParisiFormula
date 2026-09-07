@@ -68,7 +68,7 @@ theorem section5InterleavedScalarV_zero_le_parisiF {k : ℕ} (s : RSBScheme k)
   exact H.trans (mul_le_mul_of_nonneg_left
     (section5InterleavedScalarSteps_cascade_le_parisiF s β r ht hj0 hj hu h) (by norm_num))
 
-private theorem strict_of_order_obstruction {k : ℕ} (s : RSBScheme k)
+theorem strict_of_order_obstruction {k : ℕ} (s : RSBScheme k)
     (β h : ℝ) (r : ℕ) {j : ℕ} {t u : ℝ} (ht : t ∈ Set.Icc 0 1)
     (hj0 : 1 ≤ j) (hj : j ≤ k + 1)
     (hu : |u| ∈ Set.Icc (s.q (j - 1)) (s.q j))

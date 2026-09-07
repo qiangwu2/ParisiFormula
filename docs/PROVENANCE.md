@@ -1204,6 +1204,67 @@ No dependency revision changed. The locked RSAT one-cutoff GT theorem is
 still not the entire mixed Proposition 5.7; the new actual specialization
 supplies the previously missing pressure identity in the stated trial range.
 
+## Step 44: complete outside-neighbor assembly in the SK argument
+
+**Primary source:** Talagrand (2006), Proposition 5.7 and its proof,
+pp. 251 and 257--262. The local scheme has an explicit final mass-one
+interval and permits zero first overlap after exact reduction. The new
+assembly includes those faces rather than assuming all boundary overlaps
+are strict.
+
+**Reuse rather than new analytic machinery:**
+
+- `Section5TerminalPadding` reuses `RSBScheme.padOneLast`, zero-variance
+  Gaussian-step identities and the existing scalar padding identity.
+  It proves exact original constrained-free-energy/correction preservation.
+- `Section5InterleavedMassPair` isolates the original strict mass pair in
+  the existing equality-order obstruction. The unchanged
+  `strict_of_order_obstruction` proof is made public for reuse; no statement
+  or proof is altered. `Section5PositiveTerminal` uses that pair under
+  padding, not the false claim that padded masses are strictly increasing.
+- `Section5NegativeTerminal` applies the already proved actual mixed negative
+  bound to the padded scheme. Its hypotheses require only the first mass
+  and overlap gaps. First-crossing selection reuses the existing Mathlib
+  `Nat.find` wrappers; all breakpoint and terminal signs remain included.
+- `Section5ZeroInitialReflection` combines
+  `parisiFDeriv_initial_zero_of_min`, `strictMono_parisiFDeriv` and
+  `parisiF_even` to derive zero field from original minimality at `q₁=0`.
+  The existing SK evenness and independent-cascade second-field reflection
+  then give equality of the actual original constrained free energies.
+  `Section5ZeroInitialNegative` reuses the already checked zero-initial
+  local-right and far-right bounds. It does not introduce an arbitrary-field
+  symmetry or change the original disorder.
+- `Section5NegativeInitialAssembly` retains Proposition 5.4's explicit gap.
+  `Section5Smallness` uses Mathlib `Real.continuousAt_rpow_const`,
+  `Real.continuous_sqrt` and `Metric.eventually_nhds_iff` to select a positive
+  accuracy before all schemes. Finite mass strictness in the final assembly
+  reuses `Fin.strictMono_iff_lt_succ`.
+
+`Section5Proposition57.talagrand_proposition_5_7` (Lean namespace
+`SpinGlass.Targets`) covers reduced fixed-level near-minimizers, all physical
+levels, both overlap signs, every trial interval, zero first overlap and
+time zero. Its deficit is chosen before system size/disorder but may depend
+on time/overlap. Theorem 2.4's uniform compactness step remains unproved;
+no continuity of the changing finite-size overlap constraint is assumed.
+Dependency pins and the original final target statements are unchanged.
+
+**Next-step reuse audit (not completed proofs).** The generic
+`mixedScalarCascade_good` in `Section5MixedCascade` and
+`splitScalarCascade_good` in `CoupledEndpoint` already expose joint
+parameter/lambda/field continuity via `GTFrame.GoodFam`, including zero
+masses and variances. These are suitable for fixed-witness scalar compactness.
+The actual `(t,u)` specialization and breakpoint/sign gluing remain to be
+proved. At time zero, the zero-lambda mixed deficit vanishes; a fixed
+nonzero-lambda witness needs the existing arbitrary-lambda endpoint bound
+and a new scalar identification with the stationary time-zero family.
+The separate pointwise time-zero pressure estimate alone is insufficient.
+The locked RSAT `Lemmas/AT/PsiContinuity.lean` final continuity theorem is
+for its RS-specific functional and positive overlap parameter, not the
+present general RSB family. Reuse the underlying `GoodFam` machinery,
+already wrapped locally, rather than assuming that final theorem applies.
+Mathlib finite-subcover/minimum lemmas can supply the eventual compactness
+step after the actual neighborhood-stable comparisons are established.
+
 ## Historical copies and local ports
 
 All vendored files are Apache-2.0.  Original headers are retained unchanged.

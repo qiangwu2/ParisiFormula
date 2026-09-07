@@ -109,10 +109,17 @@ average, actual trace-plus-heat covariance identity, derivative inequality and
 original-free-energy endpoint transport. Outside-neighbor strict gaps now
 include positive breakpoint overlaps in the current trial range. Negative
 gaps include physical levels at least two and the stated first-level case.
-The final trial interval and remaining first-level assembly are not certified,
-so Proposition 5.7 itself and Theorem 2.2 remain open. The full Parisi formula
-is deliberately not listed.
+Step 44 certifies exact terminal free-energy padding, the minimal original
+mass-pair strict comparison, and all signed terminal intervals. Original
+minimality at zero first overlap forces zero field, allowing a proved exact
+reflection and reuse of the local/far-right bounds. The assembled Proposition
+5.7 bound covers reduced near-minimizing schemes, with one positive accuracy
+chosen before the scheme and a positive gap chosen before system size and
+disorder. Every overlap sign, trial breakpoint, first-level boundary and time
+zero is included. The uniform Theorem 2.4 bound, Theorem 2.2 and the final
+Parisi formula are not certified.
 -/
+import Targets.Section5Proposition57
 import Targets.ReplicaMeasure
 import Targets.CoupledReplicaHessian
 import Targets.CoupledReplicaHeat
@@ -267,6 +274,34 @@ accepts results which need fewer of those axioms. -/
 run_cmd do
   let allowed := #[``propext, ``Classical.choice, ``Quot.sound]
   for name in [
+    ``SpinGlass.Targets.exists_constrainedPhi_initial_signed_gap,
+    ``SpinGlass.Targets.exists_constrainedPhi_gap_right_outside_full,
+    ``SpinGlass.Targets.coupledCascade_padOneLast_succ,
+    ``SpinGlass.Targets.constrainedPhi_padOneLast,
+    ``SpinGlass.Targets.parisiCorrection_padOneLast,
+    ``SpinGlass.Targets.guerraPsi_padOneLast,
+    ``SpinGlass.Targets.exists_constrainedPhi_gap_negative_terminal,
+    ``SpinGlass.Targets.exists_constrainedPhi_gap_negative_all_trials,
+    ``SpinGlass.Targets.exists_constrainedPhi_gap_negative_first_beyond,
+    ``SpinGlass.Targets.exists_constrainedPhi_gap_negative_first_terminal,
+    ``SpinGlass.Targets.parisiFDeriv_zero_field,
+    ``SpinGlass.Targets.field_eq_zero_of_initial_overlap_zero_min,
+    ``SpinGlass.Targets.constrainedBase_flip_zero_field,
+    ``SpinGlass.Targets.coupledCascade_initial_zero_drop,
+    ``SpinGlass.Targets.constrainedCascade_initial_zero_reflection,
+    ``SpinGlass.Targets.constrainedPhi_initial_zero_reflection,
+    ``SpinGlass.Targets.constrainedPhi_initial_zero_reflection_of_min,
+    ``SpinGlass.Targets.exists_section5_common_accuracy,
+    ``SpinGlass.Targets.constrainedPhi_local_negative_initial_zero,
+    ``SpinGlass.Targets.exists_constrainedPhi_far_negative_initial_zero,
+    ``SpinGlass.Targets.exists_constrainedPhi_negative_initial_zero_neighbor,
+    ``SpinGlass.Targets.section5Interleaving_right_outside_obstruction_of_mass_lt,
+    ``SpinGlass.Targets.section5InterleavedScalarV_zero_lt_right_of_mass_lt,
+    ``SpinGlass.Targets.exists_constrainedPhi_interleaved_gap_right_of_mass_lt,
+    ``SpinGlass.Targets.RSBScheme.strictMono_mass_of_adjacent,
+    ``SpinGlass.Targets.exists_constrainedPhi_gap_outside_of_reduced_min,
+    ``SpinGlass.Targets.talagrand_proposition_5_7,
+    ``SpinGlass.Targets.strict_of_order_obstruction,
     ``SpinGlass.Targets.exists_constrainedPhi_gap_left_outside,
     ``SpinGlass.Targets.exists_constrainedPhi_gap_right_outside,
     ``SpinGlass.Targets.exists_nat_adjacent_Ico,

@@ -74,7 +74,7 @@ At the end of Step 27, replica identification, `U″`, uniform optimality estima
 and the remaining overlap regimes were still missing. Steps 29--30 close the
 derivative and interpolation gaps described in the current frontier below.
 
-**Current checked frontier (Step 43):** Proposition 4.6, closed-interval
+**Current checked frontier (Step 44):** Proposition 4.6, closed-interval
 concavity, both transported lambda gains and the positive-baseline far-left
 strict bound are checked. Stationarity now includes the final compulsory-mass
 level. Exact mass/interior-overlap reduction supplies its inward directions
@@ -131,8 +131,15 @@ free-energy bounds, not just bounds at the auxiliary zero-time endpoint.
 First-crossing interval selection includes positive breakpoint overlaps:
 the left bound covers `0 ≤ u < q_(r-1)`, and the right bound covers
 `q_(r+1) < u ≤ q_(k+1)`, with strict masses and the relevant physical gap.
-Proposition 5.7's full outside-neighbor bound, uniform
-Theorem 2.4 assembly, Theorem 2.2 and the final formula remain open.
+Step 44 completes the outside-neighbor bound of Proposition 5.7 for the
+reduced near-minimizing schemes used by the main argument. Exact terminal
+padding covers the full trial range without assuming strictness or minimality
+of the padded scheme. At zero first overlap, original minimality forces zero
+field, and exact free-energy reflection reuses the positive local/far-right
+bounds. One positive accuracy is chosen before every scheme; the positive
+pointwise deficit precedes all system sizes and disorders. Both signs, every
+breakpoint, first-level degeneracies and physical time zero are included.
+Uniform Theorem 2.4 assembly, Theorem 2.2 and the final formula remain open.
 
 **Milestone 1 (Targets 1b, 1c) is *not* on this critical path.**  Target 4 is strictly
 stronger than 1c — convergence to `parisiValue` subsumes existence of a limit — and deriving
@@ -2476,13 +2483,98 @@ proof placeholder was added; the same four original placeholders remain.
 Original target statements and dependency pins are unchanged. The updated
 blueprint compiles to 52 pages without LaTeX or box warnings.
 
+### Step 44 — complete the outside-neighbor bound of Proposition 5.7
+
+`Targets/Section5Proposition57.lean` now proves
+`talagrand_proposition_5_7` for the exact-covariance SK setting and reduced
+schemes used by the main proof. Given `β ≠ 0` and `t₀ < 1`, a positive
+accuracy `ε` is chosen before all schemes. For a fixed-level minimizer within
+that accuracy of the infimum, with strict mass increments and strict interior
+overlap increments, every `1 ≤ r ≤ k+1`, `0 ≤ t ≤ t₀` and `-1 ≤ u ≤ 1`
+satisfying `u < q_(r-1)` or `u > q_(r+1)` has
+
+`∃ δ > 0, ∀ N > 0, ∀ SKDisorder, attainable u → Ψ(t,u) ≤ 2ψ(t) - δ`.
+
+The scheme can still have `q₁=0` or `q_(k+1)=1`. The positive deficit may
+depend on the scheme, physical level, time and overlap; **it is not yet the
+uniform quadratic bound of Theorem 2.4**. Exact reduction already preserves
+the objects and quantifiers needed for the original Theorem 2.2.
+
+**Terminal interval, with actual free-energy preservation.**
+`Section5TerminalPadding.lean` deletes the extra innermost zero-variance
+step and shifts the independent cutoff exactly. Both `constrainedPhi` and
+`guerraPsi` remain those of the original scheme. The positive right obstruction
+in `Section5InterleavedMassPair.lean` needs only
+`m_r < m_(j-1)`, not strictness of every mass. Thus
+`Section5PositiveTerminal.lean` applies the proved mixed interpolation to
+the padded scheme and covers every `q_(r+1) < u ≤ 1`, including the final
+interval. No minimality or strict mass sequence is asserted for the padding.
+`Section5NegativeTerminal.lean` similarly covers all negative overlaps at
+`r ≥ 2`, including `u=-1`, zero first overlap and all trial breakpoints;
+the nondegenerate first level is covered whenever `|u|>q₁`.
+
+**First-level boundaries.** `Section5NegativeInitialAssembly.lean` puts
+the existing Proposition 5.4 in the same size-independent gap form, including
+`u=-q₁`. If `q₁=0`, `Section5ZeroInitialReflection.lean` first proves that
+original minimality forces `h=0`: the actual initial scalar slope vanishes,
+is strictly increasing, and is zero at the origin by evenness. Only then is
+the second physical replica reflected. The zero shared outer variance is
+deleted, and SK disorder evenness gives exact original free-energy symmetry.
+`Section5ZeroInitialNegative.lean` reuses the existing local/far-right estimates
+to cover `[-q₂,0)`; the full positive outside bound covers the rest after
+reflection. This does not assume a symmetry at arbitrary external field.
+
+**Assembly and common accuracy.** `Section5Smallness.lean` uses Mathlib's
+continuity of real powers and square root at zero to choose one positive
+accuracy satisfying both Section 5 smallness conditions before all schemes.
+`Section5Proposition57.lean` combines the signed and positive cases and reuses
+the already checked time-zero quadratic bound. No new analytic framework,
+dependency revision, axiom or placeholder is introduced.
+
+**Checked/open after Step 44:**
+
+- [x] Final trial interval and exact original-free-energy padding.
+- [x] All negative-overlap trials at physical levels at least two.
+- [x] Every first-level negative case, including `q₁=0` and `q₁=1`.
+- [x] Common positive accuracy before all reduced minimizing schemes.
+- [x] Complete Proposition 5.7 outside-neighbor bound in the main proof's SK
+      setting, including time zero and every attainable breakpoint.
+- [ ] Continuous scalar upper comparisons and compactness giving one uniform
+      quadratic bound in time/overlap: Theorem 2.4.
+- [ ] Supply the existing concentration/convergence deduction, close the
+      original Theorem 2.2 placeholder, and audit the final Parisi formula.
+
+**Step 44 validation:** `bash scripts/check.sh` passes (3229 supporting jobs
+and 4016 target jobs). All nine new modules compile without warnings.
+Twenty-seven new public results and the one newly exposed unchanged helper
+have allowed-set guards, bringing the total to 1349 checks (893 allowed-set
+and 456 explicit print guards). Independent read-only reviews checked the
+assembled quantifiers, terminal padding, signed reflection, zero-time case
+and both positive smallness thresholds. No axiom or proof placeholder was
+added; the same four original placeholders remain, including Theorem 2.2.
+The updated blueprint compiles to 53 pages without LaTeX or box warnings.
+Original targets and dependency pins are unchanged.
+
 **Remaining work, following the Annals argument:**
 
 1. Prove the a priori two-replica bound of Theorem 2.4 using §3–§5 and the scheme's
    optimality. The imported RS-level `twoReplica_GT_bound` is not this general result.
-   Next concrete step: complete the remaining final-trial-interval and
-   first-physical-level boundary/sign assembly, then compactness over
-   time/overlap. Step 43 proves the actual simultaneous Gaussian-averaged
+   Next concrete step: compactness over time/overlap using continuous scalar
+   upper comparisons independent of system size. Step 44 completes all
+   Proposition 5.7 interval/sign/boundary assembly for the reduced schemes.
+   Do not assume continuity in `u` of the actual finite-size constrained
+   free energy: its attainable constraint set changes with `u`.
+   Reuse `mixedScalarCascade_good` and `splitScalarCascade_good` for joint
+   scalar parameter/lambda/field continuity. Freeze each chosen mass/lambda
+   witness; no new joint-in-mass regularity is needed for that step. Still
+   prove the actual tagged `(t,u)` specialization, breakpoint/sign matching
+   by zero-variance deletion, and a time-zero scalar lambda identification.
+   The zero-lambda mixed deficit vanishes at time zero, so the separate
+   pointwise time-zero pressure bound is not by itself a neighborhood witness.
+   The checked arbitrary-lambda endpoint comparison and existing stationary
+   lambda gain are the reuse candidates. Then apply finite compact covers
+   away from `q_r` and the already proved local quadratic bounds near `q_r`.
+   Step 43 proves the actual simultaneous Gaussian-averaged
    mixed derivative, its signed covariance identity and inequality, and
    closed-interval transport to the original constrained free energy.
    Do not rebuild this pressure chain or assume a replacement derivative.
@@ -2514,7 +2606,7 @@ blueprint compiles to 52 pages without LaTeX or box warnings.
    estimate is superseded on actual inputs by Step 33's uniform bounds.
    The full nested second mass bound and its depth-uniform invariant are
    checked in Step 30; do not redo the scalar cumulant or nested derivative
-   theory. Complete the remaining outside-neighbor cases. Step 31
+   theory or the now completed outside-neighbor cases. Step 31
    transports both lambda gains and proves the positive-baseline far-left
    strict bound; Step 33 adds the local-left quadratic bound, but compactness
    remains open. Both neighbor
