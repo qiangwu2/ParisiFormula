@@ -1,4 +1,4 @@
-import Targets.Section5Interleaving
+import Targets.Section5InterleavedEndpoint
 
 /-!
 # Adjacent inserted-overlap boundary identities
@@ -43,5 +43,49 @@ theorem section5TaggedVariance_adjacent_boundary {k : ℕ} (s : RSBScheme k)
   · simp only [section5TaggedVariance, Sum.elim_inr]
     rw [section5Rho_adjacent_boundary_all s hj p,
       section5Rho_adjacent_boundary_all s hj (p + 1)]
+
+theorem section5TaggedMass_adjacent_boundary_of_ne
+    {k : ℕ} (s : RSBScheme k) {r j : ℕ} (hj : j ≤ k + 1)
+    (tag : Section5MassTag k)
+    (htag : tag ≠ Sum.inr ⟨j, by omega⟩) :
+    section5TaggedMass s r j tag = section5TaggedMass s r (j + 1) tag := by
+  rcases tag with p | p
+  · rfl
+  · by_cases hp : (p : ℕ) < j
+    · have hp' : (p : ℕ) < j + 1 := by omega
+      simp only [section5TaggedMass, Sum.elim_inr, section5Mass,
+        if_pos hp, if_pos hp']
+    · by_cases he : (p : ℕ) = j
+      · exfalso
+        apply htag
+        congr 1
+        exact Fin.ext he
+      · have hp' : ¬(p : ℕ) < j + 1 := by omega
+        by_cases he' : (p : ℕ) = j + 1
+        · simp only [section5TaggedMass, Sum.elim_inr, section5Mass,
+            if_neg hp, if_neg he, if_neg hp', if_pos he', Nat.add_sub_cancel]
+          have hsub : (p : ℕ) - 1 = j := by omega
+          rw [hsub]
+        · simp only [section5TaggedMass, Sum.elim_inr, section5Mass,
+            if_neg hp, if_neg he, if_neg hp', if_neg he', Nat.add_sub_cancel]
+
+theorem section5TaggedMode_adjacent_boundary_of_ne
+    {k : ℕ} {r j : ℕ} (hj : j ≤ k + 1) (negative : Bool) (tag : Section5MassTag k)
+    (htag : tag ≠ Sum.inr ⟨j, by omega⟩) :
+    section5TaggedMode r j negative tag =
+      section5TaggedMode r (j + 1) negative tag := by
+  rcases tag with p | p
+  · rfl
+  · by_cases hp : (p : ℕ) < j
+    · have hp' : (p : ℕ) < j + 1 := by omega
+      simp only [section5TaggedMode, Sum.elim_inr, if_pos hp, if_pos hp']
+    · by_cases he : (p : ℕ) = j
+      · exfalso
+        apply htag
+        congr 1
+        exact Fin.ext he
+      · have hp' : ¬(p : ℕ) < j + 1 := by omega
+        simp only [section5TaggedMode, Sum.elim_inr, if_neg hp,
+          if_neg hp']
 
 end SpinGlass.Targets

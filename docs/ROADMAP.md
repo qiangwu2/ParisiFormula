@@ -2606,15 +2606,23 @@ free energy, nor continuity of a chosen mass or lambda witness.
   adjacent-trial scalar identity, not that identity itself.
 - [x] `Section5InterleavedRightCompact`: compact right outside-trial bounds
   are now checked symmetrically to the left, with a half-open lower endpoint.
+- [x] `Section5TerminalCompact`: terminal right-trial compact bounds are
+  transported through exact redundant mass-one padding.
+- [x] `Section5QuadraticAssembly`: an abstract local-quadratic plus uniform-
+  outside-gap lemma converts regional estimates into one quadratic constant.
 - [ ] Join adjacent-trial breakpoints and assemble all remaining signed,
   first-level and padded terminal compact regions with the local quadratic
   bounds to obtain the single Theorem 2.4 bound.
 - [ ] Close the original Theorem 2.2 placeholder and audit the final formula.
 
-**Step 47 validation:** `bash scripts/check.sh` passes (3229 supporting jobs,
-4028 target jobs). The new modules compile without warnings. Thirty-nine new
-results and two exposed unchanged helpers have allowed-set guards, bringing
-the total to 1392 checks (936 allowed-set and 456 explicit print guards).
+**Step 48 validation:** `bash scripts/check.sh` passes (3229 supporting jobs,
+8935 target jobs). Terminal compactness, quadratic assembly, stable-sort
+deletion, and scalar-list infrastructure compile without warnings. Forty-three
+new results and two exposed unchanged helpers have allowed-set guards, bringing
+the total to 1396 checks (940 allowed-set and 456 explicit print guards).
+The same four original placeholders remain; no axiom or placeholder was added.
+The blueprint remains warning-free at 54 pages. The actual Theorem 2.4
+boundary gluing and complete region assembly remain open.
 Independent review checked empty compact sets, gap quantifiers, the genuine
 time-zero witness and the half-open trial limitation. The same four original
 placeholders remain; no axiom or placeholder was added. The updated blueprint

@@ -1317,6 +1317,13 @@ interleavings. `Section5InterleavedRightCompact` transports right outside
 strict witnesses to compact uniform gaps, using the time-zero lambda witness
 and the genuine positive-time strict comparison.
 
+`Section5TerminalCompact` transports the final trial interval through the
+exact redundant mass-one padding identities, without assuming the padded
+scheme is minimizing. `Section5QuadraticAssembly` is an elementary abstract
+finite-domain lemma: local quadratic control and a uniform outside gap imply
+one quadratic constant using `|u-q|≤2`; it does not supply the missing regional
+hypotheses.
+
 **Next-step reuse audit (not a completed proof):** at `|u| = q_j`, adjacent
 trial cumulative overlap arrays agree. Only interpolation tag `j` changes
 mass/mode, and its variance is zero. Reuse
