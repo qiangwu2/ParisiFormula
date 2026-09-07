@@ -923,6 +923,50 @@ The statement and the dual proof route were checked against
 [Talagrand, pp. 251 and 257](https://annals.math.princeton.edu/wp-content/uploads/annals-v163-n1-p04.pdf#page=31).
 No dependency revision or upstream source is changed.
 
+## Step 38: signed initial Gaussian estimates and the retained shared field
+
+The signed scalar factor follows the opposite-field Gaussian product in
+[Talagrand's proof of Proposition 5.4, p. 257](https://annals.math.princeton.edu/wp-content/uploads/annals-v163-n1-p04.pdf#page=37).
+`Section4SignedGaussianFactor` uses the existing actual `HasParisiC2` scalar
+calculus, variance differentiation, and Gaussian Stein. The pinned RSAT
+small-negative-overlap calculations are specialized to terminal `tanh` and
+do not directly supply this arbitrary-depth scalar statement.
+`Section4SignedHessianBound` reuses Mathlib's Gaussian reflection law and
+the local zero-mass Jensen/semigroup estimate. The two bounded-Gaussian
+helpers in `Section4InitialHessian` are exposed unchanged for this reuse.
+
+`Section5SignedInitialLambda` applies the existing independent-prefix
+identities and `UnitLambdaCurvature.finiteStep` to opposite signed Gaussian
+coefficients. The existing `section5_scalar_prefix` is exposed unchanged;
+no nonlinear cascade calculus or curvature induction is duplicated.
+
+The physical construction needs an additional distinction. Under the
+original local `constrainedPhi` definition, the initial frozen field has
+positive shared variance `(1−t)β²q₁`. The negative interpolating field must
+be added separately, as in (2.23), (3.18)--(3.20), and (5.7), with the external
+field unchanged. `Section5SignedInitialInterpolation` reuses arbitrary linear
+Gaussian steps, the positive construction's exact reindexing identity at
+time one, and its independent-prefix variance arrays. It proves exact
+endpoints and the combined kernel algebra. At time zero the combined cross
+covariance is `(1−t)β²q₁+tβ²u`; its sign need not be negative. The pure signed
+scalar display alone is therefore not an endpoint bridge for this local
+construction. The full signed pressure derivative remains a separate
+obligation, not an assumed identity or a claim that Proposition 5.4 is
+finished. No paper-error claim is made.
+
+`Section5RetainedSignedInitialLambda` reuses the same finite-step curvature
+invariant twice, keeping both outer Gaussian means. `Section5RetainedSignedSlope`
+avoids a new covariance-law equivalence: condition on the frozen positive
+field, use the generic signed factor bound at the shifted field, and apply
+bounded Gaussian Fubini and the already checked scalar semigroup. The
+resulting bound is for the actual double-Gaussian lambda derivative.
+`Section5SignedInitialEndpoint` reuses the terminal lambda comparison,
+growth-controlled Gaussian monotonicity, and finite-site tensorization to
+bound the original zero-time field endpoint. Combined with the retained
+slope estimate, it supplies a quantitative zero-time deficit under the
+actual initial curvature condition. Full signed pressure transport is still
+open; a pure signed display is never substituted for the retained field.
+
 ## Historical copies and local ports
 
 All vendored files are Apache-2.0.  Original headers are retained unchanged.

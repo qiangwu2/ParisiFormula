@@ -74,7 +74,7 @@ At the end of Step 27, replica identification, `U″`, uniform optimality estima
 and the remaining overlap regimes were still missing. Steps 29--30 close the
 derivative and interpolation gaps described in the current frontier below.
 
-**Current checked frontier (Step 37):** Proposition 4.6, closed-interval
+**Current checked frontier (Step 38):** Proposition 4.6, closed-interval
 concavity, both transported lambda gains and the positive-baseline far-left
 strict bound are checked. Stationarity now includes the final compulsory-mass
 level. Exact mass/interior-overlap reduction supplies its inward directions
@@ -102,7 +102,12 @@ corrected right mass derivative gives a scalar deficit chosen before system
 size and disorder, including baseline mass one. The actual normalized right
 factor is now identified and mass-continuous; a mass limit proves `U_+'=Q_+`
 up to inward endpoints. Its convex supporting line closes Proposition 5.6
-at every physical level. The remaining overlap/sign cases,
+at every physical level. The signed initial construction now keeps the original
+positive shared field separate from the negative interpolating field, and its
+physical endpoint is identified exactly with the original constrained free
+energy. Signed scalar Gaussian and lambda estimates, including the retained-field
+zero-time gain under the initial endpoint curvature bound, are available, but the
+signed pressure derivative and its transport are not yet proved. The remaining overlap/sign cases,
 uniform Theorem 2.4 assembly, Theorem 2.2 and the final formula remain open.
 
 **Milestone 1 (Targets 1b, 1c) is *not* on this critical path.**  Target 4 is strictly
@@ -1952,13 +1957,81 @@ statements and dependency pins are unchanged; no new axioms or placeholders
 were added, and the same four original placeholders remain. The updated blueprint compiles to 41 pages
 without LaTeX warnings.
 
+**Step 38 (2026-09-06): signed initial Gaussian estimates and exact endpoints.**
+
+The negative initial interval requires a genuine sign change in the
+interpolating field, not a reflection of the external field or a replacement
+of the original constrained free energy. `Section4SignedGaussianFactor`
+constructs the opposite-field slope product using the actual arbitrary-depth
+scalar input. `Section4SignedHessianBound` bounds its Hessian product by the
+original unsplit Hessian square, reusing Gaussian reflection and the checked
+zero-mass Jensen/semigroup estimate.
+`Section4SignedSlopeBound` then gives the endpoint-safe lower bound for the
+actual factor, with a generic version valid at any shifted external field.
+
+`Section5SignedInitialLambda` supplies the actual signed scalar lambda family:
+its zero-lambda value is twice the original scalar value, its derivative is
+the opposite-field product, and its second lambda derivative lies in `[0,1]`.
+Thus the existing quadratic optimization gives a scalar square gain. These
+are scalar results, not yet a bound on the original constrained free energy.
+`Section5RetainedSignedInitialLambda` proves the corresponding baseline,
+derivative, and gain with both positive and negative shared fields retained.
+
+`Section5SignedInitialInterpolation` preserves the original frozen positive
+shared field and adds a separate mass-zero negative shared field. It proves
+the exact physical and zero-time endpoint identities, as well as variance
+nonnegativity. With `a=β²q₁`, its zero-time variances are
+
+- independent: `v=tβ²(q₁+u)`;
+- frozen positive shared: `b=(1−t)a`;
+- negative shared: `c=tβ²(−u)`.
+
+They satisfy `v+b+c=a`; the combined cross-covariance is `b−c`, which may have
+either sign. A purely negative shared field does not directly identify this
+endpoint. Keep this distinction when connecting the scalar calculation in
+Talagrand's proof of Proposition 5.4 to the project's original pressure.
+No target statement or external field has been changed.
+
+`Section5RetainedSignedSlope` handles the retained field by conditioning on
+its positive shared Gaussian. The generic signed estimate, bounded Fubini,
+and the scalar semigroup give the actual derivative bound `V_λ(0)≥−cR₁(0)`.
+Under `β²R₁(0)≤1+e` and `0≤e≤(1−t₀)/2`, the actual lambda slope is at least
+`(1−t₀)(−u)/2`. `Section5SignedInitialEndpoint` transports the constrained
+terminal comparison through the independent prefix and both outer means.
+Combining these gives a genuine zero-time endpoint deficit
+`(1−t₀)²u²/8`, relative to `2 log 2 + 2A₀(h)`.
+This conditions on the actual endpoint curvature data studied previously;
+it does not assume the missing signed pressure inequality.
+
+**Step 38 checked/open checklist:**
+
+- [x] Signed Hessian-product Jensen bound, including both variance endpoints.
+- [x] Genuine signed Gaussian derivative and closed-interval slope lower bound.
+- [x] Genuine signed scalar lambda derivative, baseline, and curvature-one gain.
+- [x] Signed/frozen interpolation construction and exact original-pressure endpoint.
+- [x] Retained-field slope bound by conditioning, without covariance recombination.
+- [x] Quantitative actual zero-time endpoint gain from initial endpoint curvature.
+- [ ] Full signed pressure derivative, covariance inequality, and endpoint transport.
+- [ ] Complete Proposition 5.4 for the original constrained free energy.
+- [ ] Proposition 5.7, uniform Theorem 2.4 assembly, then Theorem 2.2 and the formula.
+
+**Step 38 validation:** `bash scripts/check.sh` passes (3229 supporting-library
+jobs and 3949 target jobs). The 42 additional axiom regression guards bring
+the total to 858. All eight new proof modules compile without warnings.
+No target statement or dependency pin changed, no axiom or proof placeholder
+was added, and the same four original placeholders remain. The updated
+blueprint compiles to 42 pages without LaTeX warnings.
+
 **Remaining work, following the Annals argument:**
 
 1. Prove the a priori two-replica bound of Theorem 2.4 using §3–§5 and the scheme's
    optimality. The imported RS-level `twoReplica_GT_bound` is not this general result.
-   Next concrete step: the negative initial interval (Proposition 5.4), reusing
-   the initial curvature and scalar Gaussian calculus with the signed paired
-   field. Then construct the interleaved mass sequences and strict comparison
+   Next concrete step: connect Step 38's signed/frozen interpolation to its
+   actual derivative/covariance inequality and integrate it to transport the
+   now-checked scalar endpoint gain, then
+   finish the negative initial interval (Proposition 5.4). Reuse the signed
+   scalar calculus and keep the frozen positive shared field; do not replace
+   it wholesale by a negative one. Then construct the interleaved mass sequences and strict comparison
    for the outside-neighbor cases (Proposition 5.7), followed by compactness
    over time/overlap. Step 37 closes the far-right strict improvement
    (Proposition 5.6), including its actual mass derivative and optimality input;

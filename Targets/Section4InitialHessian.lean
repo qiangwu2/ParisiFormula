@@ -24,14 +24,14 @@ theorem parisiStep_zero_sq_le {G : ℝ → ℝ} (hG : Measurable G)
     (sq_integral_mul_le (A := fun _ => (0 : ℝ)) (m := 0) (v := v)
       hbound hA measurable_const hG x)
 
-private theorem integrable_gaussian_bounded_shift {G : ℝ → ℝ}
+theorem integrable_gaussian_bounded_shift {G : ℝ → ℝ}
     (hG : Measurable G) (hbound : ∀ x, |G x| ≤ 1) (v x : ℝ) :
     Integrable (fun z => G (x + Real.sqrt v * z)) (gaussianReal 0 1) := by
   refine (integrable_const (1 : ℝ)).mono'
     (hG.comp (by fun_prop)).aestronglyMeasurable ?_
   exact Filter.Eventually.of_forall (fun z => by simpa only [Real.norm_eq_abs] using hbound _)
 
-private theorem abs_parisiStep_zero_le_one {G : ℝ → ℝ}
+theorem abs_parisiStep_zero_le_one {G : ℝ → ℝ}
     (hbound : ∀ x, |G x| ≤ 1) (v x : ℝ) : |parisiStep 0 v G x| ≤ 1 := by
   simp only [parisiStep, ↓reduceIte]
   apply (abs_integral_le_integral_abs).trans

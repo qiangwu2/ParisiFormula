@@ -69,8 +69,10 @@ estimates (Propositions~5.1 and~5.3) are checked. The local-right estimate
 (Proposition~5.2) is checked for every level of a reduced scheme, including
 zero first overlap and the terminal interval. The far-right strict improvement
 (Proposition~5.6) is also checked, with a deficit chosen before system size
-and disorder. The signed initial and outside-neighbor cases
-(Propositions~5.4 and~5.7), and uniform assembly into Theorem~2.4, remain open.
+and disorder. Signed initial Gaussian estimates and a construction retaining
+the original shared field are checked. The signed pressure inequality,
+completion of Proposition~5.4, the outside-neighbor case (Proposition~5.7),
+and uniform assembly into Theorem~2.4 remain open.
 
 Dependencies are Mathlib and the pinned RSAT library
 (\texttt{njimaMath/research\_public}), with local ports originating in
@@ -1745,6 +1747,98 @@ $f_+$. If $Q_+(tv)=u$, the smallness condition makes $D_+<0$; otherwise the
 lambda square gain is strict. Apply the preceding mass-or-lambda result.
 No compactness over time and overlap is claimed in this proposition.
 \end{proof}
+
+\begin{lemma}[Signed initial Gaussian calculus]
+\lean{SpinGlass.Targets.hasDerivAt\_signedSplitSlope}\leanok
+\lean{SpinGlass.Targets.signedSplitHessian\_le\_unsplit}\leanok
+\lean{SpinGlass.Targets.signedSplitSlope\_parisiF\_lower\_bound}\leanok
+Let $A$ be the actual scalar cascade immediately above the initial zero mass,
+$a=\beta^2q_1$, and $B_v=P_{0,v}A$. Define
+\[
+ W(v)=\mathbb E\bigl[B_v'(h+\sqrt{a-v}Z)B_v'(h-\sqrt{a-v}Z)\bigr].
+\]
+The function $W$ is continuous on $[0,a]$, $W(a)=B_a'(h)^2\ge0$, and
+for $0<v<a$ its genuine derivative satisfies
+\[
+ W'(v)=\mathbb E\bigl[B_v''(h+\sqrt{a-v}Z)B_v''(h-\sqrt{a-v}Z)\bigr]
+ \le P_{0,a}\bigl((A'')^2\bigr)(h)=R_1(0).
+\]
+Consequently $W(v)\ge-R_1(0)(a-v)$, including both endpoints.
+\end{lemma}
+\begin{proof}
+Differentiate the two actual smoothed slopes using the existing scalar
+variance and spatial calculus. Gaussian integration by parts cancels the
+third-derivative terms. The pointwise inequality $2xy\le x^2+y^2$,
+Gaussian reflection, and the checked zero-mass Jensen/semigroup bound give
+the derivative estimate. Apply the closed-interval mean-value inequality
+and the nonnegative independent endpoint. No new regularity assumption or
+stationarity identity is introduced.
+\end{proof}
+
+\begin{lemma}[Signed scalar lambda families and the retained-field endpoints]
+\lean{SpinGlass.Targets.section5SignedInitialV\_zero}\leanok
+\lean{SpinGlass.Targets.hasDerivAt\_section5SignedInitialV\_zero}\leanok
+\lean{SpinGlass.Targets.section5RetainedSignedInitialV\_zero}\leanok
+\lean{SpinGlass.Targets.section5RetainedSignedInitialV\_lambda\_gain}\leanok
+\lean{SpinGlass.Targets.section5SignedInitialInterpolation\_one}\leanok
+\lean{SpinGlass.Targets.section5SignedInitialInterpolation\_zero}\leanok
+The purely signed scalar family has zero-lambda value $2A_0(h)$ and
+lambda derivative $W(v)$ at zero. Its second lambda derivative lies in
+$[0,1]$, giving the usual lambda square gain.
+
+The interpolation to the original constrained free energy must also retain
+the frozen \emph{positive} shared field. For $-q_1\le u\le0$ set
+\[
+ v=t\beta^2(q_1+u),\qquad b=(1-t)\beta^2q_1,\qquad
+ c=-t\beta^2u.
+\]
+These variances are nonnegative and $v+b+c=a$. The retained scalar family
+uses independent variance $v$, positive shared variance $b$, and negative
+shared variance $c$. Its zero-lambda value is still $2A_0(h)$, its actual
+lambda derivative is the corresponding two-Gaussian slope product, and
+its second lambda derivative again lies in $[0,1]$.
+
+The checked signed interpolation has exactly the original constrained
+free energy at time one and the constrained retained-field endpoint at time
+zero. Finite-site tensorization bounds the latter by
+$2\log2+V_{\mathrm{ret}}(\lambda)-\lambda u$; it is not identified with
+the unconstrained scalar family itself. The original external field is unchanged.
+\end{lemma}
+\begin{proof}
+Apply the existing finite-step lambda curvature invariant to the independent
+prefix and the two mass-zero signed Gaussian steps. Each marginal law is
+unchanged, so the scalar semigroup proves the zero-lambda identity.
+At interpolation time one the added negative variance is zero; the existing
+exact cascade reindexing recovers the original constrained free energy.
+At time zero the disorder vanishes and the variance arrays give the stated
+field endpoint.
+\end{proof}
+\begin{lemma}[Quantitative retained-field zero-time gain]
+\lean{SpinGlass.Targets.section5RetainedSignedInitialV\_deriv\_lower\_bound}\leanok
+\lean{SpinGlass.Targets.section5SignedInitialFieldEndpoint\_quantitative\_gain}\leanok
+For the variances $v,b,c$ above, the actual retained-family derivative obeys
+\[
+ \partial_\lambda V_{\mathrm{ret}}(0)\ge-cR_1(0).
+\]
+If $0\le t\le t_0<1$, $\beta^2R_1(0)\le1+e$, and
+$0\le e\le(1-t_0)/2$, then its lambda slope is at least
+$(1-t_0)(-u)/2$. Hence, for positive $N$ and attainable overlap, the genuine
+zero-time constrained field endpoint is at most
+\[
+ 2\log2+2A_0(h)-\frac{(1-t_0)^2}{8}u^2.
+\]
+\end{lemma}
+\begin{proof}
+Condition on the positive frozen Gaussian. Apply the generic signed estimate
+with total variance $v+c$ and shifted external field. Bounded Fubini and the
+scalar semigroup combine the remaining Hessian-square mean with variance $b$
+to give $R_1(0)$. The curvature assumption bounds the slope; apply the
+unit-curvature lambda gain and the checked zero-time endpoint comparison.
+\end{proof}
+These endpoint identities and scalar estimates do not alone prove
+Proposition~5.4. The full signed pressure derivative, covariance inequality,
+and endpoint transport remain to be connected. In particular, replacing the
+retained positive shared field by a negative one is not an endpoint identity.
 
 \begin{lemma}[Closed-interval concavity and the supporting line (5.34)]
 \lean{SpinGlass.Targets.concaveOn\_section4U}\leanok

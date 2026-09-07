@@ -87,6 +87,11 @@ a mass limit proves the actual U'=Q with inward endpoints, and convexity
 gives the dual supporting line. The actual mass-or-lambda gain now proves
 Proposition 5.6, including terminal mass one, with a deficit chosen before
 system size and disorder. Compactness over time/overlap is not certified.
+Signed guards certify genuine Gaussian slope differentiation, endpoint-safe
+Hessian and slope bounds, and scalar lambda gains, including the original
+frozen positive shared field. Both exact signed interpolation endpoints and
+the zero-time scalar comparison are checked. The full signed pressure
+derivative/transport and Proposition 5.4 are not certified by these guards.
 The full Parisi formula is deliberately not listed: Theorem 2.2 is still open.
 -/
 import Targets.ReplicaMeasure
@@ -183,6 +188,8 @@ import Targets.Section5RightBoundary
 import Targets.Section4RightOptimality
 import Targets.Section5RightScalarGain
 import Targets.Section5FarRight
+import Targets.Section5RetainedSignedSlope
+import Targets.Section5SignedInitialEndpoint
 
 /-! The new critical-path results are checked against the same three standard
 axioms as the explicit print guards below. Checking the allowed set also
@@ -190,6 +197,48 @@ accepts results which need fewer of those axioms. -/
 run_cmd do
   let allowed := #[``propext, ``Classical.choice, ``Quot.sound]
   for name in [
+    ``SpinGlass.Targets.section5SignedInitialFieldEndpoint_quantitative_gain,
+    ``SpinGlass.Targets.section5SignedInitialFieldEndpoint_le,
+    ``SpinGlass.Targets.section5SignedInitialInterpolation_zero_le,
+    ``SpinGlass.Targets.section5RetainedSignedInitial_unitCurvature,
+    ``SpinGlass.Targets.hasDerivAt_section5RetainedSignedInitialV,
+    ``SpinGlass.Targets.hasDerivAt_section5RetainedSignedInitialV_zero,
+    ``SpinGlass.Targets.section5RetainedSignedInitialV_zero,
+    ``SpinGlass.Targets.section5RetainedSignedInitialV_second_derivative,
+    ``SpinGlass.Targets.section5RetainedSignedInitialV_lambda_gain,
+    ``SpinGlass.Targets.section5SignedInitial_unitCurvature,
+    ``SpinGlass.Targets.hasDerivAt_section5SignedInitialV,
+    ``SpinGlass.Targets.section5SignedInitialPrefixD_zero,
+    ``SpinGlass.Targets.hasDerivAt_section5SignedInitialV_zero,
+    ``SpinGlass.Targets.section5SignedInitialPrefix_zero,
+    ``SpinGlass.Targets.section5SignedInitialV_zero,
+    ``SpinGlass.Targets.section5SignedInitialV_second_derivative,
+    ``SpinGlass.Targets.section5SignedInitialV_lambda_gain,
+    ``SpinGlass.Targets.section5RetainedSignedInitialV_deriv_lower_bound,
+    ``SpinGlass.Targets.section5RetainedSignedInitialV_slope_lower_bound,
+    ``SpinGlass.Targets.section5RetainedSignedInitialV_quantitative_gain,
+    ``SpinGlass.Targets.signedSplitSlope_parisiF_lower_bound,
+    ``SpinGlass.Targets.signedSplitSlope_sub_overlap_lower_bound,
+    ``SpinGlass.Targets.coupledLinearStep_zero_mass_zero_variance,
+    ``SpinGlass.Targets.section5SignedInitialOuter_one,
+    ``SpinGlass.Targets.section5SignedInitial_outer_kernel,
+    ``SpinGlass.Targets.section5SignedInitial_variances_nonneg,
+    ``SpinGlass.Targets.section5SignedInitialCascade_one,
+    ``SpinGlass.Targets.section5SignedInitialInterpolation_one,
+    ``SpinGlass.Targets.section5SignedInitialInterpolation_zero,
+    ``SpinGlass.Targets.signedSplitSlope_top,
+    ``SpinGlass.Targets.signedSplitSlope_top_nonneg,
+    ``SpinGlass.Targets.continuous_signedSplitSlope,
+    ``SpinGlass.Targets.hasDerivAt_signedSplitSlope_before_ibp,
+    ``SpinGlass.Targets.hasDerivAt_signedSplitSlope,
+    ``SpinGlass.Targets.hasDerivAt_signedSplitSlope_parisiF,
+    ``SpinGlass.Targets.parisiStep_zero_signed_product_le,
+    ``SpinGlass.Targets.signedSplitHessian_le_unsplit,
+    ``SpinGlass.Targets.signedSplitHessian_parisiF_le_initial,
+    ``SpinGlass.Targets.signedSplitSlope_lower_bound,
+    ``SpinGlass.Targets.section5_scalar_prefix,
+    ``SpinGlass.Targets.integrable_gaussian_bounded_shift,
+    ``SpinGlass.Targets.abs_parisiStep_zero_le_one,
     ``SpinGlass.Targets.section4RightVarianceQ_mass_continuous_paths,
     ``SpinGlass.Targets.continuousOn_section4RightTVarianceQ_mass,
     ``SpinGlass.Targets.section4RightVarianceD_eq_massGap_mul,

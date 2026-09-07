@@ -15,6 +15,8 @@ Sherrington–Kirkpatrick (SK) model with exact covariance.
   used in the proof, including zero first overlap and the terminal interval.
   The far-right strict improvement (Proposition 5.6) is also checked,
   including the terminal mass and a deficit independent of system size.
+  Work on the negative initial interval now includes signed Gaussian estimates
+  and an interpolation construction preserving the original shared field.
   The remaining overlap/sign cases and their uniform assembly into
   Theorem 2.4 are still open.
 

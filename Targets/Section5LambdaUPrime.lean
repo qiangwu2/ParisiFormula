@@ -98,7 +98,7 @@ theorem splitScalarCascade_independent_zero {P : Type*} (m : ℕ → ℝ) (v : �
         GTFrame.step0, GTFrame.stepM] using!
         finiteStepD_first_zero p hF' hD' (m j) (v j p) x y
 
-private theorem section5_scalar_prefix {k : ℕ} (s : RSBScheme k) (β : ℝ)
+theorem section5_scalar_prefix {k : ℕ} (s : RSBScheme k) (β : ℝ)
     (r : ℕ) (m v : ℝ) {j : ℕ} (hj : j ≤ k + 2 - r) :
     scalarFieldCascade (fun i => section5Mass s r m (k + 2 - i))
         (fun i => section5Variance s β r (k + 2 - i) v) j = parisiF s β j ∧
