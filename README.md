@@ -8,10 +8,11 @@ Sherrington–Kirkpatrick (SK) model with exact covariance.
 
 - **Proved:** the SK version of Theorem 2.1 and Guerra's RSB upper bound,
   including its thermodynamic upper-bound consequence.
-- **In progress:** Theorem 2.2. Proposition 4.6's quantitative optimality bound
-  and the Section 5 interpolation bounds are checked, including a strict
-  far-left bound for positive baseline mass. Remaining work includes endpoint
-  stationarity/curvature and the other overlap cases for Theorem 2.4.
+- **In progress:** Theorem 2.2. Quantitative optimality, stationarity at every
+  level after exact scheme reduction, and the Section 5 interpolation bounds
+  are checked. The curvature estimate is checked conditional on an explicit
+  regularity bound. That uniform regularity bound and the remaining overlap
+  estimates for Theorem 2.4 are still open.
 
 **The full Parisi formula is not yet formalised.** Completed results have
 build-time axiom checks; open proof placeholders remain. A successful build

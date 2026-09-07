@@ -74,16 +74,18 @@ At the end of Step 27, replica identification, `U″`, uniform optimality estima
 and the remaining overlap regimes were still missing. Steps 29--30 close the
 derivative and interpolation gaps described in the current frontier below.
 
-**Current checked frontier (Step 31):** Proposition 4.6 now follows from actual
-scheme optimality and the uniform mass Taylor bound. Proposition 4.7 and the
-upper-endpoint derivative in Proposition 4.8 are proved for nonterminal levels
-with the stated inward-direction hypotheses; the final compulsory-mass level
-and coincident interior overlaps remain separate cases. Closed-interval concavity
-of `U`, both transported lambda gains, and the positive-baseline far-left strict
-bound are checked. The latter retains a positive deficit chosen before system
-size and disorder. Next are the remaining stationarity cases, the higher variance
-regularity and curvature estimate of Lemma 4.9/Proposition 4.10, and the other
-overlap cases needed by Theorem 2.4. Theorem 2.2 and the final formula remain open.
+**Current checked frontier (Step 32):** Proposition 4.6, closed-interval
+concavity, both transported lambda gains and the positive-baseline far-left
+strict bound are checked. Stationarity now includes the final compulsory-mass
+level. Exact mass/interior-overlap reduction supplies its inward directions
+without restricting the original Theorem 2.2 schemes. The actual Hessian-square
+factor `R` is continuous up to the variance endpoints, with inward `Q′=-R`.
+The cubic Taylor estimate and Proposition 4.10's sixth-root curvature bound
+are checked at every positive-gap level **conditional on Lipschitz regularity
+of the actual `R`**. A depth-uniform Lipschitz constant for `R` remains the
+next analytic input; Lemma 4.9 and unconditional Proposition 4.10 are not yet
+proved. The other overlap estimates, Theorem 2.4, Theorem 2.2 and the final
+formula remain open.
 
 **Milestone 1 (Targets 1b, 1c) is *not* on this critical path.**  Target 4 is strictly
 stronger than 1c — convergence to `parisiValue` subsumes existence of a limit — and deriving
@@ -1627,14 +1629,76 @@ system-size quantifier order. The original four placeholders, target statements
 and dependency pins are unchanged. The blueprint compiles to 33 pages without
 LaTeX warnings; README, roadmap and provenance share the same checked/open boundary.
 
+**Step 32 (2026-09-06): complete stationarity reduction and isolate the remaining curvature regularity.**
+
+* `Section4StationarityTerminal.lean` keeps the compulsory mass equal to one,
+  replaces the last overlap by one, inserts at a variable overlap and merges
+  equal masses. The endpoint observable is the actual original `Q(0)`.
+  This closes the final-level competitor, including the replica-symmetric
+  case, and combines with Step 31 to prove `Q(0)=q_r`, inward `U′(0)=q_r`
+  and `f′(q_r)=0` at every level with the stated inward directions.
+* `RSBSchemeOverlapReduction.lean` removes repeated interior overlaps by
+  raising an irrelevant zero-variance mass and reusing equal-mass compression.
+  It preserves the actual functional, `ψ`, every N-site interpolation `φ_N`
+  on `[0,1]`, and fixed-level minimality, while retaining strict masses.
+  Combined mass/overlap reduction therefore transfers a uniform quadratic
+  estimate for reduced schemes to the original Theorem 2.2 quantifiers.
+  It does not prove that quadratic estimate.
+  `Section4StationarityReduction.lean` supplies both inward directions and
+  stationarity at every level of the reduced minimizer. Boundary overlaps
+  zero and one remain allowed; no extra strictness is imposed on the target.
+* `Section4HessianRegularity.lean` reuses joint second-observable continuity
+  and the existing interior identity to prove closed-interval continuity of
+  the actual `R`, `Q(v)-Q(w)=-∫_w^v R`, and inward `Q′=-R`, including
+  baseline mass zero. Numerical derivative uniqueness requires positive
+  interval length. No higher-regularity bound follows merely from continuity.
+* `Section4Curvature.lean` identifies genuine inward first/second derivatives
+  of `f` and proves the deterministic short/long-gap sixth-root argument.
+  `Section4CubicTaylor.lean` derives the actual cubic remainder from an
+  explicit pairwise `L`-Lipschitz bound for `R` on its full physical interval,
+  using Mathlib's mean-value theorem twice. The remainder constant is `β⁶L/2`.
+* `Section4InitialCurvature.lean` handles the short initial interval using
+  stationarity, nonnegativity of `Q` and FTC: `∫_0^(β²q₁) R ≤ q₁`.
+  The same explicit Lipschitz input gives `-f″(q₁) ≤ Lβ⁶q₁/4`.
+  This does not vary the compulsory initial mass `m₀=0` or assume `f(0)≥0`.
+  `Section4CurvatureRegularity.lean` combines short and long initial intervals
+  with the noninitial argument. For every positive overlap gap it proves
+  `-f″(q_r) ≤ 2(β⁶L/2 + L_opt(β)) ε^(1/6)`, including `ε=0`,
+  **conditional on the actual `R` Lipschitz bound**. The constant is uniform
+  in depth only if the supplied `L` is. No such uniform `L` is constructed yet.
+
+**Step 32 checked/open checklist:**
+
+* [x] Final-level stationarity and exact coincident-interior-overlap reduction.
+* [x] Stationary reduced minimizer preserving the original functional and interpolation.
+* [x] Actual `R` continuity and endpoint-safe first/second variation identities.
+* [x] Cubic Taylor and all-positive-gap curvature estimates from explicit actual-`R` regularity.
+* [ ] Depth-uniform regularity of `R`: Lemma 4.9 and unconditional Proposition 4.10.
+* [ ] Local quadratic estimates of Propositions 5.1--5.2.
+* [ ] Initial/dual/far-overlap and signed-field cases; uniform Theorem 2.4.
+* [ ] Unconditional Theorem 2.2 and final Parisi-formula dependency audit.
+
+**Step 32 validation:** `bash scripts/check.sh` passes (3229 supporting-library
+jobs and 3902 target-build jobs). All eight new modules check without module
+warnings. The 49 new standard-axiom guards pass, for 605 guarded results in
+total. Independent reviews checked the exact reduction and stationarity
+competitors, endpoint and singleton cases, beta scaling, initial zero-mass
+admissibility, the zero-tolerance argument and the explicit regularity premise.
+The original four placeholders, target statements and dependency pins are
+unchanged. The updated blueprint compiles to 35 pages without LaTeX warnings;
+README, roadmap, blueprint and provenance distinguish conditional curvature
+from the still-unproved uniform regularity input.
+
 **Remaining work, following the Annals argument:**
 
 1. Prove the a priori two-replica bound of Theorem 2.4 using §3–§5 and the scheme's
    optimality. The imported RS-level `twoReplica_GT_bound` is not this general result.
-   Next concrete step: complete the final-level/coincident-overlap stationarity
-   cases and the higher variance regularity in Lemma 4.9, then derive the
-   curvature control in Proposition 4.10. Proposition 4.6 and nonterminal
-   stationarity are checked in Step 31; do not redo those arguments.
+   Next concrete step: prove a beta-only Lipschitz bound for the actual
+   Hessian-square factor on the full physical variance interval, including zero.
+   Step 32 then supplies the cubic Taylor and sixth-root curvature estimates
+   without further deterministic analysis. Lemma 4.9 and unconditional
+   Proposition 4.10 remain open. Proposition 4.6 and stationarity after exact
+   reduction are checked; do not redo those arguments.
    The actual positive-overlap interpolation estimate (5.9), its dual,
    square completion, mass telescoping and endpoint transport are now
    available, as are the actual nested baseline mass derivative, first variation,
@@ -1642,8 +1706,10 @@ LaTeX warnings; README, roadmap and provenance share the same checked/open bound
    (4.36), (5.18), (5.19), scalar heat equation, Lemma 5.9 and optimized time-zero
    endpoint. The actual scalar insertion and optimality input inequalities are
    now available, as are `U′=Q`, its inward endpoint form and Lemma 5.8. Use
-   the checked `Q′`/`U″` negative-square identities and uniform mass bounds
-   to prove the remaining Section 4 curvature estimates. The full nested
+   the checked `Q′`/`U″` negative-square identities, endpoint-safe Hessian
+   calculus and uniform mass bounds to prove the remaining regularity input.
+   The positive-variance third-spatial bound scales as `1/√v` and does not
+   give the required zero-inclusive uniform constant. The full nested
    second mass bound and its depth-uniform invariant are checked in Step 30;
    do not redo the scalar cumulant or nested derivative theory. Then complete
    the initial/dual scalar cases and remaining overlap/sign cases. Step 31
@@ -1653,9 +1719,10 @@ LaTeX warnings; README, roadmap and provenance share the same checked/open bound
    Do not replace `2ψ(t)`
    with `2φ(t)`.
 2. Apply the completed conditional Proposition 2.3/convergence deduction and
-   Step 23's exact equal-mass compression/strict-mass bridge once the uniform
-   Theorem 2.4 bound is proved. Handle coincident overlap levels needed by the
-   scalar stationarity argument via (2.19), or prove the bound without overlap strictness.
+   Step 32's exact mass/interior-overlap reduction once the uniform Theorem 2.4
+   bound is proved. The reduction already preserves fixed-level minimality
+   and the original convergence quantifiers; no further coincident-overlap
+   stationarity argument is needed.
 3. Supply the concentration hypothesis and replace the original Theorem 2.2
    placeholder; then audit `parisi_formula` itself.
 

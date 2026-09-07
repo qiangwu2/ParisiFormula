@@ -615,6 +615,66 @@ The initial mass-zero case, remaining dual/signed/far-overlap constructions,
 Lemma 4.9/Proposition 4.10 and the uniform Theorem 2.4 remain separate obligations.
 No dependency pins or upstream sources changed.
 
+## Step 32: stationarity reduction, endpoint regularity and conditional curvature
+
+The paper comparison is Talagrand (2006), pp. 249--251, Propositions 4.7--4.10
+and Lemma 4.9, together with the scheme reduction near (2.19).
+`Section4StationarityTerminal.lean` reuses the existing insertion and equal-mass
+compression. Its base scheme moves the last overlap to one, never lowers the
+compulsory terminal mass, and merges an inserted mass-one level. The actual
+endpoint observable is identified through all outer means. This completes the
+terminal stationarity competitor, including local depth zero, under the same
+inward-direction conditions as the earlier nonterminal proof.
+
+`RSBSchemeOverlapReduction.lean` reuses `raiseMass`, the zero-variance step
+identity, `mergeEqualMass`, and the existing competitor-padding proof of
+minimality preservation. It proves invariance for the actual arbitrary N-site
+cascade, not just the scalar functional. Iteration removes coincident interior
+overlaps without destroying strict masses. Combined with mass compression, it
+preserves the functional, `ψ`, `φ_N` on `[0,1]`, and fixed-level minimality.
+`Section4StationarityReduction.lean` extracts the inward directions from the
+reduced overlap list. Thus stationarity needs no new strictness hypothesis on
+the original Theorem 2.2 scheme. The conditional convergence transfer remains
+explicitly conditional on the uniform two-replica quadratic estimate.
+
+`Section4HessianRegularity.lean` reuses local
+`continuousOn_pairedSecondMean_paths`, `section4Cascade_baseline`, RSAT-derived
+joint C2 continuity and the existing interior negative-square identity.
+At baseline, outer potentials are independent of split variance by the actual
+semigroup identity. Mathlib's FTC and the existing interval-projection argument
+then give an integral representation and inward `Q′=-R` at both endpoints.
+The factor is the actual `section4THessianSquare`; continuity is not substituted
+for Lipschitz regularity. Numerical derivatives on singleton intervals are not
+asserted.
+
+`Section4Curvature.lean` identifies the actual overlap second derivative
+`β²(1-β²R)/2` and formalizes the short/long-gap argument. The initial
+lower-endpoint mass variation is not admissible because `m₀=0` is compulsory.
+`Section4InitialCurvature.lean` instead uses stationarity, `Q≥0`, and the actual
+FTC to obtain `∫_0^(β²q₁) R ≤ q₁`. With an explicit Lipschitz bound `L` on
+the actual `R`, this gives `-f″(q₁)≤Lβ⁶q₁/4`. No initial sign `f(0)≥0` is
+assumed or claimed.
+
+`Section4CubicTaylor.lean` reuses Mathlib's
+`Convex.norm_image_sub_le_of_norm_hasDerivWithin_le` twice to obtain the cubic
+remainder, with constant `β⁶L/2`, from that same actual-`R` Lipschitz premise.
+`Section4CurvatureRegularity.lean` combines the initial short-gap bound,
+the initial long-gap Taylor test and the noninitial two-gap argument. Its
+sixth-root curvature estimate covers all physical levels with positive left
+overlap gap, including zero tolerance, under genuine fixed-level minimality
+and near-global optimality. Independent review checked endpoint directions,
+beta scaling, the zero-tolerance branch and the unchanged target quantifiers.
+
+**Reuse boundary:** the local `ParisiThirdSpatial.abs_stepD3_le` bound is
+singular like `1/√v` as split variance tends to zero. It cannot supply the
+required full-interval, depth-uniform Lipschitz constant. Terminal smoothness
+in the pinned dependency does not by itself give that constant through the
+nested recursion either. No such constant is constructed in Step 32:
+Lemma 4.9 and unconditional Proposition 4.10 remain open. The local quadratic
+and remaining overlap cases of Section 5, uniform Theorem 2.4 and unconditional
+Theorem 2.2 are still separate obligations. No dependency pins, original target
+statements or upstream sources changed.
+
 ## Historical copies and local ports
 
 All vendored files are Apache-2.0.  Original headers are retained unchanged.

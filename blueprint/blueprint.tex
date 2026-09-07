@@ -48,10 +48,10 @@ and Talagrand's proof \cite{Tal06}.  Each statement is paired with the name of i
 Lean counterpart where one exists. Statements marked \emph{[formalised]} have checked
 proofs under their stated hypotheses; open targets and conditional deductions are
 identified explicitly. The active theorem statement is in
-\texttt{Targets/Talagrand.lean}; its supporting modules are mapped in the README.
+\texttt{Targets/Talagrand.lean}; its supporting modules are described in the roadmap.
 \texttt{Targets/Milestones.lean} also contains older, off-path targets.
 
-\textbf{Status (5 September 2026).} The exact-covariance SK version of Theorem~2.1,
+\textbf{Status (6 September 2026).} The exact-covariance SK version of Theorem~2.1,
 Guerra's RSB upper bound, and its limiting consequence are proved.
 \texttt{Targets/GuerraAudit.lean} guards their standard-axiom-only dependencies.
 Theorem~2.2 remains open, so the full Parisi formula is still conditional.
@@ -61,6 +61,11 @@ retained as an explicit, unproved hypothesis.
 Three older placeholders remain off this critical path: Guerra--Toninelli
 monotonicity, the standalone thermodynamic-limit target, and a uniform Lipschitz
 estimate for the scheme. Fixed-level continuity and existence of a minimizer are proved.
+Stationarity now holds at every level after exact scheme reduction. The actual
+endpoint Hessian calculus, cubic Taylor and sixth-root curvature deduction are
+checked, the latter two conditional on an explicit Lipschitz bound for the
+actual Hessian-square factor. Its depth-uniform bound (Lemma~4.9), unconditional
+Proposition~4.10 and the remaining Section~5 overlap estimates are still open.
 
 Dependencies are Mathlib and the pinned RSAT library
 (\texttt{njimaMath/research\_public}), with local ports originating in
@@ -98,7 +103,7 @@ The Gaussian structure is encoded through a covariance operator on the Hilbert s
 $\R^{\Sig}$ (\texttt{PhysLean.Probability.GaussianIBP.IsGaussianHilbert}).
 \end{definition}
 
-\begin{definition}[Free entropy]
+\begin{definition}[Free energy]
 \lean{SpinGlass.free\_entropy, SpinGlass.free\_energy\_density}\leanok
 With external field $h\in\R$,
 \[
@@ -870,8 +875,8 @@ reuse independent-step factorization and diagonal mass cancellation.
 The scalar Gaussian semigroup merges the two split increments at equal
 mass; its zero-mass expectation branch follows from Gaussian convolution.
 \end{proof}
-The nested mass estimates and Proposition~4.6 are proved below. Higher
-variance regularity and the remaining stationarity cases are still open.
+The nested mass estimates, Proposition~4.6 and stationarity after exact
+scheme reduction are proved below. Uniform higher variance regularity is open.
 The identification with $U'$ is checked by the following bridge.
 
 \begin{lemma}[The actual Lemma 5.8 identity]
@@ -965,8 +970,8 @@ derivative sign with Mathlib's closed-interval monotonicity theorem. The existin
 Gaussian order-preservation and parameter-derivative rules propagate the
 comparison, derivative and bound through every unchanged outer scalar level.
 \end{proof}
-Higher variance regularity and the remaining stationarity cases are open;
-nonterminal endpoint stationarity is proved below.
+Uniform higher variance regularity is open; stationarity at every level
+after exact scheme reduction is proved below.
 
 \begin{lemma}[Analytic extension through zero mass]
 \lean{SpinGlass.Targets.analyticAt\_parisiStep\_mass}\leanok
@@ -1025,7 +1030,8 @@ in (4.37), obtaining exactly (4.46).
 \end{proof}
 This proves first mass differentiation. The identities for $U'$ and $U''$
 and uniform first/second mass bounds, together with Proposition~4.6, are
-proved below. The remaining stationarity cases and Proposition~4.10 are open.
+proved below. Stationarity is completed after exact scheme reduction;
+Proposition~4.10 is proved only conditional on actual Hessian-square regularity.
 
 \begin{lemma}[Uniform scalar mass bounds and the first half of Lemma 4.5]
 \lean{SpinGlass.Targets.parisiStep\_parisiF\_mass\_derivatives\_uniform}\leanok
@@ -1240,9 +1246,39 @@ so Fermat's rule gives $Q(0)\le q_r$. At boundary overlaps use $0\le Q\le1$
 for the missing direction. Finally apply the checked inward derivative
 identities for $U$ and $f$.
 \end{proof}
-The final compulsory-mass level and coincident interior overlap levels
-remain open. No stationarity assertion is made at $\beta=0$, where the
-functional does not constrain the overlaps of arbitrary minimizers.
+The next result completes the final compulsory-mass level and handles
+coincident interior overlaps. No stationarity assertion is made at $\beta=0$,
+where the functional does not constrain overlaps of arbitrary minimizers.
+
+\begin{lemma}[Terminal stationarity and exact reduction]
+\lean{SpinGlass.Targets.section4TVarianceQ\_terminal\_zero\_eq\_overlap\_of\_min}\leanok
+\lean{SpinGlass.Targets.exists\_strict\_mass\_overlap\_reduction}\leanok
+\lean{SpinGlass.Targets.exists\_stationary\_reduction\_of\_min}\leanok
+The stationarity conclusion above also holds for $r=k+1$, including $k=0$.
+Every original fixed-level minimizer, for $\beta\ne0$, admits an equivalent
+scheme of depth $l\le k$ with strict adjacent masses and strict interior
+overlaps. It has the same functional, $\psi(t)$, and every $\varphi_N(t)$
+on $[0,1]$, remains a minimizer at its reduced depth, and satisfies
+$Q(m_{r-1},0)=q_r$ at every physical level. Its first overlap may still be
+zero and its last overlap may still be one.
+\end{lemma}
+\begin{proof}
+For terminal stationarity, move the last overlap to one while keeping the
+compulsory final mass one. Insert another mass-one level at a variable overlap
+and merge the equal masses. This is a genuine fixed-level competitor, whose
+endpoint normalized observable is the original $Q(0)$. The same endpoint
+Fermat argument supplies the missing inequality.
+For reduction, a repeated interior overlap has zero variance, so its mass is
+irrelevant to both the scalar and N-site recursions. Raise this mass to the
+next one and apply exact equal-mass compression. This preserves strictness
+of the remaining mass list. Pad every reduced competitor back to the original
+depth to transfer minimality, then iterate. Combine with the earlier mass
+reduction. Strict interior overlaps supply both required inward directions;
+at zero or one the bound $0\le Q\le1$ supplies the remaining inequality.
+\end{proof}
+Consequently the conditional quadratic-bound-to-convergence deduction can be
+applied only to these reduced schemes and still yield the original unrestricted
+Theorem~2.2. The uniform quadratic bound itself is not proved by the reduction.
 
 \begin{lemma}[Actual inserted functional and optimality inputs]
 \lean{SpinGlass.Targets.parisiFunctional\_insertLevel}\leanok
@@ -1321,8 +1357,81 @@ At baseline all remaining outer potential velocities vanish by (4.11), so
 their normalized means propagate the negative-square derivative unchanged.
 Finally use the actual $U'=Q$. The $Q'$ identity includes baseline zero and
 one; the $U''$ statement inherits the strict upper baseline restriction.
-No variance-endpoint second derivative or strictly negative bound is claimed.
+No two-sided variance-endpoint second derivative or strictly negative bound is
+claimed. The following result supplies the required inward endpoint calculus.
 \end{proof}
+
+\begin{lemma}[Actual Hessian-square continuity and endpoint derivatives]
+\lean{SpinGlass.Targets.continuousOn\_section4THessianSquare}\leanok
+\lean{SpinGlass.Targets.section4TVarianceQ\_baseline\_sub\_eq\_integral}\leanok
+\lean{SpinGlass.Targets.hasDerivWithinAt\_section4TVarianceQ\_baseline}\leanok
+\lean{SpinGlass.Targets.derivWithin2\_section4FirstVariation\_eq}\leanok
+Let $a=\beta^2(q_r-q_{r-1})$. The actual factor $R$ is continuous on $[0,a]$,
+including at baseline mass zero. For $0\le v\le w\le a$,
+\[
+ Q(m_{r-1},w)-Q(m_{r-1},v)=-\int_v^w R(z)\,dz .
+\]
+The inward derivative is $Q'=-R$ at both endpoints. For $m_{r-1}<1$ the
+actual first variation has inward derivatives
+\[
+ \begin{aligned}
+ f'(u)&=\frac{\beta^2}{2}\bigl(u-Q(m_{r-1},\beta^2(q_r-u))\bigr),\\
+ f''(u)&=\frac{\beta^2}{2}\bigl(1-\beta^2R(\beta^2(q_r-u))\bigr).
+ \end{aligned}
+\]
+Numerical derivative uniqueness is asserted only for positive interval length.
+\end{lemma}
+\begin{proof}
+Reuse joint second-observable continuity and the exact baseline semigroup
+through every remaining outer mean. Apply the FTC to the existing interior
+negative-square derivative, then extend the continuous integrand by interval
+projection to obtain inward endpoint derivatives. Apply the within-set chain
+rule to the physical variance map for the actual first variation.
+\end{proof}
+
+\begin{lemma}[Cubic Taylor and curvature, conditional on actual regularity]
+\lean{SpinGlass.Targets.section4FirstVariation\_cubic\_taylor\_of\_hessian\_lipschitz}\leanok
+\lean{SpinGlass.Targets.section4FirstVariation\_initial\_short\_curvature\_bound}\leanok
+\lean{SpinGlass.Targets.section4FirstVariation\_curvature\_bound\_of\_hessian\_lipschitz\_all\_levels}\leanok
+Assume explicitly that the actual $R$ is $L$-Lipschitz on its full physical
+variance interval, where $L\ge0$. For $m_{r-1}<1$, put $C=\beta^6L/2$.
+For any $u,w\in[q_{r-1},q_r]$, the actual first variation satisfies
+\[
+ \left|f(u)-f(w)-f'(w)(u-w)-\tfrac12 f''(w)(u-w)^2\right|
+ \le C|u-w|^3 .
+\]
+Suppose in addition that $\beta\ne0$, the scheme is an actual fixed-level
+minimizer within $\varepsilon$ of the global infimum, $m_{r-1}<m_r$,
+$q_{r-1}<q_r$, and $q_r<q_{r+1}$ or $q_r=1$. At every such physical level,
+including the initial and final levels,
+\[
+ -f''(q_r)\le 2\bigl(C+L_{\mathrm{opt}}(\beta)\bigr)\varepsilon^{1/6},
+\]
+where $L_{\mathrm{opt}}$ is the checked Proposition~4.6 constant.
+\end{lemma}
+\begin{proof}
+The actual second derivative is $C$-Lipschitz by its displayed formula.
+Two applications of Mathlib's endpoint-safe mean-value estimate give the
+cubic remainder (with an unoptimized constant). Stationarity makes the
+linear term vanish at $q_r$, and $f(q_r)=0$.
+For $r\ge2$, test at the lower endpoint when the interval is short, using
+$f(q_{r-1})\ge0$, or at distance $\varepsilon^{1/6}$ when it is long,
+using Proposition~4.6.
+For $r=1$, the compulsory mass $m_0=0$ cannot be varied: no sign for $f(0)$
+is assumed. Instead stationarity, $Q\ge0$ and the actual FTC give
+\[
+ \int_0^{\beta^2q_1}R(v)\,dv\le q_1,
+ \qquad -f''(q_1)\le \frac{L\beta^6q_1}{4}.
+\]
+This handles the short initial interval; the long one uses the same interior
+Taylor test. At $\varepsilon=0$ a sufficiently small positive test distance
+rules out negative endpoint curvature, without division by the tolerance.
+\end{proof}
+\textbf{Unproved input:} a Lipschitz constant for the actual $R$ depending only
+on $\beta$, uniformly in depth and on the full interval including zero.
+Continuity and the available $1/\sqrt v$ third-spatial bound do not supply it.
+Thus Lemma~4.9 and unconditional Proposition~4.10 remain open; the formalised
+conditional deduction does not assert that this input has been constructed.
 
 \begin{lemma}[Closed-interval concavity and the supporting line (5.34)]
 \lean{SpinGlass.Targets.concaveOn\_section4U}\leanok
@@ -1807,17 +1916,21 @@ mass. The scalar endpoint follows by one-site tensorization, and the two
 correction terms telescope. Iterate the exact deletion, using zero-variance
 padding to transfer minimality at each stage.
 \end{proof}
-This completes the mass-strictness part of (2.19), not overlap strictness.
-Thus the final conditional convergence theorem requires the quadratic bound only
-for schemes with strictly increasing masses. The baseline mass at $r=1$ is
-nevertheless $m_0=0$. Its single-step derivative is now covered by the analytic
-extension above; the nested mass-variation estimates remain to be proved.
+This completes the mass-strictness part of (2.19). The combined reduction
+proved above also removes repeated interior overlaps while preserving strict
+masses. Thus the final conditional convergence theorem requires the quadratic
+bound only for these reduced schemes. The baseline mass at $r=1$ is
+nevertheless $m_0=0$. Both its scalar derivative and the uniform nested
+mass-variation estimates are covered by the checked results above.
 
 The remaining work follows Proposition~2.3 and the coupled-replica concentration
 argument in \S3--\S5 of \cite{Tal06}: prove the a priori bound of Theorem~2.4,
 then apply the checked conditional deduction of Proposition~2.3 and the exact
-leading-zero-mass reduction. Additional coincident-level reductions may be needed
-by the scalar stationarity argument; they are not implicit in that leading-mass result.
+mass/interior-overlap reduction. The next analytic input is the depth-uniform
+Lipschitz bound for the actual Hessian-square factor. The local quadratic,
+initial/dual and remaining overlap/sign estimates in Section~5 must then be
+completed and assembled uniformly. The scalar stationarity reduction is
+already checked and does not impose new restrictions on Theorem~2.2.
 The active RSAT dependency includes
 \texttt{SpinGlass.AT.twoReplica\_GT\_bound} and Gaussian concentration results;
 these are supporting ingredients, not an existing proof of Theorem~2.2.

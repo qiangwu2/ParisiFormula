@@ -58,8 +58,15 @@ including baseline mass zero and all physical variance endpoints. Further guards
 certify Proposition 4.6, nonterminal stationarity with explicit endpoint-direction
 hypotheses, actual closed-interval concavity, both transported lambda gains and
 the positive-baseline far-left strict improvement. The mass deficit is
-explicit and independent of system size. Remaining stationarity/curvature cases
-and the other overlap regimes are not inferred from those results.
+explicit and independent of system size. New guards complete terminal
+stationarity and exact interior-overlap reduction, preserving the actual
+functional, interpolation and fixed-level minimality. Thus stationarity holds
+at every level of an equivalent reduced minimizer. They also certify actual
+Hessian-square continuity and inward Q'=-R at the variance endpoints, genuine
+first/second derivatives of f, and cubic Taylor/curvature estimates conditional
+on Lipschitz regularity of the actual R. The initial interval uses an integral
+bound, not an assumed sign for f(0). A depth-uniform Lipschitz constant for R
+and the other overlap regimes are not proved by these conditional guards.
 The full Parisi formula is deliberately not listed: Theorem 2.2 is still open.
 -/
 import Targets.ReplicaMeasure
@@ -124,6 +131,14 @@ import Targets.Section4StationarityInterior
 import Targets.Section5PressureGain
 import Targets.Section5RightPressureGain
 import Targets.Section5FarLeft
+import Targets.RSBSchemeOverlapReduction
+import Targets.Section4StationarityReduction
+import Targets.Section4StationarityTerminal
+import Targets.Section4HessianRegularity
+import Targets.Section4Curvature
+import Targets.Section4CubicTaylor
+import Targets.Section4InitialCurvature
+import Targets.Section4CurvatureRegularity
 
 /-! The new critical-path results are checked against the same three standard
 axioms as the explicit print guards below. Checking the allowed set also
@@ -230,7 +245,56 @@ run_cmd do
     ``SpinGlass.Targets.derivWithin_section4FirstVariation_upper_zero_of_min,
     ``SpinGlass.Targets.section5FarLeftBound_pos,
     ``SpinGlass.Targets.constrainedPhi_lt_two_guerraPsi_of_far_left,
-    ``SpinGlass.Targets.exists_constrainedPhi_far_left_uniform_in_size] do
+    ``SpinGlass.Targets.exists_constrainedPhi_far_left_uniform_in_size,
+    ``SpinGlass.Targets.section4FirstVariationD2_lipschitz_of_hessian_lipschitz,
+    ``SpinGlass.Targets.section4FirstVariation_cubic_taylor_of_hessian_lipschitz,
+    ``SpinGlass.Targets.section4FirstVariation_stationary_cubic_of_hessian_lipschitz,
+    ``SpinGlass.Targets.section4FirstVariation_curvature_lower_bound_of_hessian_lipschitz,
+    ``SpinGlass.Targets.RSBScheme.overlap_directions_of_strict,
+    ``SpinGlass.Targets.section4TVarianceQ_zero_eq_overlap_of_reduced_min,
+    ``SpinGlass.Targets.exists_stationary_reduction_of_min,
+    ``SpinGlass.Targets.section4Phi_terminalBase_min,
+    ``SpinGlass.Targets.section4Cascade_terminalBase_endpoint,
+    ``SpinGlass.Targets.section4VarianceQ_terminalBase_endpoint,
+    ``SpinGlass.Targets.section4TVarianceQ_terminalBase_endpoint,
+    ``SpinGlass.Targets.section4_terminal_endpointQ_le_overlap_of_min,
+    ``SpinGlass.Targets.section4TVarianceQ_terminal_zero_eq_overlap_of_min,
+    ``SpinGlass.Targets.section4TVarianceQ_zero_eq_overlap_of_min_all_levels,
+    ``SpinGlass.Targets.hasDerivWithinAt_section4U_zero_of_min_all_levels,
+    ``SpinGlass.Targets.hasDerivWithinAt_section4FirstVariation_upper_zero_of_min_all_levels,
+    ``SpinGlass.Targets.derivWithin_section4U_zero_of_min_all_levels,
+    ``SpinGlass.Targets.derivWithin_section4FirstVariation_upper_zero_of_min_all_levels,
+    ``SpinGlass.Targets.section4THessianSquare_initial_integral_le_overlap_of_min,
+    ``SpinGlass.Targets.section4FirstVariation_initial_curvature_le_of_hessian_lipschitz,
+    ``SpinGlass.Targets.section4FirstVariation_initial_short_curvature_bound,
+    ``SpinGlass.Targets.section4VarianceR_baseline_continuous_paths,
+    ``SpinGlass.Targets.continuousOn_section4THessianSquare,
+    ``SpinGlass.Targets.section4TVarianceQ_baseline_sub_eq_integral,
+    ``SpinGlass.Targets.hasDerivWithinAt_section4TVarianceQ_baseline,
+    ``SpinGlass.Targets.derivWithin_section4TVarianceQ_baseline_eq,
+    ``SpinGlass.Targets.section4FirstVariation_initial_curvature_bound_of_hessian_lipschitz,
+    ``SpinGlass.Targets.section4FirstVariation_curvature_bound_of_hessian_lipschitz_all_levels,
+    ``SpinGlass.Targets.cascadeT_raiseMass_zero_variance,
+    ``SpinGlass.Targets.parisiCorrection_raiseMass_zero_variance,
+    ``SpinGlass.Targets.guerraPsi_raiseMass_zero_variance,
+    ``SpinGlass.Targets.RSBScheme.mergeEqualOverlap_mass,
+    ``SpinGlass.Targets.RSBScheme.mergeEqualOverlap_strict_mass,
+    ``SpinGlass.Targets.parisiFunctional_mergeEqualOverlap,
+    ``SpinGlass.Targets.guerraPsi_mergeEqualOverlap,
+    ``SpinGlass.Targets.minimizer_mergeEqualOverlap,
+    ``SpinGlass.Targets.guerraPhi_raiseMass_zero_variance,
+    ``SpinGlass.Targets.guerraPhi_mergeEqualOverlap,
+    ``SpinGlass.Targets.exists_strict_overlap_reduction,
+    ``SpinGlass.Targets.exists_strict_mass_overlap_reduction,
+    ``SpinGlass.Targets.talagrand_theorem_2_2_of_strict_mass_overlap_quadratic_bound,
+    ``SpinGlass.Targets.neg_curvature_le_of_cubic_upper,
+    ``SpinGlass.Targets.neg_curvature_le_sixth_root_of_cubic_remainder,
+    ``SpinGlass.Targets.hasDerivWithinAt_section4FirstVariation_D,
+    ``SpinGlass.Targets.hasDerivWithinAt_section4FirstVariationD_D2,
+    ``SpinGlass.Targets.hasDerivWithinAt_derivWithin_section4FirstVariation,
+    ``SpinGlass.Targets.derivWithin2_section4FirstVariation_eq,
+    ``SpinGlass.Targets.section4FirstVariationD_upper_zero_of_min,
+    ``SpinGlass.Targets.section4FirstVariation_curvature_lower_bound_of_cubic_remainder] do
     for ax in ← Lean.collectAxioms name do
       unless allowed.contains ax do
         throwError "{name} depends on disallowed axiom {ax}"
