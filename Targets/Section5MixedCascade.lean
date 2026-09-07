@@ -141,7 +141,7 @@ private theorem goodFam_shift_growth {F D : P → ℝ → ℝ × ℝ → ℝ}
     h.bound_shift p l a b (x,y)⟩
 
 omit [TopologicalSpace P] [FirstCountableTopology P] in
-private theorem finiteStep_eq_gtScalarStep (m : ℝ) (a b : P → ℝ)
+theorem finiteStep_eq_gtScalarStep (m : ℝ) (a b : P → ℝ)
     (F : P → ℝ → ℝ × ℝ → ℝ) (p : P) (l x y : ℝ) :
     GTFrame.finiteStep (gaussianReal 0 1) m a b F p l (x,y) =
       AT.gtScalarStep m (a p) (b p) (fun x y => F p l (x,y)) x y := by

@@ -2137,15 +2137,97 @@ Transport the resulting scalar deficit through the genuine zero endpoint
 bound. The deficit is fixed before quantifying over $N$ and the disorder.
 \end{proof}
 
-Proposition~5.7 itself remains open. The actual mixed-pressure derivative
-and closed-interval inequality between these endpoints are not supplied by
-the one-cutoff pressure theorem. Its multi-level replica, heat and joint-path
-identities still need a mixed-mode version. Generic arbitrary-direction
-Gaussian parameter transport is available, but is not that full inequality.
-The final trial interval, interval selection at breakpoints, and negative
-cases whose absolute overlap is between neighboring indices still require
-boundary/sign assembly. The separate physical-time-zero estimate above
-already covers every attainable overlap.
+\begin{lemma}[Actual mixed calculus and endpoint continuity]
+\lean{SpinGlass.Targets.hasDerivAt\_mixedConstrainedCascade}\leanok
+\lean{SpinGlass.Targets.hasDerivAt\_mixedConstrainedCascade\_second}\leanok
+\lean{SpinGlass.Targets.hasDerivAt\_mixedConstrainedCascade\_variance}\leanok
+\lean{SpinGlass.Targets.continuousOn\_section5InterleavedInterpolation}\leanok
+\lean{SpinGlass.Targets.differentiableAt\_section5InterleavedIntegrand}\leanok
+For arbitrary ordering of independent, shared and opposite-shared Gaussian
+levels, the genuine constrained recursion has the normalized-mean first
+derivatives and covariance second derivatives. The disorder Hessian is bounded
+by $(8+16\sum_\ell |m_\ell|)\|V\|_1\|W\|_1$; the spatial analogue is bounded
+by $(2+4\sum_\ell |m_\ell|)(\|A\|_1+\|B\|_1)(\|C\|_1+\|D\|_1)$.
+The derivative in one positive variance is its Gaussian heat generator
+transported through all remaining mixed levels. Every unchanged variance
+and every mass may be zero. The actual interleaved free energy $\eta(w)$ is
+continuous for $0\le w\le1$, for either overlap sign and including zero faces.
+Its actual tagged integrand is differentiable for $0<w<1$, also at physical
+time zero. This follows from genuine joint Fr\'echet differentiability in
+time and both fields; the explicit disorder-plus-heat decomposition of this
+derivative remains a separate obligation.
+\end{lemma}
+\begin{proof}
+Reuse the established one-step parameter and covariance rules. Opposite
+sharing is a fixed second-field reflection. The independent two-step
+covariance has the common form by cancellation of the intermediate products.
+The existing finite-dimensional Gaussian heat theorem applies to these actual
+derivatives. Compact-parameter continuity passes through each mixed Gaussian
+operator; contraction in the terminal disorder supplies domination of the
+outer Gaussian expectation.
+\end{proof}
+
+\begin{lemma}[Actual mixed replica and disorder identities]
+\lean{SpinGlass.Targets.mixedConstrainedCascadeDD\_disorder\_eq\_replica}\leanok
+\lean{SpinGlass.Targets.mixedOuterMean\_spatialHeat\_eq\_replica}\leanok
+\lean{SpinGlass.Targets.hasDerivAt\_mixedConstrainedGaussian\_amplitude\_trace}\leanok
+\lean{SpinGlass.Targets.mixedConstrainedSecond\_SK\_trace}\leanok
+The genuine mixed Gibbs weights and product-before-transport split weights
+are normalized and nonnegative. The actual Hessian has the finite covariance
+telescope under those weights, and the spatial Hessian-plus-square term
+retains its original split after any number of outer transports. With field
+variances fixed, differentiation of the actual outer Gaussian average in the
+disorder amplitude equals that amplitude times the expected spectral Hessian
+trace.
+The split weights remain normalized and nonnegative after the actual disorder
+average. Contracting the Hessian with the original SK spectral covariance
+gives its overlap-moment telescope; the factor $N$ cancels exactly in the
+normalized free-energy amplitude derivative.
+\end{lemma}
+\begin{proof}
+Finite linearity of the normalized Gaussian means gives the actual probability
+and moment identities. Induct the common covariance rule and telescope its
+mass coefficients. The checked derivative bounds discharge all measurability
+and integrability hypotheses of Gaussian coordinate and radial Stein.
+\end{proof}
+
+\begin{lemma}[Signed tagged covariance and negative field endpoints]
+\lean{SpinGlass.Targets.section5Interleaved\_covariance\_increment}\leanok
+\lean{SpinGlass.Targets.section5InterleavedCovarianceExpression\_le}\leanok
+\lean{SpinGlass.Targets.exists\_section5Interleaved\_zero\_gap\_negative}\leanok
+The signed cumulative cross path is $c_i=e\rho_{\min(i,\tau)}$, where
+$e=1$ for $u\ge0$ and $e=-1$ otherwise. At each tag,
+$\Delta c_i=\Delta\rho_i$ times its actual correlation, equal to $0$, $1$
+or $-1$. Physical tags have $\Delta\rho_i=0$, so their sharing need not
+coincide with the interpolation cutoff. For $t\ge0$ and a normalized,
+nonnegative split law, the finite covariance expression is at most minus
+twice the original Parisi correction times $t$.
+
+For $r\ge2$, $m_1>0$, $q_1<q_2$, $\beta\ne0$, $0<t<1$ and $u<0$, the
+actual field endpoint has a positive deficit independent of $N$ and disorder,
+whenever the current trial index satisfies $1\le j\le k+1$ and
+$q_{j-1}\le |u|\le q_j$ (here $k$ is the local scheme index).
+This includes $q_1=0$, $j=1$ and $|u|=q_1$ when admissible.
+\end{lemma}
+\begin{proof}
+The tagged increment identity and the existing finite covariance telescope
+allow signed cross increments without changing frozen physical sharing.
+Square completion uses the same signed trial matrix and its checked endpoint
+correction. For the negative field endpoint, explicit original tags supply
+active ordinary-shared and opposite-shared increments. Exact second-replica
+reflection gives the dual strict comparison, including zero mass at the
+outer opposite level. The actual zero-endpoint bound transports the strict
+scalar deficit to $\eta(0)$.
+\end{proof}
+
+Proposition~5.7 itself remains open. The actual simultaneous mixed-pressure
+derivative must still be assembled from these contributions and identified
+with the signed covariance expression before applying closed-interval
+transport. In particular, separate partial derivatives alone do not justify
+this chain rule. The final trial interval, positive-overlap breakpoint
+selection, and first-physical-level sign cases still require boundary assembly.
+The separate physical-time-zero estimate above already covers every attainable
+overlap. The component lemmas are not the full Proposition~5.7 inequality.
 
 \begin{lemma}[Closed-interval concavity and the supporting line (5.34)]
 \lean{SpinGlass.Targets.concaveOn\_section4U}\leanok

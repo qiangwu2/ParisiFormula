@@ -1096,6 +1096,59 @@ multi-level Gibbs, replica, heat and joint-path specializations still have
 one cutoff. Formalizing their actual mixed-mode counterparts remains a real
 obligation, not an available imported theorem.
 
+## Step 42: actual mixed calculus and signed covariance
+
+The source is still Talagrand's construction on pp. 257--262, together with
+the second interpolation of Section 3. The dependency pins are unchanged.
+
+The arbitrary mixed derivative rules are short adapters of the existing
+`CoupledParamDeriv` one-step and covariance results. The independent-mode
+common covariance is the already proved cancellation of two intermediate
+tilts, not a new assumption. Opposite sharing is conjugation by second-field
+reflection. Actual Gibbs and split weights use those same normalized means;
+their probability and Hessian identities are derived by induction and finite
+linearity. Existing finite summation by parts handles the mass telescope.
+
+Closed-interval continuity reuses `CoupledContinuousOn.linearStep` and the
+actual constrained-terminal continuity package. Gaussian domination follows
+from mixed contraction in the terminal potential. The disorder-amplitude
+derivative reuses Mathlib's line-derivative measurability and the existing
+finite-dimensional Gaussian coordinate Stein/integrability theorems, with
+the checked mixed Hessian bounds supplying all hypotheses.
+Individual-variance differentiation reuses
+`hasDerivAt_parisiStepPi_variance`, `coupledLinearStep`, the actual mixed
+spatial derivatives and the unchanged outer parameter rule. The joint path
+theorem reuses `differentiableAt_jointGaussianStep`, with the mixed variance
+and spatial bounds supplying its domination. The actual tagged coefficients
+satisfy its active-face hypotheses, including locally constant zero levels.
+The subsequent explicit path decomposition can reuse the finite-parameter
+strategy in `CoupledPathDecomposition`; its generic
+`differentiableAt_multiGaussianStep` and `multiGaussianStep_eq_linearStep`
+helpers are currently private and should be exposed rather than copied.
+
+Actual averaged split-law measurability reuses the previously checked
+Gaussian disorder-measurability adapters at individual levels. The SK trace
+reuses the original spectral covariance identity and two newly public finite
+sum helpers (`sum_weighted_diagonal`, `sum_weighted_covariance`) without
+changing their proofs. The scalar reflection also reuses the now-public
+`finiteStep_eq_gtScalarStep` definition bridge. These visibility changes do
+not alter any original theorem statement or mathematical assumption.
+
+The existing covariance telescope is extended to arbitrary trial-matrix
+increments. Physical increments are exactly zero, so their modes must not
+be replaced by a one-cutoff convention; the true signed increment identity
+is now proved for the tagged arrays. The deterministic correction and
+square-completion bound are algebra, not an assumed pressure derivative.
+
+Negative scalar strictness reuses exact Gaussian sign invariance and the
+existing mixed opposite-before-shared strict comparison. Reflection supplies
+the dual shared-before-opposite version even with zero mass at the outer
+opposite level. Explicit original tags give active witnesses for `r ≥ 2`,
+including `q_1=0` and trial-overlap breakpoints. This proves an actual field
+endpoint deficit; transporting it to the original free energy remains part
+of the simultaneous mixed-pressure assembly. Generic RSAT results still do
+not supply that missing full path statement unchanged.
+
 ## Historical copies and local ports
 
 All vendored files are Apache-2.0.  Original headers are retained unchanged.

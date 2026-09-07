@@ -74,7 +74,7 @@ At the end of Step 27, replica identification, `U″`, uniform optimality estima
 and the remaining overlap regimes were still missing. Steps 29--30 close the
 derivative and interpolation gaps described in the current frontier below.
 
-**Current checked frontier (Step 41):** Proposition 4.6, closed-interval
+**Current checked frontier (Step 42):** Proposition 4.6, closed-interval
 concavity, both transported lambda gains and the positive-baseline far-left
 strict bound are checked. Stationarity now includes the final compulsory-mass
 level. Exact mass/interior-overlap reduction supplies its inward directions
@@ -113,9 +113,19 @@ original Parisi recursion are checked. The actual mixed paired recursion
 satisfies the comparison and equality-order condition (5.44). The cumulative
 tagged overlaps have the required correction, and the full interleaved
 interpolation's endpoint at its second time one is exactly the original
-constrained free energy, for either overlap sign. The mixed pressure derivative
-inequality remains missing: the existing one-cutoff pressure theorem does not
-apply unchanged. Proposition 5.7's full outside-neighbor bound, uniform
+constrained free energy, for either overlap sign. Step 42 supplies actual mixed
+first/second derivatives, normalized Gibbs and split laws, their Hessian and
+transported heat identities, Gaussian disorder differentiation, and the actual
+interpolation's closed-interval continuity. Signed trial-matrix increments now
+match the true tagged modes, including frozen physical tags. The negative
+field endpoint is strict at every physical level `r ≥ 2` in the current trial
+index range, including zero first overlap and overlap breakpoints.
+The full mixed pressure derivative inequality still needs assembly; the
+explicit formula for the simultaneous averaged derivative is not yet proved.
+Genuine joint differentiability and its specialization to the actual tagged
+integrand are now also checked, including active zero faces; its explicit
+disorder-plus-heat decomposition and outer expectation are still needed.
+Proposition 5.7's full outside-neighbor bound, uniform
 Theorem 2.4 assembly, Theorem 2.2 and the final formula remain open.
 
 **Milestone 1 (Targets 1b, 1c) is *not* on this critical path.**  Target 4 is strictly
@@ -2269,19 +2279,126 @@ No original target statement or dependency pin changed; no axiom or proof
 placeholder was added, and the same four original placeholders remain.
 The updated blueprint compiles to 48 pages without LaTeX or box warnings.
 
+### Step 42 — Actual mixed derivatives, replicas and negative endpoints
+
+This checkpoint removes the one-cutoff restriction from the actual local
+derivative and replica machinery required by Proposition 5.7. It does **not**
+replace Proposition 5.7 by a theorem assuming the missing pressure inequality.
+
+`MixedCascadeDeriv` and `MixedCascadeSecond` propagate the checked Gaussian
+parameter and covariance rules through arbitrary independent, shared and
+opposite-shared levels. They prove actual disorder/spatial first and second
+derivatives, measurability-enabling bounds, and exact translation identities.
+The independent two-step covariance products cancel by the existing proved
+identity; opposite sharing is a fixed second-field substitution. All masses
+are raw masses and may be zero; unchanged variances may also vanish.
+`MixedCascadeVariance` applies the existing arbitrary-direction Gaussian heat
+theorem to the actual mixed inner recursion. `MixedNestedVariance` supplies
+the full individual-variance parameter package, transports its heat through
+all outer modes, and proves the actual partial derivative with a uniform
+bound independent of the remaining outer depth.
+
+`MixedReplicaWeights` constructs the actual transported Gibbs law and the
+product-before-outer-transport split law. Nonnegativity, normalization,
+boundedness, finite linearity and derivative moment formulas are proved.
+`MixedReplicaHessian` proves the genuine mixed Hessian's finite covariance
+expansion and its mass telescope. `MixedReplicaHeat` transports the actual
+spatial Hessian-plus-square expression through every unchanged outer level,
+retaining each original split rather than multiplying final averaged means.
+`MixedReplicaAverage` proves joint disorder/field measurability, integrability,
+normalization and finite moments of the actual disorder-averaged split law;
+its signed square completion is included. `MixedReplicaTrace` contracts the
+actual Hessian against the original SK spectral covariance and substitutes
+that split-moment expression into the genuine amplitude derivative. The
+normalized free-energy derivative cancels the factor `N` exactly.
+
+`MixedCascadeContinuity` and `Section5InterleavedContinuity` reuse the existing
+arbitrary-direction compact-parameter Gaussian theorem. They prove actual
+mixed-potential contraction, disorder continuity/integrability, and
+closed-interval continuity of the full tagged free energy, with both signs
+and every zero-variance face. `MixedDisorderInterpolation` proves continuity
+of the actual first disorder direction, measurability of the actual Hessian,
+Gaussian coordinate/radial Stein, and differentiation of the genuine outer
+average in its disorder amplitude, with field variances fixed.
+`MixedJointInterpolation` proves genuine simultaneous differentiability in
+time and both fields, with every visited variance positive or locally fixed
+at zero. This reuses the existing joint Gaussian Fréchet theorem; it is not
+inferred from separate partial derivatives. The actual time derivative is
+the time component of that Fréchet derivative. Finally,
+`Section5InterleavedDifferentiability` discharges every such hypothesis for
+the actual tagged integrand at `0<w<1`, for both signs and even physical
+time `t=0`. The next obligation is its explicit disorder-plus-heat
+decomposition and passage through the expectation, not existence of the
+pointwise derivative.
+
+`MixedCovarianceTelescope` reuses the existing finite summation-by-parts
+identity with arbitrary signed trial-matrix increments. In
+`Section5InterleavedCovariance`, the actual cumulative cross path is the unit
+trial sign times the stopped absolute-overlap path. Its increment equals the
+diagonal increment times the actual tagged mode's correlation. In particular,
+physical tags contribute zero covariance velocity even when their positive
+sharing differs from the interpolation cutoff. Endpoints and the deterministic
+correction are checked; the algebraic bound is `-2*t*parisiCorrection` for any
+normalized nonnegative split law. This finite algebra is explicitly separate
+from identifying the derivative with that expression.
+
+`Section5MixedReflection` gives an exact scalar second-replica reflection,
+interchanging shared/opposite modes while preserving the scalar reference.
+This supplies the dual strict comparison without redoing Gaussian strictness.
+`Section5InterleavedNegative` proves strictness of the actual field endpoint
+for `r ≥ 2`, `1 ≤ j ≤ k+1`, `β ≠ 0`, `0<t<1`, `m_1>0`, `q_1<q_2`, `u<0`,
+and `|u|∈[q_(j-1),q_j]`. It allows `q_1=0`, `j=1` and `|u|=q_1`; it does not
+require an outside-index condition or strictness of every mass. The positive
+deficit is fixed before system size and disorder and bounds the genuine
+`eta(0)`. A separate result covers `r=1`, `q_1>0`, `|u|>q_1` in the same trial
+index range. The first physical level and final trial interval still require
+assembly with the existing initial-interval and padding arguments.
+
+**Checked / open checklist:**
+
+- [x] Actual mixed first/second disorder and spatial derivatives with bounds.
+- [x] Actual normalized Gibbs/split laws and Hessian/outer-heat replica identities.
+- [x] Actual averaged split laws and the normalized SK spectral contraction.
+- [x] Gaussian disorder-amplitude derivative and radial Stein trace.
+- [x] Actual individual-variance derivatives and full outer transport.
+- [x] Genuine joint differentiability and actual tagged-integrand specialization.
+- [x] Actual mixed interpolation continuity at both endpoints, including zero faces.
+- [x] Signed cumulative matrix, true mode increments and finite covariance algebra.
+- [x] Negative strict field endpoint for all current trial intervals at `r ≥ 2`.
+- [ ] Full simultaneous pressure derivative, covariance bound and endpoint transport.
+- [ ] Remaining interval/first-level boundary assembly: Proposition 5.7.
+- [ ] Uniform Theorem 2.4, Theorem 2.2 and the final Parisi formula.
+
+**Step 42 validation:** `bash scripts/check.sh` passes (3229 supporting jobs
+and 3995 target jobs). All 18 new modules compile without warnings. The 172
+new allowed-set axiom guards bring the total to 1255 (799 allowed-set guards
+and 456 explicit print guards). Independent read-only reviews checked raw
+masses, opposite signs, the Gaussian one-half factors, actual split-law
+interfaces, zero faces and documentation scope. No axiom or proof placeholder
+was added; the same four original placeholders remain. Original target
+statements and dependency pins are unchanged. Three existing generic helpers
+were made public without changing their proofs. The updated blueprint
+compiles to 50 pages without LaTeX or box warnings.
+
 **Remaining work, following the Annals argument:**
 
 1. Prove the a priori two-replica bound of Theorem 2.4 using §3–§5 and the scheme's
    optimality. The imported RS-level `twoReplica_GT_bound` is not this general result.
-   Next concrete step: generalize the actual one-cutoff replica/heat and
-   joint-path derivative packages to the mixed tagged modes of Proposition 5.7.
-   Apply the existing covariance algebra to the proved cumulative overlaps,
-   then transport between the actual endpoints and close every positive-time
+   Next concrete step: identify the proved joint time derivative explicitly
+   from the actual Gaussian disorder and field-variance contributions.
+   Pass this identity through the disorder expectation to obtain the full
+   simultaneous mixed pressure derivative.
+   Match the signed tagged covariance expression using the actual split law,
+   then use the proved closed-interval continuity to transport between the
+   actual endpoints and close every positive-time
    boundary/sign case. Follow with compactness over time/overlap.
    Step 41 already supplies strict interchange and sorting, mixed paired
    comparison, sorted scalar identification, cumulative overlaps, exact
    zero-variance deletion and the original free-energy endpoint; do not
-   rebuild those. The separate time-zero deficit is also checked.
+   rebuild those. Step 42 also supplies actual mixed derivative/replica
+   machinery, endpoint continuity, signed covariance algebra and negative
+   strict endpoints at `r ≥ 2`; do not rebuild them. The separate time-zero
+   deficit is also checked.
    Step 39 closes Proposition 5.4 through exact
    reflection and frozen-field conditioning; no separate general signed
    pressure derivative is needed for that case. Step 37 closes the far-right strict improvement

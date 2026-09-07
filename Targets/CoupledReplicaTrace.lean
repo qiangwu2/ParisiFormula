@@ -54,7 +54,7 @@ theorem constrainedReplicaMoment_const_mul
   intro q _
   ring
 
-private theorem sum_weighted_diagonal {I S : Type*} [Fintype I] [Fintype S]
+theorem sum_weighted_diagonal {I S : Type*} [Fintype I] [Fintype S]
     (c : I → ℝ) (P : S → ℝ) (f : I → S → ℝ) :
     (∑ i, c i * ∑ p, P p * f i p * f i p) =
       ∑ p, P p * ∑ i, c i * f i p * f i p := by
@@ -80,7 +80,7 @@ private theorem sum_weighted_differences {I L : Type*} [Fintype I] [Fintype L]
   intro i _
   ring
 
-private theorem sum_weighted_covariance {I L : Type*} [Fintype I] [Fintype L]
+theorem sum_weighted_covariance {I L : Type*} [Fintype I] [Fintype L]
     (c : I → ℝ) (D B : I → ℝ) (m : L → ℝ) (F G : I → L → ℝ) :
     (∑ i, c i * (D i - B i + ∑ l, m l * (F i l - G i l))) =
       (∑ i, c i * D i) - (∑ i, c i * B i) +
