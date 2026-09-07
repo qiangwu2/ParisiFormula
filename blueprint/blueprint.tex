@@ -71,10 +71,11 @@ zero first overlap and the terminal interval. The far-right strict improvement
 (Proposition~5.6) is also checked, with a deficit chosen before system size
 and disorder. The negative initial interval (Proposition~5.4) is now checked
 for reduced schemes by exact SK reflection and conditioning, preserving the
-original shared field and free energy. For Proposition~5.7, the tagged mass
-construction, correction/variance grouping, non-strict scalar operator
-interchange and finite sorting are checked. The full strict interleaved
-comparison and uniform assembly into Theorem~2.4 remain open.
+original shared field and free energy. For Proposition~5.7, strict scalar
+interchange and sorting, the mixed paired comparison, sorted scalar
+identification, the original-free-energy endpoint and the time-zero deficit
+are checked. The mixed-pressure inequality and uniform assembly into
+Theorem~2.4 remain open.
 
 Dependencies are Mathlib and the pinned RSAT library
 (\texttt{njimaMath/research\_public}), with local ports originating in
@@ -707,8 +708,8 @@ the actual lambda derivative of this $V$ at fixed $m$.
 These endpoint results alone do not assert the intervening covariance derivative
 bound. The right-interval construction and both actual interior-time pressure
 derivatives and the negative initial-overlap case are proved in the subsequent
-modules. Proposition~5.7's interleaved-pressure construction remains open;
-its tagged mass data and scalar sorting are checked below, as is the uniform
+modules. Proposition~5.7's mixed-pressure inequality remains open;
+its tagged construction, strict scalar sorting and actual endpoints are checked below, as is the uniform
 bound of Lemma~5.9.
 
 \begin{lemma}[Constrained terminal derivatives and the SK covariance trace]
@@ -1953,10 +1954,9 @@ and monotonicity in the lower mass give the case $m'=0$; the Gaussian
 semigroup handles equal masses. Induction over insertion sort repeatedly
 applies this actual interchange and scalar order preservation.
 \end{proof}
-This is the non-strict comparison, not the strict equality characterization
-needed in (5.47). Nonconstancy alone would be insufficient there: affine
-inputs also give equality. Strictness must be proved on the actual strictly
-convex scalar inputs, including a separate argument at lower mass zero.
+Nonconstancy alone is insufficient for a strict comparison: affine inputs
+also give equality. The checked strict result below uses the actual positive
+scalar Hessian and includes the zero lower-mass face.
 
 \begin{lemma}[Strict curvature and Gaussian equality rigidity]
 \lean{SpinGlass.Targets.scalarFieldCascade\_C2\_pos}\leanok
@@ -2007,10 +2007,145 @@ case. For independent propagation, non-atomicity makes both exceptional
 diagonals null; strict integral monotonicity then applies. All exponential
 integrability follows from the stated growth bounds.
 \end{proof}
-The one-step estimates do not yet give the full paired-recursion comparison.
-That propagation, strict scalar interchange,
-identification of the sorted recursion with the original Parisi recursion,
-and interleaved-pressure endpoint transport are still needed for Proposition~5.7.
+\begin{lemma}[Strict scalar interchange: (5.47) on the actual inputs]
+\lean{SpinGlass.Targets.tilt\_variance\_pos\_of\_strictMono}\leanok
+\lean{SpinGlass.Targets.parisiStep\_interchange\_strict}\leanok
+\lean{SpinGlass.Targets.parisiStep\_interchange\_parisiF\_strict}\leanok
+For $0\le m'<m\le1$, $a,b>0$, and the actual scalar inputs $A$,
+\[
+ T_{m,a}T_{m',b}A(x)<T_{m',b}T_{m,a}A(x).
+\]
+More generally, the formal statement takes linear growth, the established
+bounded C2 data, and a continuous strictly positive Hessian.
+\end{lemma}
+\begin{proof}
+Differentiate the genuine commutator
+$T_{m,v}T_{m',b}A-T_{m',b}T_{m,v}A$ inward at $v=0$.
+The derivative is $-(m-m')/2$ times the tilted variance of $A'$.
+That variance is strictly positive: equality in Cauchy--Schwarz would make
+the continuous slope constant under a full-support Gaussian, contrary to
+its strict increase. A small strict swap therefore exists. Split any
+positive upper variance by the same-mass semigroup; strict order through
+the remaining positive-variance outer step and non-strict interchange
+give the displayed inequality. This argument applies also when $m'=0$.
+\end{proof}
+
+\begin{lemma}[Actual sorted scalar endpoint and its equality order]
+\lean{SpinGlass.Targets.section5SortedScalarSteps\_cascade\_eq\_parisiF}\leanok
+\lean{SpinGlass.Targets.section5InterleavedScalarSteps\_cascade\_le\_parisiF}\leanok
+\lean{SpinGlass.Targets.section5InterleavedScalarSteps\_eq\_implies\_order}\leanok
+Sorting the actual interleaved scalar operators yields exactly the original
+Parisi recursion $A_0$. Hence $D_0^*(h)\le A_0(h)$, as in (5.50).
+Equality at one field forces the scalar masses to be nondecreasing on
+positive-variance tags, as in (5.51). Zero-variance tags impose no order.
+\end{lemma}
+\begin{proof}
+Equal-mass operators commute and merge by the Gaussian semigroup. Group
+the sorted tags by original level and use (5.49). This includes accidental
+mass ties. For strictness, insertion-sort induction locates an inverted
+pair of positive-variance operators and applies strict interchange to its
+actual log-cosh suffix. Strict order propagates through all outer operators;
+a zero-variance outer operator is exactly the identity.
+\end{proof}
+
+\begin{proposition}[Mixed paired comparison and the order in Proposition 5.11]
+\lean{SpinGlass.Targets.mixedScalarCascade\_zero\_le}\leanok
+\lean{SpinGlass.Targets.mixedScalarCascade\_eq\_implies\_order}\leanok
+\lean{SpinGlass.Targets.mixedScalarCascade\_lt\_of\_opposite\_before\_shared}\leanok
+The genuine mixed paired recursion satisfies
+$D_0(x,y)\le D_0^*(x)+D_0^*(y)$ for arbitrary order of independent, shared
+and opposite-shared steps. Equality at $(h,h)$ forces each positive-variance
+shared tag with positive mass to precede every positive-variance independent
+tag in the paper's forward indexing, as in (5.44).
+An active opposite-shared step followed outward by an active ordinary-shared
+step also forces strict comparison everywhere.
+\end{proposition}
+\begin{proof}
+Iterate the checked one-step comparisons, retaining the actual Gaussian
+integrals and RSAT's finite-step regularity. A positive-mass shared step
+creates strictness off its diagonal. It persists off both diagonals through
+intervening signed steps; a positive-variance independent step spreads it
+everywhere by Gaussian non-atomicity. For the opposite/shared obstruction,
+propagate strictness off the anti-diagonal until a shared step spreads it.
+All zero-mass and zero-variance branches are treated explicitly.
+\end{proof}
+
+\begin{lemma}[Cumulative overlaps and the original interleaved endpoint]
+\lean{SpinGlass.Targets.section5Interleaved\_pairCorrection}\leanok
+\lean{SpinGlass.Targets.section5InterleavedInterpolation\_one}\leanok
+\lean{SpinGlass.Targets.section5InterleavedInterpolation\_zero\_le\_lambda}\leanok
+The cumulative overlap at merged position $\ell$ is the inserted overlap
+indexed by the number of interpolation tags before $\ell$. It advances
+only at interpolation tags, has endpoints zero and one, and equals $|u|$
+at the distinguished cutoff. Its actual signed correction is (5.36).
+The full interleaved interpolation satisfies $\eta(1)=\Psi(t,u)$, for
+either sign of $u$, including zero variances and physical-time endpoints.
+For every attainable $u$ and every $\lambda\in\R$, its other endpoint obeys
+$\eta(0)\le2\log2+D_0(\lambda;h,h)-\lambda u$, with the actual mixed
+paired scalar recursion and the selected interval containing $|u|$.
+\end{lemma}
+\begin{proof}
+Strict source-order embeddings identify the cumulative increments and
+recover the physical list after filtering interpolation tags. At second
+time one, every interpolation variance is zero, so its actual operator is
+the identity, including at zero mass. Gaussian Fubini identifies the
+remaining independent operators, and the checked physical-field rescaling
+recovers exactly the original constrained free energy. Physical sharing
+remains positive even when the interpolating sharing is opposite.
+At second time zero the disorder vanishes exactly. The genuine constrained
+terminal relaxation passes through the mixed operators by Gaussian order;
+finite-site tensorization supplies the scalar expression. Exact index
+reversal identifies the forward tagged list with the bottom-up recursion.
+\end{proof}
+
+\begin{lemma}[The separate time-zero deficit]
+\lean{SpinGlass.Targets.constrainedPhi\_time\_zero\_le\_guerraPsi\_of\_min}\leanok
+For every attainable $u$, at each reduced minimizing level,
+\[
+ \Psi(0,u)\le2\psi(0)-\frac{(u-q_r)^2}{2}.
+\]
+The strict conclusion holds whenever $u\ne q_r$.
+\end{lemma}
+\begin{proof}
+At physical time zero the second interpolation is constant. Apply the
+existing arbitrary-overlap constrained endpoint comparison and quadratic
+lambda gain. Its derivative is the actual $Q_r(0)$; all-level stationarity
+identifies this with $q_r$. No neighboring-overlap restriction is needed.
+\end{proof}
+
+\begin{lemma}[Strict actual field endpoint in the outside-index regimes]
+\lean{SpinGlass.Targets.section5InterleavedScalarV\_zero\_lt\_left\_outside}\leanok
+\lean{SpinGlass.Targets.section5InterleavedScalarV\_zero\_lt\_right\_outside}\leanok
+\lean{SpinGlass.Targets.exists\_section5Interleaved\_zero\_gap\_left\_outside}\leanok
+\lean{SpinGlass.Targets.exists\_section5Interleaved\_zero\_gap\_right\_outside}\leanok
+Assume strict original masses and choose the interval containing $|u|$.
+When its index is outside the two neighboring indices and the two tagged
+witness variances are positive, the actual recursions satisfy
+$D_0(h,h)<2A_0(h)$. Consequently, $\delta=2A_0(h)-D_0(h,h)>0$ is independent
+of system size and disorder, and
+\[
+ \eta(0)\le2\log2+2A_0(h)-\delta.
+\]
+Both signs of $u$ are allowed. The formal statements retain the selected
+interval range and positive witness variances explicitly.
+\end{lemma}
+\begin{proof}
+Equality in the joint comparison would give equality in both the paired
+and scalar comparisons. The proved implications yield (5.44) and (5.51),
+contradicting the checked outside-neighbor tagged order obstruction.
+Transport the resulting scalar deficit through the genuine zero endpoint
+bound. The deficit is fixed before quantifying over $N$ and the disorder.
+\end{proof}
+
+Proposition~5.7 itself remains open. The actual mixed-pressure derivative
+and closed-interval inequality between these endpoints are not supplied by
+the one-cutoff pressure theorem. Its multi-level replica, heat and joint-path
+identities still need a mixed-mode version. Generic arbitrary-direction
+Gaussian parameter transport is available, but is not that full inequality.
+The final trial interval, interval selection at breakpoints, and negative
+cases whose absolute overlap is between neighboring indices still require
+boundary/sign assembly. The separate physical-time-zero estimate above
+already covers every attainable overlap.
 
 \begin{lemma}[Closed-interval concavity and the supporting line (5.34)]
 \lean{SpinGlass.Targets.concaveOn\_section4U}\leanok
@@ -2510,9 +2645,10 @@ the local-left/initial quadratic estimates are now checked. The dual local
 estimate includes both its terminal and zero-first-overlap boundaries, and
 the actual dual mass variation now proves the far-right Proposition~5.6.
 Proposition~5.4 is now checked by exact reflection and frozen-field conditioning.
-The tagged interleaving and non-strict scalar sorting for Proposition~5.7
-are checked. Complete strict scalar interchange, the paired-recursion and
-sorted-recursion identifications, the interleaved-pressure transport and
+Strict scalar interchange and sorting, the mixed paired recursion, sorted
+scalar identification, cumulative tagged overlaps, the original-pressure
+endpoint and the time-zero deficit for Proposition~5.7 are checked.
+Complete the actual mixed-pressure derivative/transport and all positive-time
 boundary/sign cases, then the compact-uniform assembly. The scalar stationarity reduction is
 already checked and does not impose new restrictions on Theorem~2.2.
 The active RSAT dependency includes

@@ -74,7 +74,7 @@ At the end of Step 27, replica identification, `U″`, uniform optimality estima
 and the remaining overlap regimes were still missing. Steps 29--30 close the
 derivative and interpolation gaps described in the current frontier below.
 
-**Current checked frontier (Step 40):** Proposition 4.6, closed-interval
+**Current checked frontier (Step 41):** Proposition 4.6, closed-interval
 concavity, both transported lambda gains and the positive-baseline far-left
 strict bound are checked. Stationarity now includes the final compulsory-mass
 level. Exact mass/interior-overlap reduction supplies its inward directions
@@ -107,11 +107,15 @@ exact SK spin reflection and conditioning on the frozen positive shared field
 reuse the actual covariance inequality with arbitrary external fields. This
 transports the retained-field zero-time gain to the original constrained free
 energy, using the original minimality and near-minimality assumptions.
-For Proposition 5.7, the tagged mass interleaving, its correction and variance
-grouping, genuine non-strict Gaussian operator interchange (5.46), and finite
-scalar sorting are checked. Strict scalar convexity and Gaussian equality
-rigidity are also available. These do not yet prove the full strict interleaved
-pressure comparison. Proposition 5.7's outside-neighbor cases, uniform
+For Proposition 5.7, strict scalar interchange (including lower mass zero),
+strict finite sorting, and identification of the sorted recursion with the
+original Parisi recursion are checked. The actual mixed paired recursion
+satisfies the comparison and equality-order condition (5.44). The cumulative
+tagged overlaps have the required correction, and the full interleaved
+interpolation's endpoint at its second time one is exactly the original
+constrained free energy, for either overlap sign. The mixed pressure derivative
+inequality remains missing: the existing one-cutoff pressure theorem does not
+apply unchanged. Proposition 5.7's full outside-neighbor bound, uniform
 Theorem 2.4 assembly, Theorem 2.2 and the final formula remain open.
 
 **Milestone 1 (Targets 1b, 1c) is *not* on this critical path.**  Target 4 is strictly
@@ -2151,19 +2155,133 @@ No target statement or dependency pin changed, and no axiom or proof
 placeholder was added; the same four original placeholders remain.
 The updated blueprint compiles to 46 pages without LaTeX or box warnings.
 
+### Step 41 — Strict scalar comparison and both actual interleaved endpoints
+
+This checkpoint closes the strict scalar-interchange gap, rather than
+assuming an equality characterization of Minkowski. **Proposition 5.7 is
+still open because its actual mixed-pressure inequality is missing.**
+
+`ParisiStrictVariance` proves strict positivity of the actual tilted variance
+of a continuous strictly increasing bounded slope. Gaussian absolute
+continuity and the checked Cauchy--Schwarz equality result rule out zero
+variance. It also proves that one strict point between continuous ordered
+profiles makes a positive-variance Gaussian step strict, even at mass zero.
+`ParisiStepStrictInterchange` differentiates the genuine small-variance
+commutator at zero; its derivative is minus half the mass difference times
+that tilted slope variance. The semigroup and non-strict interchange extend
+this small strict swap to every pair of positive variances. The lower mass
+may be zero. Actual Parisi recursions and arbitrary admissible scalar
+recursions supply every growth, C2 and continuous-positive-Hessian hypothesis.
+`ParisiListRegularity` supplies the same properties for actual list suffixes.
+
+`ParisiCascadeStrictSorting` proves that any inversion involving two positive
+variances gives a strict increase under sorting. Exact zero-variance deletion
+includes the degenerate faces; equality at one field implies ordered scalar
+masses on the active tags, as required in (5.51).
+`ParisiCascadeIdentification` and `Section5ScalarIdentification` identify the
+sorted interleaved composition with the original `parisiF` using the existing
+variance grouping and equal-mass semigroup. Thus (5.50) is now an actual
+scalar comparison with the original recursion, including all mass ties.
+`Section5ScalarEqualityOrder` specializes the equality condition to tagged
+data and the outside-neighbor order obstructions.
+
+`Section5MixedCascade` constructs the genuine finite paired recursion with
+arbitrary independent, shared and opposite-shared levels. Existing RSAT
+finite-step regularity and site tensorization are reused. The scalar
+comparison and strictness propagation prove Proposition 5.11's order
+condition (5.44) in bottom-up indices. An active shared step followed outward
+by an active independent step forces strictness. An active opposite step
+followed outward by an ordinary shared step provides the negative-case
+mechanism. These statements retain the explicit positive witness variances.
+
+`Section5InterleavedOverlaps` counts interpolation tags before each merged
+position and defines the actual cumulative overlap sequence. It proves its
+endpoints, monotonicity, value at the distinguished cutoff, unchanged values
+across physical tags, and exact increments across interpolation tags.
+The actual signed two-replica correction equals twice the original Parisi
+correction. `Section5InterleavingFilter` recovers either source list in order,
+including numerical mass ties.
+
+`Section5InterleavedEndpoint` defines the full second interpolation with
+physical variances frozen and interpolating variances multiplied by `1-w`.
+Opposite sharing occurs only at negative-overlap interpolation tags; physical
+shared fields remain positive. Exact deletion at `w=1`, source-order recovery,
+Gaussian Fubini and physical-field rescaling prove that this endpoint is
+exactly the original constrained free energy for either sign of overlap.
+`MixedCascadeGrowth` supplies growth, monotonicity and constant transport for
+arbitrary mixed steps and lists, including genuinely constrained terminals.
+`Section5InterleavedScalarCore` fixes the exact reverse-indexed tagged arrays
+shared by both comparisons. `Section5InterleavedZero` proves the other actual
+endpoint bound, `eta(0) ≤ 2*log(2) + D_0(lambda;h,h) - lambda*u`, by the
+existing constrained-terminal relaxation, mixed Gaussian order and finite-site
+tensorization. This holds for either sign, without an interpolation-derivative
+hypothesis; the zero-lambda corollary is included.
+`Section5InterleavedStrict` then proves the joint strict comparison (5.37)
+when the selected absolute-overlap interval is outside the neighboring
+indices and the two specified witness variances are positive. Both equality
+conditions are derived from the actual recursions, not assumed. The explicit
+deficit `2*A_0(h)-D_0(h,h)` is positive and is chosen before system size and
+disorder; it gives the corresponding strict bound for the genuine `eta(0)`.
+This does not cover the final trial interval above `q_(k+1)`, all choices at
+trial-overlap breakpoints, or negative cases whose absolute overlap falls
+between the neighboring indices. Those cases still need the existing
+padding/reflection machinery or active negative-mode witnesses to be assembled.
+
+`Section5TimeZero` separately proves, for every attainable overlap and every
+reduced minimizing level, the actual estimate
+`constrainedPhi(0,u) ≤ 2*guerraPsi(0) - (u-q_r)^2/2`.
+The explicit-Q version requires no stationarity. This includes signed and
+outside-neighbor overlaps; it does not rely on positive interpolation
+variances, which vanish when `t=0`.
+
+**Reuse boundary:** `CoupledParamDeriv.linearStep` now packages the existing
+arbitrary-matrix Gaussian parameter derivative with unchanged derivative
+bound. The existing full spatial/Gibbs/replica/trace and path-decomposition
+packages, however, still use one shared/independent cutoff. In Proposition 5.7
+the physical and interpolating modes can interleave differently. Neither
+RSAT's one-breakpoint GT bound nor its algebraic Guerra bound removes this
+mismatch. The actual mixed replica identity and pressure derivative must be
+proved before transporting the strict field comparison to the original
+free energy. No pressure inequality has been made an assumed input and
+called Proposition 5.7.
+
+**Checked / open checklist:**
+
+- [x] Strict scalar interchange, including zero lower mass.
+- [x] Strict scalar sorting and its positive-variance equality condition (5.51).
+- [x] Sorted scalar endpoint identification and actual inequality (5.50).
+- [x] Full mixed paired comparison and equality-order condition (5.44).
+- [x] Joint strict scalar and actual second-time-zero endpoint bounds in the
+      outside-index regimes with positive witnesses, with a system-size-independent deficit.
+- [x] Actual cumulative overlaps and signed correction (5.36).
+- [x] Both actual endpoints: the original constrained free energy at second time
+      one and the mixed scalar/lambda upper bound at second time zero.
+- [x] Uniform-in-system-size time-zero quadratic deficit for all attainable overlaps.
+- [ ] Mixed-pressure derivative/covariance inequality and closed-interval transport.
+- [ ] All positive-time outside-neighbor boundary/sign cases: Proposition 5.7.
+- [ ] Uniform Theorem 2.4 assembly, then Theorem 2.2 and the full formula.
+
+**Step 41 validation:** `bash scripts/check.sh` passes (3229 supporting-library
+jobs and 3977 target jobs). All 17 new modules compile without warnings.
+The 125 added standard-axiom regression guards bring the total to 1083
+(627 allowed-set guards and 456 explicit axiom-print guards).
+No original target statement or dependency pin changed; no axiom or proof
+placeholder was added, and the same four original placeholders remain.
+The updated blueprint compiles to 48 pages without LaTeX or box warnings.
+
 **Remaining work, following the Annals argument:**
 
 1. Prove the a priori two-replica bound of Theorem 2.4 using §3–§5 and the scheme's
    optimality. The imported RS-level `twoReplica_GT_bound` is not this general result.
-   Next concrete step: prove strict scalar operator interchange on the actual
-   strictly convex inputs, then propagate the paired comparison through the
-   tagged construction and identify its sorted scalar recursion. Complete the
-   interleaved interpolation's original-pressure transport and the boundary/sign
-   cases for Proposition 5.7, followed by compactness over time/overlap.
-   Step 40 already supplies stable tagged sorting, correction/variance grouping,
-   one-step paired comparisons, non-strict scalar interchange and finite
-   sorting; do not rebuild those. The merged cumulative overlaps and exact
-   Gaussian-step deletion must still be connected to this tagged data.
+   Next concrete step: generalize the actual one-cutoff replica/heat and
+   joint-path derivative packages to the mixed tagged modes of Proposition 5.7.
+   Apply the existing covariance algebra to the proved cumulative overlaps,
+   then transport between the actual endpoints and close every positive-time
+   boundary/sign case. Follow with compactness over time/overlap.
+   Step 41 already supplies strict interchange and sorting, mixed paired
+   comparison, sorted scalar identification, cumulative overlaps, exact
+   zero-variance deletion and the original free-energy endpoint; do not
+   rebuild those. The separate time-zero deficit is also checked.
    Step 39 closes Proposition 5.4 through exact
    reflection and frozen-field conditioning; no separate general signed
    pressure derivative is needed for that case. Step 37 closes the far-right strict improvement

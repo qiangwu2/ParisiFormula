@@ -1043,6 +1043,59 @@ strictly convex actual scalar inputs are now proved, but their strict
 interchange and the full interleaved-pressure assembly remain obligations.
 No dependency revisions, original targets, or upstream sources are changed.
 
+## Step 41: strict scalar comparison and mixed endpoints
+
+The source remains Talagrand, Annals 163 (2006), pp. 257--262, especially
+(5.36), (5.43)--(5.51). No dependency revision was changed.
+
+Strict Lemma 5.12 on the actual scalar inputs is proved by differentiating a
+small-variance commutator. This reuses the local Gaussian heat generator,
+endpoint derivative extension, parameter chain rule, positive Hessians,
+and Gaussian semigroup. The derivative is the negative mass gap times a
+genuine tilted slope variance. Its positivity is proved from Gaussian
+Cauchy--Schwarz rigidity and increasing slopes. This includes lower mass zero
+without inferring strictness from a non-strict mass limit. The formal result
+uses continuous positive Hessians of the actual inputs, not the insufficient
+generic assumption that the input is merely nonconstant.
+
+Actual mixed recursion regularity and site tensorization reuse RSAT's
+`GTFrame.finiteStep`, `finiteStep_good`, and `AT.gtVectorStep_sum` via the
+existing local adapters. Shared raw masses double only in the scalar
+comparison; the actual paired operators keep their raw masses. Independent
+steps use two independent Gaussian integrations, justified by the checked
+Fubini bridge. Opposite steps are reflected shared steps for growth and
+order, without reflecting away the original frozen physical fields.
+
+Sorted endpoint identification reuses the already proved tagged variance
+grouping, Mathlib finite-list order/permutation lemmas and the genuine
+equal-mass Gaussian semigroup. Source-filter identities use strict order of
+the inverse tag embeddings, not uniqueness of numerical mass values.
+Cumulative overlaps are constructed by counting preceding interpolation tags;
+their correction is the actual two-replica correction, for either sign.
+Exact endpoint deletion reuses the old physical-field affine change of
+variables and identifies the original constrained free energy.
+
+The new time-zero argument reuses the existing arbitrary-overlap constrained
+endpoint bound, baseline lambda gain and all-level stationarity. No fresh
+interpolation calculus is needed at `t=0`.
+
+The actual tagged equality implications now combine to give the strict field
+endpoint (5.37) in the two outside-index regimes with positive witness
+variances. The deficit is an explicit scalar expression chosen before system
+size and disorder, and the actual zero-endpoint comparison transports it to
+`eta(0)`. This is not yet a varying-time pressure comparison. The final trial
+interval, interval choices at breakpoints, and the remaining negative-overlap
+witness cases are recorded separately as open assembly work.
+
+The pinned RSAT full GT bound remains a one-breakpoint/two-regime result.
+Its algebraic Guerra module also does not prove the missing mixed pressure
+derivative. Local generic `hasFDerivAt_jointGaussianStep` and arbitrary-matrix
+parameter differentiation are reusable; `CoupledParamDeriv.linearStep`
+packages the latter with no growth in the derivative bound. But the local
+multi-level Gibbs, replica, heat and joint-path specializations still have
+one cutoff. Formalizing their actual mixed-mode counterparts remains a real
+obligation, not an available imported theorem.
+
 ## Historical copies and local ports
 
 All vendored files are Apache-2.0.  Original headers are retained unchanged.

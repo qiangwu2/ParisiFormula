@@ -99,8 +99,11 @@ not assert a general signed version of Theorem 3.1.
 Further guards certify Proposition 5.7's stable tagged mass data, correction
 and variance grouping; actual one-step paired/scalar comparisons and their
 strictness propagation; positive scalar Hessians and Gaussian equality
-rigidity; and non-strict scalar interchange and finite sorting. They do not
-assert strict scalar interchange, a complete interleaved interpolation, or
+rigidity; and non-strict scalar interchange and finite sorting. Step 41 adds
+strict scalar interchange and sorting, exact sorted scalar identification,
+full mixed paired comparison, cumulative tagged overlaps, and both actual
+interleaved endpoints, together with the all-overlap time-zero deficit.
+They do not assert the missing mixed-pressure derivative inequality or
 Proposition 5.7 itself. The full Parisi formula is deliberately not listed:
 Theorem 2.2 is still open.
 -/
@@ -204,6 +207,23 @@ import Targets.Section5InitialSigned
 import Targets.ParisiCascadeSorting
 import Targets.Section5Interleaving
 import Targets.Section5PairScalarComparison
+import Targets.CoupledLinearParamTransport
+import Targets.MixedCascadeGrowth
+import Targets.ParisiCascadeIdentification
+import Targets.ParisiCascadeStrictSorting
+import Targets.ParisiListRegularity
+import Targets.ParisiStepStrictInterchange
+import Targets.ParisiStrictVariance
+import Targets.Section5InterleavedEndpoint
+import Targets.Section5InterleavedOverlaps
+import Targets.Section5InterleavedScalarCore
+import Targets.Section5InterleavedZero
+import Targets.Section5InterleavingFilter
+import Targets.Section5MixedCascade
+import Targets.Section5ScalarEqualityOrder
+import Targets.Section5ScalarIdentification
+import Targets.Section5TimeZero
+import Targets.Section5InterleavedStrict
 
 /-! The new critical-path results are checked against the same three standard
 axioms as the explicit print guards below. Checking the allowed set also
@@ -211,6 +231,131 @@ accepts results which need fewer of those axioms. -/
 run_cmd do
   let allowed := #[``propext, ``Classical.choice, ``Quot.sound]
   for name in [
+    ``SpinGlass.Targets.section5InterleavedScalarV_eq_reference_implies_order,
+    ``SpinGlass.Targets.section5InterleavedScalarV_zero_le_parisiF,
+    ``SpinGlass.Targets.section5InterleavedScalarV_zero_lt_left_outside,
+    ``SpinGlass.Targets.section5InterleavedScalarV_zero_lt_right_outside,
+    ``SpinGlass.Targets.section5InterleavedInterpolation_zero_le_sub_deficit,
+    ``SpinGlass.Targets.exists_section5Interleaved_zero_gap_left_outside,
+    ``SpinGlass.Targets.exists_section5Interleaved_zero_gap_right_outside,
+    ``SpinGlass.Targets.section5InterleavedInterpolation_zero_lt_left_outside,
+    ``SpinGlass.Targets.section5InterleavedInterpolation_zero_lt_right_outside,
+    ``SpinGlass.Targets.hasDerivAt_section5TaggedPathVariance,
+    ``SpinGlass.Targets.section5TaggedPathVariance_pos_or_eq_zero,
+    ``SpinGlass.Targets.section5ReverseTag_at_position,
+    ``SpinGlass.Targets.section5ReverseTag_at_tag,
+    ``SpinGlass.Targets.section5TaggedMode_scalarMass,
+    ``SpinGlass.Targets.section5TaggedMode_eq_independent_iff,
+    ``SpinGlass.Targets.section5ReverseMass_nonneg,
+    ``SpinGlass.Targets.section5ReverseMode_scalarMass_mem_Icc,
+    ``SpinGlass.Targets.parisiListCascade_ofFn_reverse,
+    ``SpinGlass.Targets.section5InterleavedScalarReference_eq_list,
+    ``SpinGlass.Targets.section5InterleavedScalarV_zero_le_reference,
+    ``SpinGlass.Targets.mixedVectorListCascade_ofFn,
+    ``SpinGlass.Targets.mixedVectorListCascade_constrained_zero_le,
+    ``SpinGlass.Targets.section5InterleavedInterpolation_zero_eq,
+    ``SpinGlass.Targets.section5InterleavedInterpolation_zero_le_lambda,
+    ``SpinGlass.Targets.section5InterleavedInterpolation_zero_le,
+    ``SpinGlass.Targets.parisiListCascade_C2_pos,
+    ``SpinGlass.Targets.parisiListCascade_logcosh_C2_pos,
+    ``SpinGlass.Targets.continuous_parisiListCascade_logcosh,
+    ``SpinGlass.Targets.parisiStep_interchange_parisiListCascade_strict,
+    ``SpinGlass.Targets.gtVectorStep_zero_coefficients,
+    ``SpinGlass.Targets.mixedVectorStep_zero_variance,
+    ``SpinGlass.Targets.mixedVectorListCascade_filter,
+    ``SpinGlass.Targets.mixedVectorListCascade_map,
+    ``SpinGlass.Targets.mixedVectorCascade_eq_list,
+    ``SpinGlass.Targets.mixedVectorListCascade_forward_suffix,
+    ``SpinGlass.Targets.mixedVectorListCascade_forward,
+    ``SpinGlass.Targets.mixedVectorCascade_congr,
+    ``SpinGlass.Targets.mixedVectorCascade_eq_fieldCascade,
+    ``SpinGlass.Targets.section5TaggedPathVariance_zero,
+    ``SpinGlass.Targets.section5TaggedPathVariance_one,
+    ``SpinGlass.Targets.section5TaggedPathVariance_nonneg,
+    ``SpinGlass.Targets.section5TaggedPathCascade_one_filter,
+    ``SpinGlass.Targets.section5PhysicalList_eq_fieldCascade,
+    ``SpinGlass.Targets.section5InterleavedCascade_one_eq_fieldCascade,
+    ``SpinGlass.Targets.section5InterleavedInterpolation_one,
+    ``SpinGlass.Targets.parisiStep_lt_of_forall_lt,
+    ``SpinGlass.Targets.parisiListCascade_orderedInsert_lt,
+    ``SpinGlass.Targets.parisiListCascade_insertionSort_lt_of_not_positive_order,
+    ``SpinGlass.Targets.parisiListCascade_positive_order_of_sorting_eq,
+    ``SpinGlass.Targets.section5InterleavingRank_zero,
+    ``SpinGlass.Targets.section5InterleavingRank_last,
+    ``SpinGlass.Targets.section5InterleavingRank_at_interpolating,
+    ``SpinGlass.Targets.section5InterleavingRank_succ,
+    ``SpinGlass.Targets.section5InterleavedRho_endpoints,
+    ``SpinGlass.Targets.section5InterleavedRho_at_interpolating,
+    ``SpinGlass.Targets.section5InterleavedRho_at_cutoff,
+    ``SpinGlass.Targets.section5InterleavedRho_physical_succ,
+    ``SpinGlass.Targets.section5InterleavedRho_interpolating_succ,
+    ``SpinGlass.Targets.section5InterleavedRho_mono,
+    ``SpinGlass.Targets.section5InterleavedRho_trial_increment,
+    ``SpinGlass.Targets.section5InterleavedRho_correction,
+    ``SpinGlass.Targets.section5InterleavedMassNat_coe,
+    ``SpinGlass.Targets.section5Interleaved_pairCorrection,
+    ``SpinGlass.Targets.section5InterleavedRho_increment,
+    ``SpinGlass.Targets.section5Interpolation_time_zero,
+    ``SpinGlass.Targets.constrainedPhi_time_zero_eq_fieldEndpoint,
+    ``SpinGlass.Targets.constrainedPhi_time_zero_le_guerraPsi_Q,
+    ``SpinGlass.Targets.constrainedPhi_time_zero_le_guerraPsi_of_Q,
+    ``SpinGlass.Targets.constrainedPhi_time_zero_le_guerraPsi_of_min,
+    ``SpinGlass.Targets.constrainedPhi_time_zero_lt_guerraPsi_of_min,
+    ``SpinGlass.Targets.parisiListCascade_eq_of_perm_of_sorted,
+    ``SpinGlass.Targets.parisiListCascade_constant_mass,
+    ``SpinGlass.Targets.CoupledGrowth.flip_second,
+    ``SpinGlass.Targets.mixedVectorStep_shared_eq,
+    ``SpinGlass.Targets.mixedVectorStep_independent_eq,
+    ``SpinGlass.Targets.mixedVectorStep_opposite_eq,
+    ``SpinGlass.Targets.CoupledGrowth.mixedStep,
+    ``SpinGlass.Targets.mixedVectorStep_mono,
+    ``SpinGlass.Targets.mixedVectorStep_const_add,
+    ``SpinGlass.Targets.CoupledGrowth.mixedList,
+    ``SpinGlass.Targets.mixedVectorListCascade_mono,
+    ``SpinGlass.Targets.mixedVectorListCascade_const_add,
+    ``SpinGlass.Targets.section5SortedScalarSteps_cascade_eq_original,
+    ``SpinGlass.Targets.section5OriginalScalarSteps_cascade_eq_parisiF,
+    ``SpinGlass.Targets.section5SortedScalarSteps_cascade_eq_parisiF,
+    ``SpinGlass.Targets.section5InterleavedScalarSteps_cascade_le_parisiF,
+    ``SpinGlass.Targets.hasDerivAt_nested_parisiStep_variance,
+    ``SpinGlass.Targets.hasDerivWithinAt_nested_parisiStep_variance_zero,
+    ``SpinGlass.Targets.hasDerivWithinAt_parisiStep_variance_zero,
+    ``SpinGlass.Targets.hasDerivWithinAt_parisiStep_commutator_zero,
+    ``SpinGlass.Targets.exists_small_strict_parisiStep_interchange,
+    ``SpinGlass.Targets.parisiStep_interchange_strict,
+    ``SpinGlass.Targets.parisiStep_interchange_parisiF_strict,
+    ``SpinGlass.Targets.continuous_scalarFieldCascadeSecond,
+    ``SpinGlass.Targets.parisiStep_interchange_scalarFieldCascade_strict,
+    ``SpinGlass.Targets.section5InterleavedScalarSteps_eq_implies_order,
+    ``SpinGlass.Targets.section5InterleavedScalarSteps_lt_of_not_order,
+    ``SpinGlass.Targets.section5InterleavedScalarSteps_lt_left_of_paired_order,
+    ``SpinGlass.Targets.section5InterleavedScalarSteps_lt_right_of_paired_order,
+    ``SpinGlass.Targets.CoupledParamDeriv.linearStep,
+    ``SpinGlass.Targets.tilt_variance_pos_of_strictMono,
+    ``SpinGlass.Targets.integral_gaussian_lt_of_continuous_le,
+    ``SpinGlass.Targets.parisiStep_lt_of_continuous_le,
+    ``SpinGlass.Targets.ofFn_filterMap_inl_of_strictMono,
+    ``SpinGlass.Targets.ofFn_filterMap_inr_of_strictMono,
+    ``SpinGlass.Targets.section5Interleaving_filterMap_physical,
+    ``SpinGlass.Targets.section5Interleaving_filterMap_interpolating,
+    ``SpinGlass.Targets.section5Interleaving_filter_physical,
+    ``SpinGlass.Targets.section5Interleaving_filter_interpolating,
+    ``SpinGlass.Targets.mixedScalarCascade_good,
+    ``SpinGlass.Targets.mixedVectorCascade_eq_sum,
+    ``SpinGlass.Targets.mixedScalarCascade_zero_le,
+    ``SpinGlass.Targets.mixedScalarCascade_strict_succ,
+    ``SpinGlass.Targets.mixedScalarCascade_strict_independent_succ,
+    ``SpinGlass.Targets.mixedScalarCascade_strictOff_succ,
+    ``SpinGlass.Targets.mixedScalarCascade_strict_shared_succ,
+    ``SpinGlass.Targets.mixedScalarCascade_strict_mono,
+    ``SpinGlass.Targets.mixedScalarCascade_strictOff_mono,
+    ``SpinGlass.Targets.mixedScalarCascade_lt_of_shared_before_independent,
+    ``SpinGlass.Targets.mixedScalarCascade_eq_implies_order,
+    ``SpinGlass.Targets.mixedScalarCascade_strict_opposite_succ,
+    ``SpinGlass.Targets.mixedScalarCascade_strict_shared_of_anti_succ,
+    ``SpinGlass.Targets.mixedScalarCascade_strictAnti_succ,
+    ``SpinGlass.Targets.mixedScalarCascade_strictAnti_mono,
+    ``SpinGlass.Targets.mixedScalarCascade_lt_of_opposite_before_shared,
     ``SpinGlass.Targets.parisiListCascade_nil,
     ``SpinGlass.Targets.parisiListCascade_cons,
     ``SpinGlass.Targets.parisiListCascade_append,
