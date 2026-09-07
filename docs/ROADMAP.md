@@ -2594,15 +2594,27 @@ free energy, nor continuity of a chosen mass or lambda witness.
   inserted overlap sequences agree pointwise. This is the exact overlap
   component of adjacent-trial gluing; the sorted tagged cascade identity is
   still open.
+- [x] `Section5InterleavedRightCompact`: the matching compact right
+  outside-trial adapter, with the lower endpoint excluded to retain a positive
+  interpolation variance and time-zero lambda witnesses.
+- [x] `Section5StableSortFilter`: stable insertion sort commutes with erasing
+  one tagged entry, including ties. This is a reusable component of zero-
+  variance deletion, not yet the full adjacent-trial reindexing.
+- [x] `Section5AdjacentScalar`: a scalar-list counterpart of the exact
+  zero-variance filter and a proved reverse-index bridge from the mixed scalar
+  recursion to a tagged forward list. It is infrastructure for the eventual
+  adjacent-trial scalar identity, not that identity itself.
+- [x] `Section5InterleavedRightCompact`: compact right outside-trial bounds
+  are now checked symmetrically to the left, with a half-open lower endpoint.
 - [ ] Join adjacent-trial breakpoints and assemble all remaining signed,
   first-level and padded terminal compact regions with the local quadratic
   bounds to obtain the single Theorem 2.4 bound.
 - [ ] Close the original Theorem 2.2 placeholder and audit the final formula.
 
-**Step 45 validation:** `bash scripts/check.sh` passes (3229 supporting jobs,
-4024 target jobs). All eight new modules compile without warnings. Thirty-three
-new results and two exposed unchanged helpers have allowed-set guards, bringing
-the total to 1384 checks (928 allowed-set and 456 explicit print guards).
+**Step 47 validation:** `bash scripts/check.sh` passes (3229 supporting jobs,
+4028 target jobs). The new modules compile without warnings. Thirty-nine new
+results and two exposed unchanged helpers have allowed-set guards, bringing
+the total to 1392 checks (936 allowed-set and 456 explicit print guards).
 Independent review checked empty compact sets, gap quantifiers, the genuine
 time-zero witness and the half-open trial limitation. The same four original
 placeholders remain; no axiom or placeholder was added. The updated blueprint
@@ -2613,7 +2625,7 @@ compiles to 54 pages without LaTeX or box warnings.
 1. Prove the a priori two-replica bound of Theorem 2.4 using §3–§5 and the scheme's
    optimality. The imported RS-level `twoReplica_GT_bound` is not this general result.
    Next concrete step: join trial boundaries and complete the compact cover
-   using the scalar comparisons established in Step 45. Step 44 completes all
+   using the scalar comparisons established in Step 45 and Step 47. Step 44 completes all
    Proposition 5.7 interval/sign/boundary assembly for the reduced schemes.
    Do not assume continuity in `u` of the actual finite-size constrained
    free energy: its attainable constraint set changes with `u`.

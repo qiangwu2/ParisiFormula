@@ -123,6 +123,9 @@ import Targets.Section5Proposition57
 import Targets.Section5InterleavedCompact
 import Targets.Section5ScalarComparisonCompact
 import Targets.Section5AdjacentBoundary
+import Targets.Section5InterleavedRightCompact
+import Targets.Section5StableSortFilter
+import Targets.Section5AdjacentScalar
 import Targets.ReplicaMeasure
 import Targets.CoupledReplicaHessian
 import Targets.CoupledReplicaHeat
@@ -314,6 +317,12 @@ run_cmd do
     ``SpinGlass.Targets.section5FrozenVariance_eq_insert,
     ``SpinGlass.Targets.section5Rho_adjacent_boundary,
     ``SpinGlass.Targets.section5Rho_adjacent_boundary_all,
+    ``SpinGlass.Targets.section5TaggedVariance_adjacent_boundary,
+    ``SpinGlass.Targets.exists_uniform_constrainedPhi_right_outside_trial,
+    ``SpinGlass.Targets.insertionSort_erase_eq,
+    ``SpinGlass.Targets.mixedScalarStep'_zero_variance,
+    ``SpinGlass.Targets.mixedScalarListCascade'_filter,
+    ``SpinGlass.Targets.mixedScalarCascade'_ofFn_reverse,
     ``SpinGlass.Targets.exists_constrainedPhi_initial_signed_gap,
     ``SpinGlass.Targets.exists_constrainedPhi_gap_right_outside_full,
     ``SpinGlass.Targets.coupledCascade_padOneLast_succ,

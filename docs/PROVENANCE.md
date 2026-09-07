@@ -1302,6 +1302,21 @@ the gluing route: `section5Rho s j (q_j) p = section5Rho s (j+1) (q_j) p`
 for every position. It deliberately does not identify the sorted tagged
 operators.
 
+`Section5InterleavedRightCompact` supplies the symmetric compact right
+outside-trial bound. Its lower endpoint is half-open so the interpolation
+variance is strictly positive; the upper endpoint may be included. The
+generic `insertionSort_erase_eq` lemma in `Section5StableSortFilter` reuses
+Mathlib permutation and pairwise sorting facts to delete one tagged entry,
+including equal masses. A reindexing between the adjacent trial tag types is
+still required.
+
+`Section5AdjacentScalar` mirrors the exact zero-variance deletion at the
+scalar level and proves the reverse-index recursion/list identity. It is kept
+as infrastructure only; it does not assert equality of the two adjacent
+interleavings. `Section5InterleavedRightCompact` transports right outside
+strict witnesses to compact uniform gaps, using the time-zero lambda witness
+and the genuine positive-time strict comparison.
+
 **Next-step reuse audit (not a completed proof):** at `|u| = q_j`, adjacent
 trial cumulative overlap arrays agree. Only interpolation tag `j` changes
 mass/mode, and its variance is zero. Reuse

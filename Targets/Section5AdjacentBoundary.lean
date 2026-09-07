@@ -1,4 +1,4 @@
-import Targets.TalagrandSection5
+import Targets.Section5Interleaving
 
 /-!
 # Adjacent inserted-overlap boundary identities
@@ -33,5 +33,15 @@ theorem section5Rho_adjacent_boundary_all {k : ℕ} (s : RSBScheme k)
     {j : ℕ} (hj : j ≤ k + 1) (p : ℕ) :
     section5Rho s j (s.q j) p = section5Rho s (j + 1) (s.q j) p :=
   section5Rho_adjacent_boundary s hj (s.q j) rfl p
+
+theorem section5TaggedVariance_adjacent_boundary {k : ℕ} (s : RSBScheme k)
+    (β t : ℝ) {j : ℕ} (hj : j ≤ k + 1) (tag : Section5MassTag k) :
+    section5TaggedVariance s β t (s.q j) j tag =
+      section5TaggedVariance s β t (s.q j) (j + 1) tag := by
+  rcases tag with p | p
+  · rfl
+  · simp only [section5TaggedVariance, Sum.elim_inr]
+    rw [section5Rho_adjacent_boundary_all s hj p,
+      section5Rho_adjacent_boundary_all s hj (p + 1)]
 
 end SpinGlass.Targets

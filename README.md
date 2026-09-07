@@ -22,7 +22,9 @@ Sherrington–Kirkpatrick (SK) model with exact covariance.
   intervals, zero first overlap and time zero. Its positive deficit is
   independent of system size. Continuous scalar comparisons now give uniform
   gaps on compact subregions, and the inserted overlap sequences agree at
-  adjacent breakpoints. Joining the sorted tagged boundary cases into the full
+  adjacent breakpoints, compact right outside-trial bounds, and the scalar
+  zero-variance list bridge are checked.
+  Joining the sorted tagged boundary cases into the full
   Theorem 2.4 bound remains; Theorem 2.2 and the final formula are still open.
 
 **The full Parisi formula is not yet formalised.** Completed results have

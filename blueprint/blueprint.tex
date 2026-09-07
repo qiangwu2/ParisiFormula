@@ -2444,6 +2444,14 @@ the sorted tagged Gaussian operators still requires deleting the changed
 zero-variance interpolation tag and comparing the surviving stable sorts.
 \end{lemma}
 
+The compact right outside-trial region is handled symmetrically, with a
+half-open lower overlap endpoint so that the interpolating variance is
+positive. Mathlib's stable insertion-sort permutation lemma now permits
+deleting one tagged entry, including equal mass ties. The scalar-list
+zero-variance filter and reverse-index bridge are also checked as supporting
+infrastructure. The remaining work is the reindexing between the two
+adjacent tagged trial types and the terminal padding case.
+
 \begin{lemma}[Closed-interval concavity and the supporting line (5.34)]
 \lean{SpinGlass.Targets.concaveOn\_section4U}\leanok
 \lean{SpinGlass.Targets.section4U\_sub\_ge\_supportingLine}\leanok
