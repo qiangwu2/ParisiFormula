@@ -870,8 +870,9 @@ reuse independent-step factorization and diagonal mass cancellation.
 The scalar Gaussian semigroup merges the two split increments at equal
 mass; its zero-mass expectation branch follows from Gaussian convolution.
 \end{proof}
-Higher nested Section~4 mass/variance identities and optimality estimates
-remain open. The identification with $U'$ is now checked by the following bridge.
+The nested mass estimates and Proposition~4.6 are proved below. Higher
+variance regularity and the remaining stationarity cases are still open.
+The identification with $U'$ is checked by the following bridge.
 
 \begin{lemma}[The actual Lemma 5.8 identity]
 \lean{SpinGlass.Targets.deriv\_section5V\_zero\_eq\_Q}\leanok
@@ -897,7 +898,8 @@ Use the proved $U'=Q$ and the inward FTC at baseline. Substitute into
 the already checked lambda-curvature gain; the $Q$ gain itself also allows
 baseline mass one without claiming the $U'$ identity there.
 \end{proof}
-This does not transport the gain to time one or prove the uniform optimality estimates.
+The gain is transported to the actual constrained free energy below; its
+uniform comparison with $(u-q_r)^2$ near $q_r$ remains open.
 
 \begin{lemma}[The scalar heat equation (4.4) on actual Parisi inputs]
 \lean{SpinGlass.Targets.hasDerivAt\_parisiStep\_parisiF\_variance}\leanok
@@ -963,7 +965,8 @@ derivative sign with Mathlib's closed-interval monotonicity theorem. The existin
 Gaussian order-preservation and parameter-derivative rules propagate the
 comparison, derivative and bound through every unchanged outer scalar level.
 \end{proof}
-Higher mixed mass/variance derivatives and endpoint stationarity remain open.
+Higher variance regularity and the remaining stationarity cases are open;
+nonterminal endpoint stationarity is proved below.
 
 \begin{lemma}[Analytic extension through zero mass]
 \lean{SpinGlass.Targets.analyticAt\_parisiStep\_mass}\leanok
@@ -1021,8 +1024,8 @@ Zero variance is constant in mass. Finally differentiate the affine correction
 in (4.37), obtaining exactly (4.46).
 \end{proof}
 This proves first mass differentiation. The identities for $U'$ and $U''$
-and uniform first/second mass bounds are proved below; quantitative
-optimality and the remaining stationarity estimates remain open.
+and uniform first/second mass bounds, together with Proposition~4.6, are
+proved below. The remaining stationarity cases and Proposition~4.10 are open.
 
 \begin{lemma}[Uniform scalar mass bounds and the first half of Lemma 4.5]
 \lean{SpinGlass.Targets.parisiStep\_parisiF\_mass\_derivatives\_uniform}\leanok
@@ -1081,8 +1084,29 @@ the variance term is absorbed by the squared first derivative. Thus no factor
 accumulates with depth. The correction defining $\Phi$ is affine in mass.
 Two applications of the mean-value theorem give the displayed Taylor bound,
 without optimizing its constant to $C/2$. The checked baseline value and
-first-variation identities give the expansion. This does not yet apply
-scheme optimality or prove the quantitative improvement in Theorem~2.4.
+first-variation identities give the expansion. The next result applies
+scheme optimality; the full improvement in Theorem~2.4 remains open.
+\end{proof}
+
+\begin{lemma}[Quantitative optimality: Proposition 4.6]
+\lean{SpinGlass.Targets.section4FirstVariation\_lower\_bound}\leanok
+\lean{SpinGlass.Targets.exists\_section4FirstVariation\_lower\_bound}\leanok
+Let the scheme minimize its functional at its fixed level, and suppose
+$\mathcal P_k\le\inf\mathcal P+\varepsilon$. If $m_{r-1}<m_r$, then
+\[
+ f(u)\ge-L(\beta)\sqrt\varepsilon\qquad(q_{r-1}\le u\le q_r),
+ \quad L(\beta)=2\sqrt{C(\beta)+1}>0.
+\]
+The constant is independent of the level count, external field, overlap and
+mass gap. Both overlap endpoints and baseline mass zero are included.
+\end{lemma}
+\begin{proof}
+Write $C_+=C(\beta)+1$. If $f(u)<0$, the upper-mass competitor and the
+Taylor bound give $-f(u)\le C_+(m_r-m_{r-1})$. Thus
+$\delta=-f(u)/(2C_+)$ is an admissible mass increase. Apply near-global
+minimality to this actual inserted competitor and the same Taylor bound:
+$-\varepsilon\le f(u)\delta+C_+\delta^2=-f(u)^2/(4C_+)$.
+Taking square roots proves the claim; $f(u)\ge0$ is immediate.
 \end{proof}
 
 \begin{lemma}[Closed-interval bounds for the actual first variation]
@@ -1188,7 +1212,37 @@ The restriction $r\ge2$ preserves the compulsory mass $m_0=0$; this argument
 is not claimed for the initial interval.
 \end{proof}
 The identity for $U''$ is proved below and the full nested second mass bound
-is proved above. Remaining endpoint stationarity conditions are still open.
+is proved above. The following result supplies nonterminal stationarity.
+
+\begin{lemma}[Stationarity at nonterminal levels: Propositions 4.7--4.8]
+\lean{SpinGlass.Targets.section4TVarianceQ\_zero\_eq\_overlap\_of\_min}\leanok
+\lean{SpinGlass.Targets.hasDerivWithinAt\_section4U\_zero\_of\_min}\leanok
+\lean{SpinGlass.Targets.hasDerivWithinAt\_section4FirstVariation\_upper\_zero\_of\_min}\leanok
+Suppose the scheme is an actual fixed-level minimizer, $\beta\ne0$,
+$m_{r-1}<m_r$, and $r$ is below the final compulsory-mass level
+($1\le r\le k$ in the local indexing). Assume
+\[
+ (q_{r-1}<q_r\ \text{or}\ q_r=0),\qquad
+ (q_r<q_{r+1}\ \text{or}\ q_r=1).
+\]
+Then $Q(m_{r-1},0)=q_r$. Thus the genuine inward derivatives satisfy
+$U'(0)=q_r$ and $f'(q_r)=0$. Numerical derivative uniqueness is asserted
+only for positive-length intervals.
+\end{lemma}
+\begin{proof}
+The left competitor at upper inserted mass gives $q_r\le Q(0)$ by
+Mathlib's endpoint Fermat rule. For the opposite direction, lower the
+nonterminal mass $m_r$ to $m_{r-1}$, then insert the original mass at the
+next interval. Equal-mass compression gives an actual competitor at the
+original level, not merely a formal parameter variation. At its lower
+endpoint the actual normalized observable equals the original $Q(0)$,
+so Fermat's rule gives $Q(0)\le q_r$. At boundary overlaps use $0\le Q\le1$
+for the missing direction. Finally apply the checked inward derivative
+identities for $U$ and $f$.
+\end{proof}
+The final compulsory-mass level and coincident interior overlap levels
+remain open. No stationarity assertion is made at $\beta=0$, where the
+functional does not constrain the overlaps of arbitrary minimizers.
 
 \begin{lemma}[Actual inserted functional and optimality inputs]
 \lean{SpinGlass.Targets.parisiFunctional\_insertLevel}\leanok
@@ -1212,7 +1266,7 @@ shared masses. Apply the global infimum to the inserted competitor. At upper
 inserted mass, merge the equal adjacent masses to obtain a competitor at the
 original level before applying fixed-level minimality.
 \end{proof}
-These are the inputs (4.30)--(4.31), not the remaining uniform optimality estimates.
+These are the inputs (4.30)--(4.31) used in the checked Proposition~4.6 above.
 
 \begin{lemma}[Actual slope velocity and moving squared-slope observable]
 \lean{SpinGlass.Targets.hasDerivAt\_stepD1\_parisiF\_variance}\leanok
@@ -1269,6 +1323,88 @@ Finally use the actual $U'=Q$. The $Q'$ identity includes baseline zero and
 one; the $U''$ statement inherits the strict upper baseline restriction.
 No variance-endpoint second derivative or strictly negative bound is claimed.
 \end{proof}
+
+\begin{lemma}[Closed-interval concavity and the supporting line (5.34)]
+\lean{SpinGlass.Targets.concaveOn\_section4U}\leanok
+\lean{SpinGlass.Targets.section4U\_sub\_ge\_supportingLine}\leanok
+\lean{SpinGlass.Targets.section4U\_interpolation\_slope\_lower\_bound}\leanok
+For $m_{r-1}<1$, the actual $U$ is concave on $[0,a]$. For $v\in[0,a]$
+and $t\in[0,1]$,
+\[
+ U(tv)\ge U(v)-(1-t)vQ(m_{r-1},tv).
+\]
+Consequently, writing $v=\beta^2(q_r-u)$ and
+$D=U(tv)-t\beta^2(q_r^2-u^2)/2$,
+\[
+ D\ge2f(u)+(1-t)\frac{\beta^2}2(q_r-u)^2
+       -(1-t)v\bigl(Q(m_{r-1},tv)-u\bigr).
+\]
+Both time and variance endpoints, including a zero variance gap, are allowed.
+\end{lemma}
+\begin{proof}
+Reuse Mathlib's derivative criterion for concavity with $U'=Q$ and
+$Q'=-R\le0$ on the interior, and the proved closed-interval continuity.
+The inward derivative identifies the supporting slope at either endpoint.
+Apply the supporting line at $tv$ to $v$ and expand the SK correction.
+\end{proof}
+
+\begin{lemma}[Actual constrained free-energy gains]
+\lean{SpinGlass.Targets.constrainedPhi\_le\_two\_guerraPsi\_sub\_factor\_sq}\leanok
+\lean{SpinGlass.Targets.constrainedPhi\_le\_two\_guerraPsi\_mass\_taylor}\leanok
+\lean{SpinGlass.Targets.constrainedPhi\_le\_guerraPsi\_right\_lambda\_gain}\leanok
+For an attainable overlap in the left interval, set $v=\beta^2(q_r-u)$.
+The actual constrained free energy satisfies
+\[
+ \Psi(t,u)\le2\psi(t)-\tfrac12\bigl(Q(m_{r-1},tv)-u\bigr)^2.
+\]
+For $m_{r-1}/2\le m\le m_r$, with $D$ as above, it also satisfies
+\[
+ \Psi(t,u)\le2\psi(t)+D(m-m_{r-1})+2C(\beta)(m-m_{r-1})^2.
+\]
+On the right interval the analogous lambda bound holds with the actual
+right-transform derivative in place of $Q$; its dual scalar identification
+is not assumed.
+\end{lemma}
+\begin{proof}
+Combine the actual second-interpolation endpoint inequalities with the
+time-zero lambda bounds. At baseline mass the correction is exactly that
+in $2\psi(t)$. For the mass bound use $V(0,m,tv)=2T(tv,m)$ and the full
+two-sided mass Taylor estimate, including decreases from positive baseline.
+\end{proof}
+
+\begin{lemma}[Positive-baseline far-left strict improvement]
+\lean{SpinGlass.Targets.constrainedPhi\_lt\_two\_guerraPsi\_of\_left\_gap}\leanok
+\lean{SpinGlass.Targets.exists\_constrainedPhi\_left\_gap\_uniform\_in\_size}\leanok
+Under the actual optimality hypotheses of Proposition~4.6, suppose
+$0<m_{r-1}<m_r$ and
+\[
+ 2L(\beta)\sqrt\varepsilon<(1-t)\frac{\beta^2}2(q_r-u)^2.
+\]
+Then $\Psi(t,u)<2\psi(t)$. More precisely a positive deficit can be chosen
+before $N$ and the SK disorder, for the fixed scheme, $t$ and $u$.
+\end{lemma}
+\begin{proof}
+If $Q(m_{r-1},tv)\ne u$, the lambda deficit is positive. Otherwise the
+supporting-line bound and Proposition~4.6 give $D>0$. Choose
+\[
+ \delta=\min\left\{\frac{m_{r-1}}2,\frac{D}{4(C(\beta)+1)}\right\}>0.
+\]
+The admissible mass $m=m_{r-1}-\delta$ gives a deficit at least $D\delta/2$.
+Both deficits are independent of $N$. This is the positive-baseline
+argument of Proposition~5.5, not the initial mass-zero argument, nor the
+compactness and local quadratic estimates required by Theorem~2.4.
+\end{proof}
+\lean{SpinGlass.Targets.constrainedPhi\_lt\_two\_guerraPsi\_of\_far\_left}\leanok
+\lean{SpinGlass.Targets.exists\_constrainedPhi\_far\_left\_uniform\_in\_size}\leanok
+The paper's uniform-smallness form is also checked: choose
+$L_3(\beta)=4L(\beta)$. For $\beta\ne0$, $L_1>0$, $0\le t\le t_0<1$,
+\[
+ L_1(q_r-u)\ge1-t_0,\qquad
+ L_3(\beta)\sqrt\varepsilon\le
+ (1-t_0)\frac{\beta^2}2\left(\frac{1-t_0}{L_1}\right)^2
+\]
+imply the preceding strict bound under the same optimality and positive-mass
+hypotheses. The constant $L_3$ is independent of depth, field and gap.
 
 \begin{lemma}[Actual normalized constrained replicas at every split]
 \lean{SpinGlass.Targets.sum\_constrainedCascadeGibbs}\leanok
@@ -1554,8 +1690,8 @@ redundant level and reuse the existing time-one equality. Reuse site
 tensorization for time zero, the scalar semigroup for the baseline, and the
 sharp lambda-curvature invariant for the explicit optimized gain.
 \end{proof}
-This does not identify the lambda derivative with the dual $U'$ or transport
-the scalar gain to time one.
+The gain is now transported to the actual constrained free energy above.
+Identification of the lambda derivative with the dual $U'$ remains open.
 
 \begin{lemma}[Dual correction and full right scalar comparison]
 \lean{SpinGlass.Targets.section5RightCorrection\_eq}\leanok

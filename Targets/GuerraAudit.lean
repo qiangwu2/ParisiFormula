@@ -54,8 +54,12 @@ full actual Q' and U'' negative-square identity, and U'' in [-1,0] on interior
 variance. They also certify zero-inclusive uniform first/second scalar mass
 bounds and the first mass bound for full T and Phi. New guards certify the
 full nested second mass bound and uniform quadratic Taylor expansion,
-including baseline mass zero and all physical variance endpoints. Remaining
-quantitative optimality and stationarity conditions are still open.
+including baseline mass zero and all physical variance endpoints. Further guards
+certify Proposition 4.6, nonterminal stationarity with explicit endpoint-direction
+hypotheses, actual closed-interval concavity, both transported lambda gains and
+the positive-baseline far-left strict improvement. The mass deficit is
+explicit and independent of system size. Remaining stationarity/curvature cases
+and the other overlap regimes are not inferred from those results.
 The full Parisi formula is deliberately not listed: Theorem 2.2 is still open.
 -/
 import Targets.ReplicaMeasure
@@ -113,6 +117,13 @@ import Targets.Section4UPrime
 import Targets.Section5InterpolationBound
 import Targets.Section4MassSecond
 import Targets.Section4MassTaylor
+import Targets.Section4QuantitativeOptimality
+import Targets.Section4Concavity
+import Targets.Section4Stationarity
+import Targets.Section4StationarityInterior
+import Targets.Section5PressureGain
+import Targets.Section5RightPressureGain
+import Targets.Section5FarLeft
 
 /-! The new critical-path results are checked against the same three standard
 axioms as the explicit print guards below. Checking the allowed set also
@@ -174,7 +185,52 @@ run_cmd do
     ``SpinGlass.Targets.section4Phi_mass_derivative_lipschitz,
     ``SpinGlass.Targets.section4Phi_mass_taylor_bound,
     ``SpinGlass.Targets.section4T_mass_taylor_baseline,
-    ``SpinGlass.Targets.section4Phi_mass_taylor_baseline] do
+    ``SpinGlass.Targets.section4Phi_mass_taylor_baseline,
+    ``SpinGlass.Targets.section4OptimalityBound_pos,
+    ``SpinGlass.Targets.section4FirstVariation_lower_bound,
+    ``SpinGlass.Targets.exists_section4FirstVariation_lower_bound,
+    ``SpinGlass.Targets.antitoneOn_section4TVarianceQ_baseline,
+    ``SpinGlass.Targets.concaveOn_section4U,
+    ``SpinGlass.Targets.section4U_le_supportingLine,
+    ``SpinGlass.Targets.section4U_sub_ge_supportingLine,
+    ``SpinGlass.Targets.section4U_interpolation_slope_lower_bound,
+    ``SpinGlass.Targets.section4U_interpolation_slope_lower_bound_of_factor_eq,
+    ``SpinGlass.Targets.stepD1_parisiF_zero_variance,
+    ``SpinGlass.Targets.section4Cascade_zero_variance_mass_independent,
+    ``SpinGlass.Targets.section4VarianceQ_zero_mass_independent,
+    ``SpinGlass.Targets.section4TVarianceQ_zero_mass_independent,
+    ``SpinGlass.Targets.hasDerivWithinAt_section4T_variance_factor,
+    ``SpinGlass.Targets.hasDerivWithinAt_section4Phi_overlap,
+    ``SpinGlass.Targets.derivative_nonpos_of_min_at_right,
+    ``SpinGlass.Targets.section4_overlap_le_endpointQ_of_min,
+    ``SpinGlass.Targets.constrainedPhi_le_two_guerraPsi_sub_factor_sq,
+    ``SpinGlass.Targets.constrainedPhi_lt_two_guerraPsi_of_factor_ne,
+    ``SpinGlass.Targets.constrainedPhi_le_two_guerraPsi_mass_taylor,
+    ``SpinGlass.Targets.constrainedPhi_le_two_guerraPsi_sub_mass_gain,
+    ``SpinGlass.Targets.constrainedPhi_lt_two_guerraPsi_of_mass_slope_pos,
+    ``SpinGlass.Targets.constrainedPhi_lt_two_guerraPsi_of_left_gap,
+    ``SpinGlass.Targets.exists_constrainedPhi_left_gap_uniform_in_size,
+    ``SpinGlass.Targets.constrainedPhi_le_guerraPsi_right_lambda_gain,
+    ``SpinGlass.Targets.constrainedPhi_le_guerraPsi_right,
+    ``SpinGlass.Targets.constrainedPhi_lt_guerraPsi_right_of_lambda_deriv_ne,
+    ``SpinGlass.Targets.parisiF_lowerMass_prefix,
+    ``SpinGlass.Targets.parisiFDeriv_lowerMass_prefix,
+    ``SpinGlass.Targets.section4Phi_stationarityBase_min,
+    ``SpinGlass.Targets.derivative_nonneg_of_min_at_left,
+    ``SpinGlass.Targets.pairedSecondMean_zero_variance,
+    ``SpinGlass.Targets.section4Cascade_stationarityBase_endpoint,
+    ``SpinGlass.Targets.section4VarianceQ_stationarityBase_endpoint_base,
+    ``SpinGlass.Targets.section4VarianceQ_stationarityBase_endpoint,
+    ``SpinGlass.Targets.section4TVarianceQ_stationarityBase_endpoint,
+    ``SpinGlass.Targets.section4_endpointQ_le_overlap_of_min,
+    ``SpinGlass.Targets.section4TVarianceQ_zero_eq_overlap_of_min,
+    ``SpinGlass.Targets.hasDerivWithinAt_section4U_zero_of_min,
+    ``SpinGlass.Targets.hasDerivWithinAt_section4FirstVariation_upper_zero_of_min,
+    ``SpinGlass.Targets.derivWithin_section4U_zero_of_min,
+    ``SpinGlass.Targets.derivWithin_section4FirstVariation_upper_zero_of_min,
+    ``SpinGlass.Targets.section5FarLeftBound_pos,
+    ``SpinGlass.Targets.constrainedPhi_lt_two_guerraPsi_of_far_left,
+    ``SpinGlass.Targets.exists_constrainedPhi_far_left_uniform_in_size] do
     for ax in ← Lean.collectAxioms name do
       unless allowed.contains ax do
         throwError "{name} depends on disallowed axiom {ax}"

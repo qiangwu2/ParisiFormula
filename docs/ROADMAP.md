@@ -74,14 +74,16 @@ At the end of Step 27, replica identification, `U″`, uniform optimality estima
 and the remaining overlap regimes were still missing. Steps 29--30 close the
 derivative and interpolation gaps described in the current frontier below.
 
-**Current checked frontier (Step 30):** the actual averaged replica covariance
-identity, the derivative inequality and endpoint transport for both positive-overlap
-Section 5 constructions are proved, including the left estimate (5.9). The full
-nested first/second mass estimates of Lemma 4.5 and uniform quadratic Taylor
-bounds for the inserted functional are also proved. The next task is to combine
-these with scheme optimality for the quantitative estimates of Sections 4--5,
-then treat the initial/remaining overlap and sign cases needed by Theorem 2.4.
-Theorem 2.2 and the final Parisi formula remain open.
+**Current checked frontier (Step 31):** Proposition 4.6 now follows from actual
+scheme optimality and the uniform mass Taylor bound. Proposition 4.7 and the
+upper-endpoint derivative in Proposition 4.8 are proved for nonterminal levels
+with the stated inward-direction hypotheses; the final compulsory-mass level
+and coincident interior overlaps remain separate cases. Closed-interval concavity
+of `U`, both transported lambda gains, and the positive-baseline far-left strict
+bound are checked. The latter retains a positive deficit chosen before system
+size and disorder. Next are the remaining stationarity cases, the higher variance
+regularity and curvature estimate of Lemma 4.9/Proposition 4.10, and the other
+overlap cases needed by Theorem 2.4. Theorem 2.2 and the final formula remain open.
 
 **Milestone 1 (Targets 1b, 1c) is *not* on this critical path.**  Target 4 is strictly
 stronger than 1c — convergence to `parisiValue` subsumes existence of a limit — and deriving
@@ -1568,13 +1570,71 @@ The original four placeholders and target statements are unchanged. The updated
 blueprint compiles to 31 pages without LaTeX warnings; README, blueprint,
 provenance and this checklist use the same checked/open boundary.
 
+**Step 31 (2026-09-06): quantitative optimality, partial stationarity and actual pressure gains.**
+
+* `Section4QuantitativeOptimality.lean` proves Proposition 4.6 for the actual
+  first variation: `f(u) ≥ -L(β)√ε`. The positive constant is chosen before the
+  depth, field, mass gap and overlap. Fixed-level minimality and near-global
+  minimality are genuine hypotheses about the original functional; no desired
+  derivative sign is assumed. Zero baseline mass and overlap endpoints are included.
+* `Section4Stationarity.lean` proves endpoint-safe overlap derivatives and
+  `q_r ≤ Q(0)` from an actual left competitor. `Section4StationarityInterior.lean`
+  constructs the opposite competitor by lowering a nonterminal mass and reusing
+  the existing insertion. This proves `Q(0)=q_r`, inward `U′(0)=q_r` and
+  `f′(q_r)=0` for `1 ≤ r ≤ local k`, `β ≠ 0`, strict adjacent masses, and
+  `(q_(r-1)<q_r or q_r=0)`, `(q_r<q_(r+1) or q_r=1)`.
+  Numerical inward derivatives additionally require positive interval length.
+  The final compulsory-mass level `r=local k+1` and coincident interior
+  overlap levels are not silently covered. The target already assumes `β>0`.
+* `Section4Concavity.lean` reuses Mathlib's derivative criterion and supporting
+  lines to prove closed-interval concavity and (5.34) with the actual `Q`.
+  Its SK form retains the error `Q(tv)-u`; no stationarity is presumed.
+* `Section5PressureGain.lean` and `Section5RightPressureGain.lean` combine the
+  checked interpolation endpoints and lambda optimization into bounds for the
+  actual constrained free energy relative to `2ψ(t)`. On the left the deficit
+  is `(Q(tv)-u)²/2`; on the right it uses the actual right lambda derivative.
+  The two-sided mass Taylor estimate also allows decreasing a positive baseline.
+* For `0<m_(r-1)<m_r`, the same file proves the far-left strict improvement
+  whenever `2L(β)√ε < (1-t)β²(q_r-u)²/2`. If the lambda error vanishes,
+  concavity and Proposition 4.6 force a positive mass slope. An explicit admissible
+  mass decrease supplies a positive deficit independent of system size and disorder.
+  This is the positive-baseline argument of Proposition 5.5, not the initial
+  mass-zero case or the uniform local quadratic estimate.
+  `Section5FarLeft.lean` puts it in the paper's uniform-smallness form: choose
+  `L₃(β)=4L(β)`, assume `L₁(q_r-u)≥1-t₀` and
+  `L₃(β)√ε≤(1-t₀)β²((1-t₀)/L₁)²/2`, with `β≠0`, `L₁>0`, `0≤t≤t₀<1`.
+  The same hypotheses give a positive deficit chosen before system size;
+  compactness in time and overlap remains unproved.
+
+**Step 31 checked/open checklist:**
+
+* [x] Proposition 4.6, with a depth- and gap-independent constant.
+* [x] Proposition 4.7 and `f′(q_r)=0` for nonterminal levels with the stated endpoint directions.
+* [x] Actual closed-interval concavity and supporting-line estimate (5.34).
+* [x] Actual left/right lambda gains relative to `2ψ(t)`.
+* [x] Positive-baseline far-left strict improvement, with a system-size-independent deficit.
+* [ ] Remaining stationarity cases and coincident-overlap reduction.
+* [ ] Lemma 4.9, Proposition 4.10 and the local quadratic estimates of Propositions 5.1--5.2.
+* [ ] Initial/dual/far-overlap and signed-field cases; uniform Theorem 2.4.
+* [ ] Unconditional Theorem 2.2 and final Parisi-formula dependency audit.
+
+**Step 31 validation:** `bash scripts/check.sh` passes (3229 supporting-library
+jobs and 3894 target-build jobs). All seven new modules check without module
+warnings. The 45 new standard-axiom guards pass, for 556 guarded results in total.
+Independent reviews checked the genuine optimality competitors, stationarity
+directions, endpoint derivatives, mass admissibility, normalization and the
+system-size quantifier order. The original four placeholders, target statements
+and dependency pins are unchanged. The blueprint compiles to 33 pages without
+LaTeX warnings; README, roadmap and provenance share the same checked/open boundary.
+
 **Remaining work, following the Annals argument:**
 
 1. Prove the a priori two-replica bound of Theorem 2.4 using §3–§5 and the scheme's
    optimality. The imported RS-level `twoReplica_GT_bound` is not this general result.
-   Next concrete step: combine the checked baseline Taylor estimate with
-   inserted-scheme optimality and the actual first variation to prove the
-   quantitative Section 4 estimates (including the remaining stationarity).
+   Next concrete step: complete the final-level/coincident-overlap stationarity
+   cases and the higher variance regularity in Lemma 4.9, then derive the
+   curvature control in Proposition 4.10. Proposition 4.6 and nonterminal
+   stationarity are checked in Step 31; do not redo those arguments.
    The actual positive-overlap interpolation estimate (5.9), its dual,
    square completion, mass telescoping and endpoint transport are now
    available, as are the actual nested baseline mass derivative, first variation,
@@ -1583,10 +1643,12 @@ provenance and this checklist use the same checked/open boundary.
    endpoint. The actual scalar insertion and optimality input inequalities are
    now available, as are `U′=Q`, its inward endpoint form and Lemma 5.8. Use
    the checked `Q′`/`U″` negative-square identities and uniform mass bounds
-   to prove the remaining Section 4 optimality estimates. The full nested
+   to prove the remaining Section 4 curvature estimates. The full nested
    second mass bound and its depth-uniform invariant are checked in Step 30;
    do not redo the scalar cumulant or nested derivative theory. Then complete
-   the initial/dual scalar cases and remaining overlap/sign cases. Both neighbor
+   the initial/dual scalar cases and remaining overlap/sign cases. Step 31
+   transports both lambda gains and proves the positive-baseline far-left
+   strict bound, but not compactness or a local quadratic overlap bound. Both neighbor
    interval endpoint constructions and both correction adapters are checked.
    Do not replace `2ψ(t)`
    with `2φ(t)`.

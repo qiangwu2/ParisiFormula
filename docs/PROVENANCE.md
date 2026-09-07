@@ -571,6 +571,50 @@ optimality, the initial/remaining overlap and sign cases, Theorem 2.4 and
 unconditional Theorem 2.2 remain separate obligations. No dependency pins or
 upstream sources were changed.
 
+## Step 31: quantitative optimality, stationarity and pressure gains
+
+`Section4QuantitativeOptimality.lean` follows Proposition 4.6, p. 249 of
+Talagrand (2006). It reuses the actual inserted competitors and the checked
+full mass Taylor bound. The explicit constant is `2√(C(β)+1)`; strict adjacent
+masses are assumed as in (2.19), but the baseline may be zero. No optimizer
+or stationarity hypothesis has been replaced by a sign condition on `f`.
+
+`Section4Stationarity.lean` reuses the existing variance integral identity and
+Mathlib's inward FTC and tangent-cone Fermat rule. At zero split variance,
+the actual normalized observable is independent of the inserted mass.
+`Section4StationarityInterior.lean` lowers a nonterminal mass, then reuses
+the original insertion and equal-mass compression to obtain the opposite
+fixed-level competitor. The actual endpoint observable is identified through
+all remaining outer levels, including zero masses. This proves Proposition
+4.7 and the upper derivative in Proposition 4.8 for `1≤r≤local k`, with
+strict adjacent masses and the stated inward overlap directions. Boundary
+overlaps zero and one use `0≤Q≤1`; numerical inward derivatives require
+a nondegenerate interval. The final compulsory mass and coincident interior
+overlaps remain open. `β≠0` is needed for stationarity; the target assumes `β>0`.
+
+`Section4Concavity.lean` uses Mathlib's
+`concaveOn_of_hasDerivWithinAt2_nonpos` and supporting-line inequalities,
+with the already proved actual `U′=Q`, `Q′=-R` and endpoint continuity.
+Thus (5.34) uses a proved inward slope at the endpoints, not Lean's default
+value for an unproved derivative. Zero variance gaps are included.
+
+`Section5PressureGain.lean` and `Section5RightPressureGain.lean` reuse the
+actual second-interpolation endpoint bounds and lambda curvature estimate.
+The correction cancels to `2ψ(t)`, not `2φ(t)`. The full mass Taylor estimate
+allows both directions at a positive baseline; the explicit decrease
+`min(m_(r-1)/2, D/(4(C(β)+1)))` stays admissible and gives deficit at least
+`Dδ/2`. Together with Proposition 4.6 and (5.34), this proves the
+positive-baseline far-left strict bound in Proposition 5.5's argument.
+The deficit is retained before system size and disorder are quantified.
+`Section5FarLeft.lean` uses the SK quadratic convexity defect to express
+the hypothesis uniformly over `t≤t₀` and `L₁(q_r-u)≥1-t₀`, with beta-only
+`L₃=4L`. The factor four turns the non-strict smallness assumption into a
+strict gain. This does not assert the infimum defining (5.4) has the same
+formula outside its physical, nonempty range.
+The initial mass-zero case, remaining dual/signed/far-overlap constructions,
+Lemma 4.9/Proposition 4.10 and the uniform Theorem 2.4 remain separate obligations.
+No dependency pins or upstream sources changed.
+
 ## Historical copies and local ports
 
 All vendored files are Apache-2.0.  Original headers are retained unchanged.
