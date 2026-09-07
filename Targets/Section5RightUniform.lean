@@ -11,8 +11,8 @@ that baseline. Thus the proved right lambda gain has a beta-only quadratic
 deficit, with the same constant as the left estimate.
 
 Terminal padding includes `r = k+1` without assuming minimality of the padded
-scheme. A positive left overlap gap is still required: first-overlap-zero
-curvature remains separate, so this is not unrestricted Proposition 5.2.
+scheme. This theorem retains a positive left overlap gap. The zero-first-overlap
+case and the combined estimate for reduced schemes are in `Section5RightBoundary`.
 -/
 
 open MeasureTheory ProbabilityTheory Real

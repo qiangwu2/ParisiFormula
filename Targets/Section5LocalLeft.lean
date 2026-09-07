@@ -143,7 +143,9 @@ noncomputable def section5LocalLeftConstant (β L : ℝ) : ℝ :=
   32 + 4 * L * β ^ 4 +
     16 * (β ^ 6 * L / 2 + section4OptimalityBound β) / β ^ 2
 
-private theorem section5LocalLeftConstant_bounds (β L : ℝ) (hL : 0 ≤ L) :
+/-- The common local-estimate constant dominates the coefficients needed
+on both sides, including the zero-first-overlap boundary. -/
+theorem section5LocalLeftConstant_bounds (β L : ℝ) (hL : 0 ≤ L) :
     32 ≤ section5LocalLeftConstant β L ∧
       4 * L * β ^ 4 ≤ section5LocalLeftConstant β L ∧
       16 * (β ^ 6 * L / 2 + section4OptimalityBound β) / β ^ 2 ≤

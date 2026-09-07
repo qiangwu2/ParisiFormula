@@ -65,10 +65,10 @@ Stationarity now holds at every level after exact scheme reduction. The actual
 endpoint Hessian calculus and depth-uniform regularity are checked. Lemma~4.9's
 interior third derivative and closed-interval Taylor control now supply
 Proposition~4.10 without an assumed regularity bound. The local-left and initial
-estimates (Propositions~5.1 and~5.3) are checked. The local-right estimate is
-checked at every level with a positive left overlap gap, including the terminal
-interval. Its zero-first-overlap extension, remaining overlap/sign cases and uniform
-assembly into Theorem~2.4 remain open.
+estimates (Propositions~5.1 and~5.3) are checked. The local-right estimate
+(Proposition~5.2) is checked for every level of a reduced scheme, including
+zero first overlap and the terminal interval. The remaining overlap/sign
+cases and uniform assembly into Theorem~2.4 remain open.
 
 Dependencies are Mathlib and the pinned RSAT library
 (\texttt{njimaMath/research\_public}), with local ports originating in
@@ -1576,17 +1576,56 @@ $t\beta^2R_+(t\beta^2(u-q_r))-1$. Locally it is at most
 $-(1-t_0)/2$, so the slope is at most $-(1-t_0)(u-q_r)/2$.
 Apply the checked right lambda square gain for the actual constrained free energy.
 \end{proof}
-\textbf{Still open:} the first-overlap-zero curvature extension.
-The positive-left-gap curvature theorem also cannot be applied at $q_1=0$.
-Thus unrestricted Proposition~5.2 is not claimed here.
-The checked zero-variance identities identify $Q_1(0)$ and $R_1(0)$ with
-the squares of the genuine scalar first and second derivatives. Stationarity
-forces the first derivative to vanish at $q_1=0$, including when $k=0$.
-The remaining curvature inequality requires a one-sided right variation;
-its unequal inner and outer masses prevent direct use of the baseline
-$Q'=-R$ identity.
-\lean{SpinGlass.Targets.section4THessianSquare\_initial\_zero\_eq\_sq}\leanok
-\lean{SpinGlass.Targets.parisiFDeriv\_initial\_zero\_of\_min}\leanok
+
+\begin{lemma}[Zero-first-overlap curvature and the completed local-right case]
+\lean{SpinGlass.Targets.hasDerivWithinAt\_zeroOuterSquaredSlope\_zero}\leanok
+\lean{SpinGlass.Targets.section4THessianSquare\_initial\_zero\_le\_of\_min}\leanok
+\lean{SpinGlass.Targets.constrainedPhi\_local\_right\_of\_reduced\_min}\leanok
+Suppose $q_1=0$, $q_2>0$, $m_1>0$, $\beta\ne0$, and the original scheme
+minimizes the functional at its fixed level. Then
+\[
+ \beta^2R_1(0)\le1.
+\]
+The local-right quadratic estimate therefore holds at $r=1$ with zero first
+overlap, with the same constant $L_1(\beta)$ and without a near-optimality
+assumption in this boundary case. Combining with the positive-left-gap
+estimate proves Proposition~5.2 for every physical level of a reduced scheme
+in the exact-covariance SK setting.
+\end{lemma}
+\begin{proof}
+Let $A$ be the original scalar input immediately above the first mass,
+$m=m_1$, and $a=\beta^2q_2$. Write $B_v$ for the scalar Parisi step of
+mass $m$ and variance $v$ applied to $A$, and set
+\[
+ G(u)=\mathbb E\bigl[B_{a-u}'(h+\sqrt{u}Z)^2\bigr],\qquad Z\sim N(0,1).
+\]
+The checked scalar-square identities and stationarity give $B_a'(h)=0$.
+For each fixed $z$, positive-variance calculus applied to
+$B_{a-\theta^2}'(h+\theta z)$ at $\theta=0$ gives derivative $B_a''(h)z$.
+After division by $\theta$ and squaring, a quadratic Gaussian envelope
+permits dominated convergence. Thus the genuine inward derivative satisfies
+\[
+ G(0)=0,\qquad G_+'(0)=B_a''(h)^2=R_1(0).
+\]
+The existing auxiliary-base constructions give an actual same-level
+competitor $f$ minimized at zero, with closed-interval derivative
+\[
+ f'(u)=\frac{\beta^2m_1}{2}\bigl(u-G(\beta^2u)\bigr).
+\]
+Its outer mass is zero and its inner mass is $m_1$; no equal-mass derivative
+formula is substituted. The first derivative vanishes at zero, and
+\[
+ f_+''(0)=\frac{\beta^2m_1}{2}\bigl(1-\beta^2R_1(0)\bigr)\ge0.
+\]
+The last inequality is the one-sided second-order necessary condition,
+proved using the slope limit and mean-value theorem. Dividing by the positive
+coefficient gives the curvature bound. Apply the already checked right-factor
+calculus and lambda gain with zero curvature error. When $q_2=0$, the right
+interval is a singleton and the non-strict pressure bound suffices.
+The terminal replica-symmetric case uses the existing terminal auxiliary base.
+\end{proof}
+The signed and remaining far-overlap cases, compactness, and the uniform
+assembly into Theorem~2.4 are still open.
 
 \begin{lemma}[Closed-interval concavity and the supporting line (5.34)]
 \lean{SpinGlass.Targets.concaveOn\_section4U}\leanok

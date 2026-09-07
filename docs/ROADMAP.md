@@ -74,7 +74,7 @@ At the end of Step 27, replica identification, `U″`, uniform optimality estima
 and the remaining overlap regimes were still missing. Steps 29--30 close the
 derivative and interpolation gaps described in the current frontier below.
 
-**Current checked frontier (Step 35):** Proposition 4.6, closed-interval
+**Current checked frontier (Step 36):** Proposition 4.6, closed-interval
 concavity, both transported lambda gains and the positive-baseline far-left
 strict bound are checked. Stationarity now includes the final compulsory-mass
 level. Exact mass/interior-overlap reduction supplies its inward directions
@@ -89,11 +89,13 @@ local-left and entire initial-interval quadratic deficits for the actual
 constrained free energy relative to `2ψ`, with explicit beta-only constants.
 The right baseline is now identified exactly with the reflected next left
 interval, and neighboring endpoint factors agree. This proves the local-right
-quadratic estimate for `1 ≤ r ≤ k+1` with `q_(r-1) < q_r`, using the same
-beta-only constant as Proposition 5.1. Exact redundant terminal padding now
-includes the possibly nontrivial interval `[q_(k+1),1]` without assuming
-minimality of the padded scheme. First-overlap-zero curvature still needs an
-extension; unrestricted Proposition 5.2 is not yet complete. That boundary, the remaining overlap/sign cases,
+quadratic estimate for `1 ≤ r ≤ k+1` in every reduced scheme, using the same
+beta-only constant as Proposition 5.1. Exact redundant terminal padding includes
+the possibly nontrivial interval `[q_(k+1),1]` without assuming minimality of the
+padded scheme. One-sided optimality now supplies curvature at zero first overlap,
+closing the other boundary case. Proposition 5.2 is checked in the project's
+exact-covariance SK setting for the reduced schemes used by the convergence
+deduction. The remaining overlap/sign cases,
 uniform Theorem 2.4 assembly, Theorem 2.2 and the final formula remain open.
 
 **Milestone 1 (Targets 1b, 1c) is *not* on this critical path.**  Target 4 is strictly
@@ -1840,20 +1842,61 @@ placeholders, project axioms or dependency changes were introduced. The same
 four original placeholders remain. The updated blueprint compiles to 38 pages
 without LaTeX warnings.
 
+**Step 36 (2026-09-06): zero-first-overlap curvature and Proposition 5.2.**
+
+`ParisiZeroOverlapDerivative.lean` proves the actual endpoint derivative of
+the unweighted squared-slope Gaussian mean. At a vanishing scalar slope, the
+rescaling `θ = √u` reduces the pointwise limit to existing positive-variance
+calculus; Gaussian dominated convergence gives the squared scalar Hessian.
+The total variance is explicitly positive, so this is not a derivative
+inferred from a singleton interval.
+
+`Section4ZeroOverlapVariation.lean` constructs an actual same-level minimizing
+right comparator from the existing auxiliary bases, including `k=0`, and
+identifies its derivative on the entire closed interval. Its inner mass is
+`m_1` and its outer mass is zero; no equal-mass derivative theorem is substituted.
+`OneSidedCurvature.lean` proves the second-order necessary condition at a
+stationary one-sided minimum using Mathlib's slope limit and mean-value theorem.
+
+`Section4ZeroOverlapCurvature.lean` combines these results with the original
+scheme's stationarity to prove `β² R_1(0) ≤ 1` when `q_1=0`, `q_2>0`, `β≠0`
+and the first mass gap is positive. This bound needs no near-optimality error.
+`Section5RightBoundary.lean` then proves the local-right deficit at zero first
+overlap and combines it with the positive-left-gap theorem. Its final theorem
+`constrainedPhi_local_right_of_reduced_min` covers every physical level of a
+reduced scheme with the same beta-only constant. A collapsed first right
+interval is handled directly by the existing non-strict pressure bound.
+
+**Step 36 checked/open checklist:**
+
+* [x] Actual squared-slope Gaussian endpoint derivative with domination.
+* [x] Actual same-level right comparator and one-sided second-order minimality.
+* [x] Zero-first-overlap curvature, including the replica-symmetric case.
+* [x] Proposition 5.2 for reduced schemes in the exact-covariance SK setting,
+  with zero first overlap, terminal levels, closed overlap intervals and
+  `0 ≤ t ≤ t₀ < 1` (not `t=1`).
+* [ ] Far-right strict improvement, negative initial and outside-neighbor cases.
+* [ ] Compactness/uniform Theorem 2.4 assembly, Theorem 2.2 and the final formula.
+
+**Step 36 validation:** `bash scripts/check.sh` passes (3229 supporting-library
+jobs and 3930 target-build jobs). Fourteen newly guarded public results bring
+the total to 754. The five new proof modules and changed modules build without
+new warnings. No placeholders, project axioms, dependency changes or weakened
+target statements were introduced; the same four original placeholders remain.
+The updated blueprint compiles to 39 pages without LaTeX warnings.
+
 **Remaining work, following the Annals argument:**
 
 1. Prove the a priori two-replica bound of Theorem 2.4 using §3–§5 and the scheme's
    optimality. The imported RS-level `twoReplica_GT_bound` is not this general result.
-   Next concrete step: extend the dual local estimate to the first-overlap-zero
-   boundary. Step 35 closes the terminal interval by exact scalar, paired and
-   factor padding identities; do not repeat that bridge or assume padded
-   minimality. For the zero first overlap, obtain curvature from a genuine
-   admissible right variation instead of assuming a positive left gap. The
-   relevant competitor has inner mass `m_1` and outer mass zero, so the existing
-   equal-mass baseline identity `Q′=-R` is not its derivative. At a stationary
-   zero first overlap, the needed right derivative of its squared-gradient
-   expectation is the squared scalar Hessian. Then complete the
-   far-overlap and signed cases. Uniform regularity,
+   Next concrete step: the far-right strict improvement (Proposition 5.6),
+   reusing the existing right interpolation, lambda gain and actual right
+   scalar variation. Identify the mass derivative and its optimality deficit;
+   equality of the baseline lambda family alone does not identify variations
+   in the inserted mass. The negative initial interval (Proposition 5.4),
+   remaining outside-neighbor cases (Proposition 5.7), and compactness over
+   time/overlap also remain. Steps 35--36 close both local-right boundary cases;
+   do not repeat terminal padding or zero-overlap curvature. Uniform regularity,
    Proposition 4.10 and the left/initial estimates are now checked in Step 33;
    do not redo those arguments or the stationarity reduction.
    The actual positive-overlap interpolation estimate (5.9), its dual,

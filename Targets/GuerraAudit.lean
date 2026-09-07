@@ -75,9 +75,11 @@ The initial interval uses Jensen. Further guards identify the actual right
 baseline lambda family by reflection, match neighboring Q/R endpoints and
 prove the local-right quadratic estimate for every positive-left-gap level,
 including the terminal interval through exact redundant padding of the scalar,
-paired and factor recursions. They do not prove curvature when the first
-overlap is zero. That boundary extension, other overlap/sign
-regimes and the uniform Theorem 2.4 assembly remain open.
+paired and factor recursions. Further guards prove the actual zero-first-overlap
+right comparator, its squared-slope endpoint derivative, and one-sided curvature.
+The local-right estimate now covers every level of a reduced scheme, including
+both boundary cases. Other overlap/sign regimes and the uniform Theorem 2.4
+assembly remain open.
 The full Parisi formula is deliberately not listed: Theorem 2.2 is still open.
 -/
 import Targets.ReplicaMeasure
@@ -170,6 +172,7 @@ import Targets.Section5RightLambdaFactor
 import Targets.Section5LocalRight
 import Targets.Section5RightUniform
 import Targets.Section4ZeroOverlap
+import Targets.Section5RightBoundary
 
 /-! The new critical-path results are checked against the same three standard
 axioms as the explicit print guards below. Checking the allowed set also
@@ -177,6 +180,20 @@ accepts results which need fewer of those axioms. -/
 run_cmd do
   let allowed := #[``propext, ``Classical.choice, ``Quot.sound]
   for name in [
+    ``SpinGlass.Targets.stepD1_initial_totalVariance,
+    ``SpinGlass.Targets.stepD2_initial_totalVariance,
+    ``SpinGlass.Targets.section5LocalLeftConstant_bounds,
+    ``SpinGlass.Targets.oneSidedCurvature_nonneg_of_localMin,
+    ``SpinGlass.Targets.oneSidedCurvature_nonneg_of_min,
+    ``SpinGlass.Targets.zeroOuterSquaredSlope_zero,
+    ``SpinGlass.Targets.hasDerivWithinAt_zeroOuterSquaredSlope_zero,
+    ``SpinGlass.Targets.hasDerivWithinAt_zeroOuterSquaredSlope_parisiF_zero,
+    ``SpinGlass.Targets.section4TVarianceQ_zeroOverlap_stationarityBase,
+    ``SpinGlass.Targets.section4TVarianceQ_zeroOverlap_terminalBase,
+    ``SpinGlass.Targets.exists_section4ZeroOverlap_comparator,
+    ``SpinGlass.Targets.section4THessianSquare_initial_zero_le_of_min,
+    ``SpinGlass.Targets.constrainedPhi_local_right_initial_zero,
+    ``SpinGlass.Targets.constrainedPhi_local_right_of_reduced_min,
     ``SpinGlass.Targets.section4TVarianceQ_initial_zero_eq_sq,
     ``SpinGlass.Targets.section4THessianSquare_initial_zero_eq_sq,
     ``SpinGlass.Targets.parisiFDeriv_initial_zero_of_min,

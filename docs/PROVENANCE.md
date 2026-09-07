@@ -804,7 +804,7 @@ squares and that the first derivative vanishes. These are checked reductions,
 not a proof of the still-missing curvature inequality.
 No new Gaussian framework or different proof route is justified by this gap.
 
-**Candidate next proof, not yet formalized:** write
+**Candidate recorded at Step 35 (completed in Step 36 below):** write
 `S(v,x) = stepD1 A A' m v x`, with positive total variance `a` and
 `S(a,h)=0`. For fixed Gaussian coordinate `z`, apply the existing
 `hasDerivAt_stepD1_variance_curve` to `S(a-θ²,h+θz)` at `θ=0`.
@@ -816,8 +816,56 @@ squaring; `memLp_id_gaussianReal 2` supplies integrability. Dominated convergenc
 with `θ=√u`, followed by `hasDerivWithinAt_iff_tendsto_slope`, would establish
 the missing inward derivative of the squared-gradient expectation. A
 one-sided second-order minimum argument would then give the curvature
-inequality. This route reuses positive-variance calculus; neither the limiting
-argument nor the resulting curvature inequality is claimed checked yet.
+inequality. At the Step 35 checkpoint, neither the limiting argument nor the
+resulting curvature inequality was checked. Step 36 completes this route.
+
+## Step 36: zero-first-overlap curvature and the complete local-right case
+
+Talagrand's dual construction is described on p. 250 and Proposition 5.2 on
+p. 251 of the [2006 Annals paper](https://annals.math.princeton.edu/wp-content/uploads/annals-v163-n1-p04.pdf).
+The local scheme reduction retains possible boundary overlaps zero and one.
+The new boundary proof treats these explicitly while preserving the original
+convergence quantifiers and the exact-covariance SK normalization.
+
+`ParisiZeroOverlapDerivative.lean` reuses
+`hasDerivAt_stepD1_variance_curve` and
+`HasDerivAt.tendsto_slope_zero_right` on the amplitude path
+`S(a-θ²,h+θz)`. Existing positive-variance slope bounds and the C2 spatial
+bound give an integrable quadratic Gaussian envelope. Mathlib's
+`tendsto_integral_filter_of_dominated_convergence`,
+`memLp_id_gaussianReal 2`, and the standard Gaussian second moment identify
+the actual inward variance derivative with the squared Hessian. There is
+no assumed endpoint heat formula or unproved interchange of limit and integral.
+
+`Section4ZeroOverlapVariation.lean` reuses the actual
+`section4Phi_stationarityBase_min` and `section4Phi_terminalBase_min`
+competitors and `hasDerivWithinAt_section4Phi_overlap`. Zero-variance evaluation,
+zero-mass weights and scalar prefix identities identify the derivative exactly
+as `β²*m_1/2 * (u-Q0(β²*u))`. The existence theorem requires only zero first
+overlap and the original fixed-level minimality; positive variance, nonzero
+beta and a positive mass gap are used later, where necessary.
+
+`OneSidedCurvature.lean` reuses Mathlib's derivative-as-slope limit and
+`exists_hasDerivAt_eq_slope`. It requires a genuine one-sided minimum,
+genuine first derivatives on a nondegenerate interval, a zero endpoint first
+derivative, and only the second derivative at that endpoint. No continuity
+of a second derivative throughout the interval is assumed.
+
+`Section4ZeroOverlapCurvature.lean` assembles these results with the checked
+scalar-square identities and original stationarity. The coefficient
+`β²*m_1/2` is positive; composing `Q0` with `β²*u` contributes the second
+factor `β²`. The resulting bound is exactly `β² R_1(0) ≤ 1`, with no epsilon
+error. `Section5RightBoundary.lean` reuses the proved local slope/pressure
+gain and the existing common constant. The previously private constant bounds
+are exposed, not reproved. Its combined theorem proves Proposition 5.2 for
+the reduced schemes used on the critical path, including both boundary cases.
+
+**Next reuse boundary:** baseline right/left reflection identifies the lambda
+family at the baseline mass, not the entire variable-mass families. A proof
+of the far-right strict gain must identify the actual right mass derivative
+and its optimality deficit; it cannot simply assume those variable-mass
+families agree. The signed and outside-neighbor constructions and subsequent
+compactness remain open. No dependency pins or upstream sources changed.
 
 ## Historical copies and local ports
 

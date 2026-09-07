@@ -7,13 +7,31 @@ import Targets.Section4StationarityTerminal
 When `q₁ = 0`, both initial variances vanish. The genuine normalized
 squared-slope and squared-Hessian factors are therefore scalar squares.
 Fixed-level stationarity forces the scalar first derivative to vanish.
-The second-order one-sided optimality estimate is a separate obligation;
-these identities do not assert its curvature conclusion.
+The second-order one-sided optimality estimate is proved separately in
+`Section4ZeroOverlapCurvature`; these identities are its scalar inputs.
 -/
 
 open MeasureTheory ProbabilityTheory Real
 
 namespace SpinGlass.Targets
+
+/-- At zero initial overlap, the first scalar step has total variance
+`β² q₂`; this identifies the slope used in the admissible right variation. -/
+theorem stepD1_initial_totalVariance {k : ℕ} (s : RSBScheme k)
+    (β h : ℝ) (hq : s.q 1 = 0) :
+    stepD1 (parisiF s β k) (parisiFDeriv s β k) (s.m 1) (β ^ 2 * s.q 2) h =
+      parisiFDeriv s β (k + 1) h := by
+  simp only [parisiFDeriv, show k + 1 - k = 1 by omega,
+    show k + 2 - k = 2 by omega, hq, sub_zero]
+
+/-- The corresponding scalar Hessian is the original recursion's genuine
+second derivative, including in the replica-symmetric case. -/
+theorem stepD2_initial_totalVariance {k : ℕ} (s : RSBScheme k)
+    (β h : ℝ) (hq : s.q 1 = 0) :
+    stepD2 (parisiF s β k) (parisiFDeriv s β k) (parisiFSecond s β k)
+      (s.m 1) (β ^ 2 * s.q 2) h = parisiFSecond s β (k + 1) h := by
+  simp only [parisiFSecond, show k + 1 - k = 1 by omega,
+    show k + 2 - k = 2 by omega, hq, sub_zero]
 
 /-- At zero initial overlap the actual endpoint factor is a scalar square,
 independently of the inserted mass. No derivative at a singleton is used. -/
