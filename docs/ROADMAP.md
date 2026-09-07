@@ -74,7 +74,7 @@ At the end of Step 27, replica identification, `U″`, uniform optimality estima
 and the remaining overlap regimes were still missing. Steps 29--30 close the
 derivative and interpolation gaps described in the current frontier below.
 
-**Current checked frontier (Step 38):** Proposition 4.6, closed-interval
+**Current checked frontier (Step 39):** Proposition 4.6, closed-interval
 concavity, both transported lambda gains and the positive-baseline far-left
 strict bound are checked. Stationarity now includes the final compulsory-mass
 level. Exact mass/interior-overlap reduction supplies its inward directions
@@ -102,13 +102,13 @@ corrected right mass derivative gives a scalar deficit chosen before system
 size and disorder, including baseline mass one. The actual normalized right
 factor is now identified and mass-continuous; a mass limit proves `U_+'=Q_+`
 up to inward endpoints. Its convex supporting line closes Proposition 5.6
-at every physical level. The signed initial construction now keeps the original
-positive shared field separate from the negative interpolating field, and its
-physical endpoint is identified exactly with the original constrained free
-energy. Signed scalar Gaussian and lambda estimates, including the retained-field
-zero-time gain under the initial endpoint curvature bound, are available, but the
-signed pressure derivative and its transport are not yet proved. The remaining overlap/sign cases,
-uniform Theorem 2.4 assembly, Theorem 2.2 and the final formula remain open.
+at every physical level. Proposition 5.4 is now checked for reduced schemes:
+exact SK spin reflection and conditioning on the frozen positive shared field
+reuse the actual covariance inequality with arbitrary external fields. This
+transports the retained-field zero-time gain to the original constrained free
+energy, using the original minimality and near-minimality assumptions.
+Proposition 5.7's outside-neighbor cases, uniform Theorem 2.4 assembly,
+Theorem 2.2 and the final formula remain open.
 
 **Milestone 1 (Targets 1b, 1c) is *not* on this critical path.**  Target 4 is strictly
 stronger than 1c — convergence to `parisiValue` subsumes existence of a limit — and deriving
@@ -1959,6 +1959,9 @@ without LaTeX warnings.
 
 **Step 38 (2026-09-06): signed initial Gaussian estimates and exact endpoints.**
 
+This records the Step 38 frontier; Step 39 below closes Proposition 5.4's
+remaining pressure-transport obligation.
+
 The negative initial interval requires a genuine sign change in the
 interpolating field, not a reflection of the external field or a replacement
 of the original constrained free energy. `Section4SignedGaussianFactor`
@@ -2022,18 +2025,67 @@ No target statement or dependency pin changed, no axiom or proof placeholder
 was added, and the same four original placeholders remain. The updated
 blueprint compiles to 42 pages without LaTeX warnings.
 
+### Step 39 — Proposition 5.4: the negative initial interval
+
+The negative initial estimate now holds for the **original constrained free
+energy**, not only its zero-time scalar endpoint. In the project's
+exact-covariance SK setting, for reduced schemes satisfying the original
+fixed-level minimality, near-global minimality and beta-only smallness condition,
+`constrainedPhi_initial_signed_uniform` proves
+
+\[
+  \Psi(t,u)\le 2\psi(t)-\frac{(1-t_0)^2}{8}u^2,
+  \qquad -q_1\le u<0,\quad 0\le t\le t_0<1.
+\]
+
+`constrainedPhi_initial_signed_lt` gives Talagrand's strict conclusion.
+The explicit hypotheses retain `β ≠ 0`, `m₀ < m₁`, and
+`q₁ < q₂` or `q₁ = 1`, as in the initial curvature argument for reduced
+schemes. The negative interval is empty when `q₁ = 0`. The deficit is
+independent of system size and disorder, but vanishes as `u → 0`; this is
+not the full uniform bound of Theorem 2.4.
+
+The proof reuses the positive interpolation calculus rather than constructing
+a second signed replica-Hessian framework. `SKSpinFlip` derives
+`U(−σ)=U(σ)` almost surely from exact SK covariance, including zero spectral
+variances. `Section5SignedCascadeFlip` reflects the second replica and its
+independent Gaussian fields. After conditioning on the frozen field, the
+external fields are explicitly `x = h + √((1−t)β²q₁) z` and `−x`.
+`Section5ConditionedInitialInterpolation` proves the actual derivative bound
+and endpoint transport for these arbitrary fields. Genuine joint Gaussian
+integrability and Fubini in `Section5SignedInitialConditioning` recover the
+original pressure. No external field is silently changed or discarded.
+`Section5InitialSigned` combines this transport with Step 38's retained-field
+gain. The initial curvature extraction is factored out of the existing
+Proposition 5.3 proof without changing that theorem's statement.
+
+**Checked / open checklist:**
+
+- [x] Exact almost-sure SK symmetry and signed-cascade reflection.
+- [x] Actual conditioned interpolation derivative and endpoint inequality.
+- [x] Integrable frozen-field averaging and original-pressure transport.
+- [x] Proposition 5.4, including `u = −q₁`, from the original minimizing assumptions.
+- [ ] Proposition 5.7: interleaved mass sequences and outside-neighbor comparison.
+- [ ] Compact/uniform assembly into Theorem 2.4.
+- [ ] Discharge Theorem 2.2's concentration input and audit the final formula.
+
+**Step 39 validation:** `bash scripts/check.sh` passes (3229 supporting-library
+jobs and 3954 target jobs). All five new proof modules and the refactored
+initial-left module compile without warnings. The 32 added standard-axiom
+regression guards bring the total to 890. No target statement or dependency
+pin changed, no axiom or proof placeholder was added, and the same four
+original placeholders remain. The updated blueprint compiles to 43 pages
+with no LaTeX warnings or box warnings.
+
 **Remaining work, following the Annals argument:**
 
 1. Prove the a priori two-replica bound of Theorem 2.4 using §3–§5 and the scheme's
    optimality. The imported RS-level `twoReplica_GT_bound` is not this general result.
-   Next concrete step: connect Step 38's signed/frozen interpolation to its
-   actual derivative/covariance inequality and integrate it to transport the
-   now-checked scalar endpoint gain, then
-   finish the negative initial interval (Proposition 5.4). Reuse the signed
-   scalar calculus and keep the frozen positive shared field; do not replace
-   it wholesale by a negative one. Then construct the interleaved mass sequences and strict comparison
-   for the outside-neighbor cases (Proposition 5.7), followed by compactness
-   over time/overlap. Step 37 closes the far-right strict improvement
+   Next concrete step: construct the interleaved mass sequences and strict
+   comparison for the outside-neighbor cases (Proposition 5.7), followed by
+   compactness over time/overlap. Step 39 closes Proposition 5.4 through exact
+   reflection and frozen-field conditioning; no separate general signed
+   pressure derivative is needed for that case. Step 37 closes the far-right strict improvement
    (Proposition 5.6), including its actual mass derivative and optimality input;
    do not repeat that work or identify the full variable-mass families by
    baseline reflection. Steps 35--36 close both local-right boundary cases;
@@ -2052,7 +2104,7 @@ blueprint compiles to 42 pages without LaTeX warnings.
    estimate is superseded on actual inputs by Step 33's uniform bounds.
    The full nested second mass bound and its depth-uniform invariant are
    checked in Step 30; do not redo the scalar cumulant or nested derivative
-   theory. Complete the remaining signed and outside-neighbor cases. Step 31
+   theory. Complete the remaining outside-neighbor cases. Step 31
    transports both lambda gains and proves the positive-baseline far-left
    strict bound; Step 33 adds the local-left quadratic bound, but compactness
    remains open. Both neighbor

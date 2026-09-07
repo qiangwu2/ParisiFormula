@@ -63,6 +63,56 @@ theorem section5LeftSlope_initial_ge_of_endpoint_curvature
   rw [Hzero] at H
   linarith
 
+/-- Original near-optimality supplies the initial curvature error needed by
+both signs of the initial overlap. This packages the already checked
+sixth-root estimate without assuming stationarity or a pressure inequality. -/
+theorem section5Initial_curvature_data {k : ℕ} (s : RSBScheme k) (β h ε : ℝ)
+    (hβ : β ≠ 0) (hm : s.m 0 < s.m 1) (hq : 0 < s.q 1)
+    (hright : s.q 1 < s.q 2 ∨ s.q 1 = 1) {t₀ L : ℝ} (hL : 0 ≤ L)
+    (hmin : ∀ s' : RSBScheme k, parisiFunctional s β h ≤ parisiFunctional s' β h)
+    (hnear : parisiFunctional s β h ≤ parisiValue β h + ε)
+    (hsmall : section5LocalLeftConstant β L * ε ^ (1 / 6 : ℝ) ≤ 1 - t₀)
+    (hLip : ∀ v ∈ Set.Icc 0 (β ^ 2 * s.q 1),
+      ∀ w ∈ Set.Icc 0 (β ^ 2 * s.q 1),
+        |section4THessianSquare s β h 1 v - section4THessianSquare s β h 1 w| ≤ L * |v - w|) :
+    32 ≤ section5LocalLeftConstant β L ∧ ∃ e : ℝ, 0 ≤ e ∧
+      e ≤ (1 - t₀) / 2 ∧ β ^ 2 * section4THessianSquare s β h 1 0 ≤ 1 + e := by
+  have hε : 0 ≤ ε := by linarith [parisiValue_le s β h]
+  have hη : 0 ≤ ε ^ (1 / 6 : ℝ) := Real.rpow_nonneg hε _
+  have hB : 0 < β ^ 2 := sq_pos_of_ne_zero hβ
+  have hA : 0 ≤ β ^ 6 * L / 2 + section4OptimalityBound β := by
+    have hO := (section4OptimalityBound_pos β).le
+    positivity
+  have hc : 32 ≤ section5LocalLeftConstant β L ∧
+      16 * (β ^ 6 * L / 2 + section4OptimalityBound β) / β ^ 2 ≤
+        section5LocalLeftConstant β L := by
+    have hp : 0 ≤ 4 * L * β ^ 4 := by positivity
+    have hd : 0 ≤ 16 * (β ^ 6 * L / 2 + section4OptimalityBound β) / β ^ 2 := by positivity
+    unfold section5LocalLeftConstant
+    constructor <;> linarith
+  let e := 4 * (β ^ 6 * L / 2 + section4OptimalityBound β) / β ^ 2 * ε ^ (1 / 6 : ℝ)
+  have he : 0 ≤ e := mul_nonneg
+    (div_nonneg (mul_nonneg (by norm_num) hA) hB.le) hη
+  have he_small : e ≤ (1 - t₀) / 2 := by
+    have H := mul_le_mul_of_nonneg_right hc.2 hη
+    have he4 : 16 * (β ^ 6 * L / 2 + section4OptimalityBound β) / β ^ 2 *
+        ε ^ (1 / 6 : ℝ) = 4 * e := by dsimp [e]; ring
+    rw [he4] at H
+    nlinarith only [H, hsmall, he]
+  have Hcurv := section4FirstVariation_initial_curvature_bound_of_hessian_lipschitz
+    s β h ε hβ hm hq hright hmin hnear hL hLip
+  simp only [section4FirstVariationD2, sub_self, mul_zero] at Hcurv
+  have hR : β ^ 2 * section4THessianSquare s β h 1 0 ≤ 1 + e := by
+    have H : β ^ 2 * section4THessianSquare s β h 1 0 - 1 ≤
+        (4 * (β ^ 6 * L / 2 + section4OptimalityBound β) * ε ^ (1 / 6 : ℝ)) / β ^ 2 := by
+      apply (le_div_iff₀ hB).mpr
+      nlinarith only [Hcurv]
+    have heq : (4 * (β ^ 6 * L / 2 + section4OptimalityBound β) * ε ^ (1 / 6 : ℝ)) /
+        β ^ 2 = e := by dsimp [e]; ring
+    rw [heq] at H
+    linarith
+  exact ⟨hc.1, e, he, he_small, hR⟩
+
 variable {n k : ℕ} {Ω : Type*} [MeasureSpace Ω]
 variable [IsProbabilityMeasure (ℙ : Measure Ω)]
 
@@ -116,45 +166,13 @@ theorem constrainedPhi_initial_left_of_hessian_lipschitz
     rw [show k + 2 - 1 = k + 1 by omega] at H
     exact H.trans (sub_le_self _ (div_nonneg (sq_nonneg _) (by norm_num)))
   have hq : 0 < s.q 1 := hu.1.trans_lt (lt_of_le_of_ne hu.2 heq)
-  have hε : 0 ≤ ε := by linarith [parisiValue_le s β h]
-  have hη : 0 ≤ ε ^ (1 / 6 : ℝ) := Real.rpow_nonneg hε _
-  have hB : 0 < β ^ 2 := sq_pos_of_ne_zero hβ
-  have hA : 0 ≤ β ^ 6 * L / 2 + section4OptimalityBound β := by
-    have hO := (section4OptimalityBound_pos β).le
-    positivity
-  have hc : 32 ≤ section5LocalLeftConstant β L ∧
-      16 * (β ^ 6 * L / 2 + section4OptimalityBound β) / β ^ 2 ≤
-        section5LocalLeftConstant β L := by
-    have hp : 0 ≤ 4 * L * β ^ 4 := by positivity
-    have hd : 0 ≤ 16 * (β ^ 6 * L / 2 + section4OptimalityBound β) / β ^ 2 := by positivity
-    unfold section5LocalLeftConstant
-    constructor <;> linarith
-  let e := 4 * (β ^ 6 * L / 2 + section4OptimalityBound β) / β ^ 2 * ε ^ (1 / 6 : ℝ)
-  have he : 0 ≤ e := mul_nonneg
-    (div_nonneg (mul_nonneg (by norm_num) hA) hB.le) hη
-  have he_small : e ≤ (1 - t₀) / 2 := by
-    have H := mul_le_mul_of_nonneg_right hc.2 hη
-    have he4 : 16 * (β ^ 6 * L / 2 + section4OptimalityBound β) / β ^ 2 *
-        ε ^ (1 / 6 : ℝ) = 4 * e := by dsimp [e]; ring
-    rw [he4] at H
-    nlinarith only [H, hsmall, he]
-  have Hcurv := section4FirstVariation_initial_curvature_bound_of_hessian_lipschitz
-    s β h ε hβ hm hq hright hmin hnear hL hLip
-  simp only [section4FirstVariationD2, sub_self, mul_zero] at Hcurv
-  have hR : β ^ 2 * section4THessianSquare s β h 1 0 ≤ 1 + e := by
-    have H : β ^ 2 * section4THessianSquare s β h 1 0 - 1 ≤
-        (4 * (β ^ 6 * L / 2 + section4OptimalityBound β) * ε ^ (1 / 6 : ℝ)) / β ^ 2 := by
-      apply (le_div_iff₀ hB).mpr
-      nlinarith only [Hcurv]
-    have heq : (4 * (β ^ 6 * L / 2 + section4OptimalityBound β) * ε ^ (1 / 6 : ℝ)) /
-        β ^ 2 = e := by dsimp [e]; ring
-    rw [heq] at H
-    linarith
+  obtain ⟨hc, e, he, he_small, hR⟩ :=
+    section5Initial_curvature_data s β h ε hβ hm hq hright hL hmin hnear hsmall hLip
   have hQ := section4TVarianceQ_zero_eq_overlap_of_min_all_levels s β h (r := 1) le_rfl (by omega)
     hβ (by simpa using hm) (Or.inl (by simpa only [Nat.sub_self, s.q_zero] using hq)) hright hmin
   have H := constrainedPhi_initial_left_of_endpoint_curvature hn s β h sk ht ht₀ he hu hQ hR he_small
   have hcoeff : (1 - t₀) ^ 2 / section5LocalLeftConstant β L ≤ (1 - t₀) ^ 2 / 8 :=
-    div_le_div_of_nonneg_left (sq_nonneg _) (by norm_num) (by linarith [hc.1])
+    div_le_div_of_nonneg_left (sq_nonneg _) (by norm_num) (by linarith [hc])
   have Hgain := mul_le_mul_of_nonneg_right hcoeff (sq_nonneg (u - s.q 1))
   linarith
 

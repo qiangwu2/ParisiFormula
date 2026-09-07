@@ -90,8 +90,12 @@ system size and disorder. Compactness over time/overlap is not certified.
 Signed guards certify genuine Gaussian slope differentiation, endpoint-safe
 Hessian and slope bounds, and scalar lambda gains, including the original
 frozen positive shared field. Both exact signed interpolation endpoints and
-the zero-time scalar comparison are checked. The full signed pressure
-derivative/transport and Proposition 5.4 are not certified by these guards.
+the zero-time scalar comparison are checked. Exact SK spin reflection,
+conditioning on the retained frozen field, and the arbitrary-field covariance
+inequality now supply the actual signed endpoint transport. Proposition 5.4
+is certified under the original minimizing assumptions for reduced schemes,
+with an explicit quadratic deficit in the negative initial overlap. This does
+not assert a general signed version of Theorem 3.1.
 The full Parisi formula is deliberately not listed: Theorem 2.2 is still open.
 -/
 import Targets.ReplicaMeasure
@@ -190,6 +194,7 @@ import Targets.Section5RightScalarGain
 import Targets.Section5FarRight
 import Targets.Section5RetainedSignedSlope
 import Targets.Section5SignedInitialEndpoint
+import Targets.Section5InitialSigned
 
 /-! The new critical-path results are checked against the same three standard
 axioms as the explicit print guards below. Checking the allowed set also
@@ -197,6 +202,38 @@ accepts results which need fewer of those axioms. -/
 run_cmd do
   let allowed := #[``propext, ``Classical.choice, ``Quot.sound]
   for name in [
+    ``SpinGlass.Targets.constrainedPhi_initial_signed_of_endpoint_curvature,
+    ``SpinGlass.Targets.constrainedPhi_initial_signed_uniform,
+    ``SpinGlass.Targets.constrainedPhi_initial_signed_lt,
+    ``SpinGlass.Targets.section5Initial_curvature_data,
+    ``SpinGlass.Targets.coupledLinearStep_zero_signed_shared_commute,
+    ``SpinGlass.Targets.continuous_constrainedPairFieldCascade_joint,
+    ``SpinGlass.Targets.integrable_constrainedPairFieldCascade_frozen_pair,
+    ``SpinGlass.Targets.section5SignedInitialInterpolation_eq_conditioned_average,
+    ``SpinGlass.Targets.integrable_section5ConditionedInitialInterpolation_frozen,
+    ``SpinGlass.Targets.section5SignedInitialInterpolation_endpoint_bound,
+    ``SpinGlass.Targets.measurePreserving_neg_piGauss,
+    ``SpinGlass.Targets.independentStepPi_flip_second,
+    ``SpinGlass.Targets.coupledFieldCascade_independent_flip_second,
+    ``SpinGlass.Targets.coupledLinearStep_anti_flip_second,
+    ``SpinGlass.Targets.section5SignedInitial_anti_prefix_eq_conditioned,
+    ``SpinGlass.Targets.section5ConditionedInitialVariance_nonneg,
+    ``SpinGlass.Targets.hasDerivAt_section5ConditionedInitialVariance,
+    ``SpinGlass.Targets.section5ConditionedInitialVariance_pos_or_eq_zero,
+    ``SpinGlass.Targets.section5ConditionedInitialVelocity_zero_of_not_pos,
+    ``SpinGlass.Targets.continuousOn_section5ConditionedInitialInterpolation,
+    ``SpinGlass.Targets.hasDerivAt_section5ConditionedInitialInterpolation_replica,
+    ``SpinGlass.Targets.deriv_section5ConditionedInitialInterpolation_le,
+    ``SpinGlass.Targets.section5ConditionedInitialInterpolation_endpoint_bound,
+    ``SpinGlass.Targets.configFlip_configFlip,
+    ``SpinGlass.Targets.spin_configFlip,
+    ``SpinGlass.Targets.overlap_configFlip_right,
+    ``SpinGlass.Targets.overlap_configFlip_left,
+    ``SpinGlass.Targets.constrainedPairFieldBase_flip,
+    ``SpinGlass.Targets.attainableOverlap_neg,
+    ``SpinGlass.Targets.constrainedPair_nonempty_neg,
+    ``SpinGlass.Targets.skDisorder_basis_even_of_variance_ne_zero,
+    ``SpinGlass.Targets.skDisorder_even_ae,
     ``SpinGlass.Targets.section5SignedInitialFieldEndpoint_quantitative_gain,
     ``SpinGlass.Targets.section5SignedInitialFieldEndpoint_le,
     ``SpinGlass.Targets.section5SignedInitialInterpolation_zero_le,

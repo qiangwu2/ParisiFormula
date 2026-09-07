@@ -69,10 +69,10 @@ estimates (Propositions~5.1 and~5.3) are checked. The local-right estimate
 (Proposition~5.2) is checked for every level of a reduced scheme, including
 zero first overlap and the terminal interval. The far-right strict improvement
 (Proposition~5.6) is also checked, with a deficit chosen before system size
-and disorder. Signed initial Gaussian estimates and a construction retaining
-the original shared field are checked. The signed pressure inequality,
-completion of Proposition~5.4, the outside-neighbor case (Proposition~5.7),
-and uniform assembly into Theorem~2.4 remain open.
+and disorder. The negative initial interval (Proposition~5.4) is now checked
+for reduced schemes by exact SK reflection and conditioning, preserving the
+original shared field and free energy. The outside-neighbor case
+(Proposition~5.7) and uniform assembly into Theorem~2.4 remain open.
 
 Dependencies are Mathlib and the pinned RSAT library
 (\texttt{njimaMath/research\_public}), with local ports originating in
@@ -1628,8 +1628,8 @@ calculus and lambda gain with zero curvature error. When $q_2=0$, the right
 interval is a singleton and the non-strict pressure bound suffices.
 The terminal replica-symmetric case uses the existing terminal auxiliary base.
 \end{proof}
-The signed initial and outside-neighbor cases, compactness, and the uniform
-assembly into Theorem~2.4 are still open; the far-right case is proved below.
+The outside-neighbor cases, compactness, and the uniform assembly into
+Theorem~2.4 are still open; the far-right and signed initial cases are proved below.
 
 \begin{lemma}[The actual right mass variation and its optimality bound]
 \lean{SpinGlass.Targets.parisiFunctional\_insertRightLevel}\leanok
@@ -1835,10 +1835,68 @@ scalar semigroup combine the remaining Hessian-square mean with variance $b$
 to give $R_1(0)$. The curvature assumption bounds the slope; apply the
 unit-curvature lambda gain and the checked zero-time endpoint comparison.
 \end{proof}
-These endpoint identities and scalar estimates do not alone prove
-Proposition~5.4. The full signed pressure derivative, covariance inequality,
-and endpoint transport remain to be connected. In particular, replacing the
-retained positive shared field by a negative one is not an endpoint identity.
+The endpoint gain is transported to the original pressure by the following
+exact reflection and conditioning argument. The retained positive shared
+field is never replaced by a negative one.
+
+\begin{lemma}[Exact signed initial pressure transport]
+\lean{SpinGlass.Targets.skDisorder\_even\_ae}\leanok
+\lean{SpinGlass.Targets.section5SignedInitialInterpolation\_eq\_conditioned\_average}\leanok
+\lean{SpinGlass.Targets.section5SignedInitialInterpolation\_endpoint\_bound}\leanok
+For $N>0$, $0\le t\le1$, and attainable $-q_1\le u\le0$, the actual
+signed interpolation satisfies
+\[
+ \Psi(t,u)\le \mathcal E_0(t,u)-2tC,
+\]
+where $\mathcal E_0$ is the retained-field zero-time endpoint above and $C$
+is the Parisi correction in $\psi(t)=\log2+A_0(h)-tC$.
+\end{lemma}
+\begin{proof}
+Exact SK covariance gives
+$\E[(U(-\sigma)-U(\sigma))^2]=0$, hence Hamiltonian evenness on a common
+full-measure set. The formal proof uses the existing spectral representation
+and includes zero spectral variances. Reflecting the second replica reverses
+its overlap and physical field. Reflection of its independent Gaussian fields
+also preserves their product law.
+
+Condition on the frozen positive field $\sqrt b\,z$, with
+$b=(1-t)\beta^2q_1$. The two remaining external fields are explicitly
+$x=h+\sqrt b\,z$ and $-x$. The negative shared interpolating variance becomes
+the ordinary positive shared variance $(1-w)t\beta^2(-u)$.
+The existing arbitrary-field trace and heat calculus, with the frozen variance
+removed from this conditional path, gives its genuine derivative bound
+$\partial_w\widetilde\Psi(w;x,-x)\le-2tC$ and closed-interval endpoint
+inequality. Joint continuity and affine Gaussian bounds justify Fubini and
+integration over $z$. Undoing reflection recovers exactly the original
+constrained free energy, including $t=0$ and all zero-variance endpoints.
+This proves the required signed transport without asserting a general signed
+version of Theorem~3.1.
+\end{proof}
+
+\begin{proposition}[The negative initial interval: Proposition 5.4]
+\lean{SpinGlass.Targets.section5Initial\_curvature\_data}\leanok
+\lean{SpinGlass.Targets.constrainedPhi\_initial\_signed\_uniform}\leanok
+\lean{SpinGlass.Targets.constrainedPhi\_initial\_signed\_lt}\leanok
+Let $\beta\ne0$ and let the scheme minimize at its own fixed level and be
+within $\varepsilon$ of the infimum of the Parisi functional. Assume the
+reduced-scheme conditions $m_0<m_1$ and $q_1<q_2$ or $q_1=1$.
+With the same explicit beta-only constant $L_2$ as in Proposition~5.3,
+assume $L_2\varepsilon^{1/6}\le1-t_0$ and $0\le t\le t_0<1$.
+For $N>0$ and every attainable $-q_1\le u<0$,
+\[
+ \Psi(t,u)\le2\psi(t)-\frac{(1-t_0)^2}{8}u^2<2\psi(t).
+\]
+\end{proposition}
+\begin{proof}
+The initial curvature argument already used in Proposition~5.3 supplies
+$0\le e\le(1-t_0)/2$ with $\beta^2R_1(0)\le1+e$; its regularity input is
+the checked universal Hessian-square Lipschitz constant $535$.
+Apply the retained-field zero-time gain and the exact pressure transport.
+The deficit is strictly positive because $u<0$ and $t_0<1$.
+If $q_1=0$ the negative interval is empty. The non-strict curvature-based
+estimate also includes $u=0$, but the displayed deficit vanishes there;
+the uniform assembly of Theorem~2.4 is a separate remaining obligation.
+\end{proof}
 
 \begin{lemma}[Closed-interval concavity and the supporting line (5.34)]
 \lean{SpinGlass.Targets.concaveOn\_section4U}\leanok
@@ -2337,9 +2395,9 @@ mass/interior-overlap reduction. Uniform Hessian regularity, curvature and
 the local-left/initial quadratic estimates are now checked. The dual local
 estimate includes both its terminal and zero-first-overlap boundaries, and
 the actual dual mass variation now proves the far-right Proposition~5.6.
-Complete the signed initial case (Proposition~5.4), the interleaved-mass
-outside-neighbor construction (Proposition~5.7), and their compact-uniform
-assembly. The scalar stationarity reduction is
+Proposition~5.4 is now checked by exact reflection and frozen-field conditioning.
+Complete the interleaved-mass outside-neighbor construction (Proposition~5.7)
+and the compact-uniform assembly. The scalar stationarity reduction is
 already checked and does not impose new restrictions on Theorem~2.2.
 The active RSAT dependency includes
 \texttt{SpinGlass.AT.twoReplica\_GT\_bound} and Gaussian concentration results;

@@ -925,6 +925,9 @@ No dependency revision or upstream source is changed.
 
 ## Step 38: signed initial Gaussian estimates and the retained shared field
 
+This records the ingredients available at Step 38. The pressure-transport
+obligation described here is closed in Step 39 below.
+
 The signed scalar factor follows the opposite-field Gaussian product in
 [Talagrand's proof of Proposition 5.4, p. 257](https://annals.math.princeton.edu/wp-content/uploads/annals-v163-n1-p04.pdf#page=37).
 `Section4SignedGaussianFactor` uses the existing actual `HasParisiC2` scalar
@@ -966,6 +969,37 @@ bound the original zero-time field endpoint. Combined with the retained
 slope estimate, it supplies a quantitative zero-time deficit under the
 actual initial curvature condition. Full signed pressure transport is still
 open; a pure signed display is never substituted for the retained field.
+
+## Step 39: exact reflection and conditioning close Proposition 5.4
+
+The retained-field transport left open in Step 38 is now proved for the actual
+SK constrained free energy. `SKSpinFlip` derives almost-sure Hamiltonian
+evenness from the existing exact spectral covariance identity and Mathlib's
+zero-variance Gaussian law; no symmetry axiom or positive spectral-variance
+assumption is added. `Section5SignedCascadeFlip` uses Mathlib's Gaussian
+reflection law, finite-product measure preservation, and the existing
+independent cascade. It reflects the second replica together with its field.
+
+`Section5ConditionedInitialInterpolation` reuses the actual arbitrary-field
+trace/heat derivative, normalized replica covariance estimate, and
+closed-interval endpoint transport. `Section5SignedInitialConditioning`
+uses the existing `CoupledGrowth` Gaussian integrability bounds, fixed-face
+joint continuity, the disorder Lipschitz estimate, and Mathlib Fubini to
+average over the retained positive shared field. The reflected fields are
+explicitly `x = h + √((1−t)β²q₁) z` and `−x`; after averaging and undoing
+reflection the endpoint is the original constrained free energy at field `h`.
+There is no wholesale replacement of the frozen positive field by a negative
+one, nor a claim of a general signed Theorem 3.1.
+
+`Section5InitialSigned` combines this transport with the actual retained-field
+gain from Step 38 and the original minimizing-scheme curvature estimate.
+The curvature extraction is moved unchanged into
+`section5Initial_curvature_data` for reuse by Propositions 5.3 and 5.4.
+The final quantitative and strict conclusions retain the reduced-scheme
+hypotheses and the same explicit beta-only smallness constant.
+This is an exact SK reformulation of the signed interpolation in
+Talagrand's Proposition 5.4, not an alternative route to the Parisi formula.
+No dependency pins or upstream sources are changed.
 
 ## Historical copies and local ports
 
