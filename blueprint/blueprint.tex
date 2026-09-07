@@ -65,8 +65,10 @@ Stationarity now holds at every level after exact scheme reduction. The actual
 endpoint Hessian calculus and depth-uniform regularity are checked. Lemma~4.9's
 interior third derivative and closed-interval Taylor control now supply
 Proposition~4.10 without an assumed regularity bound. The local-left and initial
-estimates (Propositions~5.1 and~5.3) are checked. The dual and remaining
-overlap/sign cases, and their uniform assembly into Theorem~2.4, remain open.
+estimates (Propositions~5.1 and~5.3) are checked. The local-right estimate is
+checked at nonterminal levels with a positive left overlap gap. Its terminal
+and zero-first-overlap extensions, remaining overlap/sign cases and uniform
+assembly into Theorem~2.4 remain open.
 
 Dependencies are Mathlib and the pinned RSAT library
 (\texttt{njimaMath/research\_public}), with local ports originating in
@@ -1525,6 +1527,54 @@ throughout $[0,\beta^2q_1]$. The slope bound therefore holds on the entire
 initial overlap interval. Coincident endpoints give zero deficit directly.
 \end{proof}
 
+\begin{lemma}[The local-right estimate by reflection; stated nonboundary scope]
+\lean{SpinGlass.Targets.section5RightV\_baseline\_eq\_reflected\_next}\leanok
+\lean{SpinGlass.Targets.section4THessianSquare\_neighbor\_full\_eq\_zero}\leanok
+\lean{SpinGlass.Targets.constrainedPhi\_local\_right\_uniform}\leanok
+For $1\le r\le k$, put $a=\beta^2(q_{r+1}-q_r)$ and define the actual
+reflected factors $Q_+(v)=Q_{r+1}(a-v)$ and $R_+(v)=R_{r+1}(a-v)$,
+with baseline mass $m_r$. The entire right baseline lambda family agrees
+with the next left family at variance $a-v$. Moreover,
+\[
+ Q_+'(v)=R_+(v),\qquad
+ |R_+(v)-R_+(w)|\le535|v-w|,
+\]
+with inward endpoint derivatives, and
+\[
+ Q_+(0)=Q_r(0),\qquad R_+(0)=R_r(0).
+\]
+Under the same fixed-level minimality, near-optimality, strict mass and
+inward-direction hypotheses as the left estimate, with $q_{r-1}<q_r$,
+the local-right estimate holds:
+\[
+ \begin{gathered}
+ q_r\le u\le q_{r+1},\quad 0\le t\le t_0<1,\\
+ L_1(\beta)\varepsilon^{1/6}\le1-t_0,\quad
+ L_1(\beta)(u-q_r)\le1-t_0\\
+ \Longrightarrow\quad
+ \Phi_N(t,u)\le2\psi(t)-\frac{(1-t_0)^2}{L_1(\beta)}(u-q_r)^2.
+ \end{gathered}
+\]
+Here $\beta\ne0$, $u$ is attainable, and $L_1$ is the same constant as above.
+\end{lemma}
+\begin{proof}
+The paired mass arrays and sharing cutoffs agree exactly; only the split
+variance is reversed. Reuse the checked left lambda derivative and factor
+calculus. At full inner variance the scalar derivative recursion is the
+original next scalar derivative; the zero outer variance evaluates directly.
+This proves the neighboring endpoint identities through all remaining means.
+Stationarity and curvature therefore transfer from the original level.
+The right slope $Q_+(t\beta^2(u-q_r))-u$ has derivative
+$t\beta^2R_+(t\beta^2(u-q_r))-1$. Locally it is at most
+$-(1-t_0)/2$, so the slope is at most $-(1-t_0)(u-q_r)/2$.
+Apply the checked right lambda square gain for the actual constrained free energy.
+\end{proof}
+\textbf{Still open:} the terminal right interval and first-overlap-zero
+curvature extension. In the Lean indexing $q_{k+2}=1$, not $q_{k+1}=1$,
+so the terminal right interval cannot be discarded as a singleton.
+The positive-left-gap curvature theorem also cannot be applied at $q_1=0$.
+Thus unrestricted Proposition~5.2 is not claimed here.
+
 \begin{lemma}[Closed-interval concavity and the supporting line (5.34)]
 \lean{SpinGlass.Targets.concaveOn\_section4U}\leanok
 \lean{SpinGlass.Targets.section4U\_sub\_ge\_supportingLine}\leanok
@@ -2019,9 +2069,10 @@ The remaining work follows Proposition~2.3 and the coupled-replica concentration
 argument in \S3--\S5 of \cite{Tal06}: prove the a priori bound of Theorem~2.4,
 then apply the checked conditional deduction of Proposition~2.3 and the exact
 mass/interior-overlap reduction. Uniform Hessian regularity, curvature and
-the local-left/initial quadratic estimates are now checked. The next step is
-the dual local estimate, followed by the remaining terminal/far-overlap and
-signed cases, and their uniform assembly. The scalar stationarity reduction is
+the local-left/initial quadratic estimates are now checked. The dual local
+estimate is checked away from its terminal and zero-first-overlap boundaries.
+Extend it to those boundaries, then complete the remaining far-overlap and
+signed cases and their uniform assembly. The scalar stationarity reduction is
 already checked and does not impose new restrictions on Theorem~2.2.
 The active RSAT dependency includes
 \texttt{SpinGlass.AT.twoReplica\_GT\_bound} and Gaussian concentration results;

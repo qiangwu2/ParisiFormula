@@ -74,7 +74,7 @@ At the end of Step 27, replica identification, `U″`, uniform optimality estima
 and the remaining overlap regimes were still missing. Steps 29--30 close the
 derivative and interpolation gaps described in the current frontier below.
 
-**Current checked frontier (Step 33):** Proposition 4.6, closed-interval
+**Current checked frontier (Step 34):** Proposition 4.6, closed-interval
 concavity, both transported lambda gains and the positive-baseline far-left
 strict bound are checked. Stationarity now includes the final compulsory-mass
 level. Exact mass/interior-overlap reduction supplies its inward directions
@@ -87,8 +87,13 @@ cubic Taylor estimate are checked. Proposition 4.10's sixth-root curvature
 bound no longer assumes regularity. Propositions 5.1 and 5.3 now give the
 local-left and entire initial-interval quadratic deficits for the actual
 constrained free energy relative to `2ψ`, with explicit beta-only constants.
-The dual and remaining overlap/sign cases, uniform Theorem 2.4 assembly,
-Theorem 2.2 and the final formula remain open.
+The right baseline is now identified exactly with the reflected next left
+interval, and neighboring endpoint factors agree. This proves the local-right
+quadratic estimate for `1 ≤ r ≤ k` with `q_(r-1) < q_r`, using the same
+beta-only constant as Proposition 5.1. The terminal right interval and
+first-overlap-zero curvature still need extensions; unrestricted Proposition
+5.2 is not yet complete. Those boundaries, the remaining overlap/sign cases,
+uniform Theorem 2.4 assembly, Theorem 2.2 and the final formula remain open.
 
 **Milestone 1 (Targets 1b, 1c) is *not* on this critical path.**  Target 4 is strictly
 stronger than 1c — convergence to `parisiValue` subsumes existence of a limit — and deriving
@@ -1753,13 +1758,64 @@ The original four placeholders, target statements and dependency pins remain
 unchanged. The updated blueprint compiles to 37 pages without LaTeX warnings;
 README, roadmap, blueprint and provenance record the new checked/open boundary.
 
+**Step 34 (2026-09-06): the dual local estimate by exact reflection.**
+
+* `Section5RightLambdaFactor.lean` proves equality of the actual baseline
+  lambda families, not just their zero-coupling values. The right paired
+  masses equal the next left masses, the sharing cutoffs agree, and the
+  variance arrays match under `v ↦ a-v`, where `a=β²(q_(r+1)-q_r)`.
+  The existing zero-lambda derivative theorem therefore identifies the
+  right derivative with the reflected actual normalized squared-slope factor.
+  No new dual Gaussian differentiation is needed for these levels.
+* `Section4RightFactor.lean` defines the reflected `Q` and `R` and reuses
+  the checked closed-interval calculus to give `Q_right′=R_right` and the
+  same Lipschitz constant 535, including zero masses and variance endpoints.
+  `Section4NeighborFactors.lean` proves that the next level's full-variance
+  `Q` and `R` equal the original level's zero-variance factors. These are
+  exact identities, without stationarity or optimality assumptions.
+* `Section5LocalRight.lean` proves that the actual right lambda slope
+  `Q_right(tβ²(u-q_r))-u` is at most `-(1-t₀)(u-q_r)/2` locally, given
+  endpoint stationarity and curvature. The existing right pressure gain
+  then gives the quadratic deficit relative to the actual `2ψ`.
+  `Section5RightUniform.lean` supplies both endpoint inputs from the original
+  minimizer and the checked curvature theorem, with the same constant
+  `section5LocalLeftConstant β 535`. No regularity, derivative identification
+  or desired free-energy bound is assumed.
+
+**Step 34 checked/open checklist:**
+
+* [x] Exact reflection of the right baseline lambda family and its derivative.
+* [x] Neighboring endpoint `Q`/`R` identities and reflected endpoint-safe calculus.
+* [x] Actual local-right quadratic estimate for `1 ≤ r ≤ k`, positive left gap.
+* [ ] Terminal right interval `r=k+1`: `q_(k+2)=1`, so this interval need not collapse.
+* [ ] First-overlap-zero curvature: the positive-left-gap theorem cannot supply it.
+* [ ] Remaining far-overlap/sign cases, uniform Theorem 2.4 and unconditional Theorem 2.2.
+
+**Step 34 validation:** `bash scripts/check.sh` passes (3229 supporting-library
+jobs and 3921 target-build jobs). All 20 public results in the five new modules
+are guarded, for 710 guarded results overall. No new module warnings or proof
+placeholders were introduced; the original four placeholders and dependency
+pins are unchanged. The original theorem statements were not weakened.
+The updated blueprint compiles to 38 pages without LaTeX warnings.
+
 **Remaining work, following the Annals argument:**
 
 1. Prove the a priori two-replica bound of Theorem 2.4 using §3–§5 and the scheme's
    optimality. The imported RS-level `twoReplica_GT_bound` is not this general result.
-   Next concrete step: complete the dual local estimate (Proposition 5.2),
-   reusing the checked right-interval interpolation and endpoint gain, then
-   the remaining terminal/far-overlap and signed cases. Uniform regularity,
+   Next concrete step: extend Step 34's dual local estimate to the terminal
+   interval and the first-overlap-zero boundary. The existing left calculus
+   stops at index `k+1`, whereas terminal reflection needs the auxiliary index
+   `k+2`; the actual terminal right interval need not be degenerate. For the
+   terminal case, the shortest identified candidate is adding a redundant
+   terminal mass-one, zero-variance level and proving whole-interval equality
+   of the shifted scalar, paired and `Q/R` recursions. This would reuse the
+   nonterminal calculus without asserting minimality of the padded scheme;
+   original-scheme curvature is already available when its left gap is positive.
+   `section4TVarianceQ_terminalBase_endpoint` alone is only an endpoint
+   identity and does not supply this whole-interval bridge. For the
+   zero first overlap, obtain curvature from a genuine admissible right
+   variation instead of assuming a positive left gap. Then complete the
+   far-overlap and signed cases. Uniform regularity,
    Proposition 4.10 and the left/initial estimates are now checked in Step 33;
    do not redo those arguments or the stationarity reduction.
    The actual positive-overlap interpolation estimate (5.9), its dual,

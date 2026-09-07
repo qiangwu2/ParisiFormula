@@ -71,8 +71,12 @@ Taylor and Proposition 4.10 no longer assume regularity. The genuine interior
 third derivative, beta zero, and endpoint-safe Taylor control are checked
 separately. Further guards certify Propositions 5.1 and 5.3 for the actual
 constrained free energy relative to 2 psi, using an explicit beta-only constant.
-The initial interval uses Jensen; the dual and other overlap/sign regimes and
-the uniform Theorem 2.4 assembly remain open.
+The initial interval uses Jensen. Further guards identify the actual right
+baseline lambda family by reflection, match neighboring Q/R endpoints and
+prove the local-right quadratic estimate for nonterminal positive-left-gap
+levels. These results do not cover the terminal right interval or curvature
+when the first overlap is zero. Those boundary extensions, other overlap/sign
+regimes and the uniform Theorem 2.4 assembly remain open.
 The full Parisi formula is deliberately not listed: Theorem 2.2 is still open.
 -/
 import Targets.ReplicaMeasure
@@ -159,6 +163,11 @@ import Targets.Section4CurvatureUniform
 import Targets.Section5LocalLeft
 import Targets.Section5InitialLeft
 import Targets.Section5LeftUniform
+import Targets.Section4RightFactor
+import Targets.Section4NeighborFactors
+import Targets.Section5RightLambdaFactor
+import Targets.Section5LocalRight
+import Targets.Section5RightUniform
 
 /-! The new critical-path results are checked against the same three standard
 axioms as the explicit print guards below. Checking the allowed set also
@@ -166,6 +175,26 @@ accepts results which need fewer of those axioms. -/
 run_cmd do
   let allowed := #[``propext, ``Classical.choice, ``Quot.sound]
   for name in [
+    ``SpinGlass.Targets.hasDerivWithinAt_section5RightSlope,
+    ``SpinGlass.Targets.section5RightSlope_le_local_of_endpoint_curvature,
+    ``SpinGlass.Targets.constrainedPhi_le_two_guerraPsi_sub_right_factor_sq,
+    ``SpinGlass.Targets.constrainedPhi_local_right_of_endpoint_curvature,
+    ``SpinGlass.Targets.constrainedPhi_local_right_uniform,
+    ``SpinGlass.Targets.section4Right_reflectedVariance_mem,
+    ``SpinGlass.Targets.hasDerivWithinAt_section4RightQ,
+    ``SpinGlass.Targets.continuousOn_section4RightQ,
+    ``SpinGlass.Targets.section4RightR_lipschitz_uniform,
+    ``SpinGlass.Targets.splitScalarCascade_congr_at,
+    ``SpinGlass.Targets.section5RightMass_baseline_eq_next,
+    ``SpinGlass.Targets.section5RightVariance_eq_reflected_next,
+    ``SpinGlass.Targets.section5RightV_baseline_eq_reflected_next,
+    ``SpinGlass.Targets.hasDerivAt_section5RightV_zero_Q,
+    ``SpinGlass.Targets.deriv_section5RightV_zero_eq_Q,
+    ``SpinGlass.Targets.stepD2_parisiF_zero_variance,
+    ``SpinGlass.Targets.section4VarianceQ_neighbor_full_eq_zero,
+    ``SpinGlass.Targets.section4VarianceR_neighbor_full_eq_zero,
+    ``SpinGlass.Targets.section4TVarianceQ_neighbor_full_eq_zero,
+    ``SpinGlass.Targets.section4THessianSquare_neighbor_full_eq_zero,
     ``SpinGlass.Targets.parisiStep_zero_sq_le,
     ``SpinGlass.Targets.parisiStep_zero_split_square_le,
     ``SpinGlass.Targets.stepD2_zero_mass_eq_parisiStep,

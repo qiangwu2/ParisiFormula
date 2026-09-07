@@ -726,6 +726,43 @@ uniform Theorem 2.4 assembly are not implied by the completed left/initial
 cases. Theorem 2.2 remains open. No dependency pins, original target statements,
 upstream sources or original placeholders changed.
 
+## Step 34: exact reflection for the local-right estimate
+
+Talagrand describes the dual split at the end of Section 4 (p. 250) and states
+Proposition 5.2 on p. 251; on p. 257 he refers to the analogous left proof.
+The formalization reuses that left analysis via exact identities rather than
+duplicating a second Gaussian calculus development.
+
+`Section5RightLambdaFactor.lean` proves agreement of the actual paired mass
+arrays, reversed variance arrays and sharing cutoff. A finite-cascade
+congruence lemma permits parameter reindexing without changing the underlying
+lambda family. The existing `hasDerivAt_section5V_zero_Q` then identifies the
+genuine right zero-lambda derivative. Half-masses at shared levels are retained;
+this is not a comparison of two different baseline measures.
+
+`Section4RightFactor.lean` reuses the proved `Q′=-R` within-set chain rule
+and the uniform 535 bound. Reflection changes the derivative sign to positive
+without changing its Lipschitz constant. `Section4NeighborFactors.lean` uses
+the actual `parisiFDeriv`/`parisiFSecond` recursions, zero-variance evaluation
+and baseline outer-potential identities to match neighboring endpoint factors.
+
+`Section5LocalRight.lean` reuses Mathlib's mean-value estimate and the checked
+actual right interpolation/lambda gain. `Section5RightUniform.lean` supplies
+stationarity and curvature from the original scheme via the endpoint identities.
+The resulting quadratic deficit has the same beta-only constant as the left
+estimate and remains relative to `2ψ`, not `2φ`.
+
+**Scope boundary:** the uniform result requires `1 ≤ r ≤ k` and a positive
+left overlap gap. The scheme's terminal overlap is `q(k+2)=1`; one cannot
+discard the right interval at `r=k+1`. Also the existing curvature theorem
+cannot be applied when the first overlap equals zero. These extensions remain
+open, so unrestricted Proposition 5.2 and Theorem 2.4 are not claimed complete.
+For terminal reuse, a redundant mass-one/zero-variance padding is a candidate,
+but equality of the whole shifted `Q/R` and paired recursions is not proved.
+The existing `section4TVarianceQ_terminalBase_endpoint` only matches one
+endpoint of a modified scheme and is insufficient for that purpose.
+No original targets, dependency pins or upstream sources were changed.
+
 ## Historical copies and local ports
 
 All vendored files are Apache-2.0.  Original headers are retained unchanged.
