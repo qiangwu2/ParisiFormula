@@ -2393,10 +2393,44 @@ negative bound, and the full positive outside bound. At $t=0$, the previously
 proved quadratic deficit applies and the outside condition ensures $u\ne q_r$.
 \end{proof}
 
+\begin{lemma}[Continuous scalar witnesses and compact subregions]
+\lean{SpinGlass.Targets.continuousOn\_section5InterleavedScalarV\_trial}\leanok
+\lean{SpinGlass.Targets.section5InterleavedScalarV\_time\_zero}\leanok
+\lean{SpinGlass.Targets.exists\_uniform\_positive\_of\_compact\_witnesses}\leanok
+\lean{SpinGlass.Targets.exists\_constrainedPhi\_compact\_left\_gap}\leanok
+\lean{SpinGlass.Targets.exists\_constrainedPhi\_compact\_right\_gap}\leanok
+\lean{SpinGlass.Targets.exists\_uniform\_constrainedPhi\_left\_outside\_trial}\leanok
+For each fixed lambda, the actual mixed scalar comparison is continuous in
+$(t,u)$ on its closed admissible trial strip, including the sign boundary.
+At time zero the full-lambda family equals the physical stationary scalar
+family; consequently its quadratic lambda gain is available as a continuous
+witness, including after exact terminal padding using original minimality.
+
+More generally, let $S$ be compact and let $(D_i)_i$ be continuous scalar
+deficits on $S$. If for every $z\in S$ some $D_i(z)>0$, then there is one
+$\delta>0$ such that every $z\in S$ has some $D_i(z)\ge\delta$.
+For the actual comparison deficits this gives
+$\Psi(t,u)\le 2\psi(t)-\delta$, uniformly before $N$ and the disorder.
+The checked concrete applications cover compact left/right neighboring
+regions satisfying the far-gap smallness hypotheses and compact left
+outside-trial regions $q_{j-1}\le u<q_j$, $j<r$, including time zero,
+under strict masses, the physical overlap gap and stationarity.
+\end{lemma}
+\begin{proof}
+Specialize the existing good scalar families to time and overlap. Zero
+variances delete exactly and identify the two sign charts at zero.
+For compactness, freeze a strictly positive witness at each point; its
+half-value persists on an open neighborhood. A finite subcover and the
+minimum of these positive half-values give $\delta$. Witness selection
+need not be continuous. The actual arbitrary-lambda endpoint inequality
+transports the scalar bound to the constrained free energy.
+\end{proof}
+
 The compact uniform quadratic bound of Theorem~2.4 remains open.
-The pointwise deficit above may depend on $(t,u)$: a finite-cover argument
-requires continuous scalar upper comparisons independent of $N$, not an
-unproved continuity assertion for the changing finite-size overlap constraint.
+The results above do not yet join different trial indices at their shared
+breakpoints or assemble every signed and terminal domain with the local
+quadratic bounds. No continuity is asserted for the changing finite-size
+overlap constraint.
 
 \begin{lemma}[Closed-interval concavity and the supporting line (5.34)]
 \lean{SpinGlass.Targets.concaveOn\_section4U}\leanok

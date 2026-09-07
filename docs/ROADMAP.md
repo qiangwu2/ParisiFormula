@@ -74,7 +74,7 @@ At the end of Step 27, replica identification, `U″`, uniform optimality estima
 and the remaining overlap regimes were still missing. Steps 29--30 close the
 derivative and interpolation gaps described in the current frontier below.
 
-**Current checked frontier (Step 44):** Proposition 4.6, closed-interval
+**Current checked frontier (Step 45):** Proposition 4.6, closed-interval
 concavity, both transported lambda gains and the positive-baseline far-left
 strict bound are checked. Stationarity now includes the final compulsory-mass
 level. Exact mass/interior-overlap reduction supplies its inward directions
@@ -139,7 +139,12 @@ field, and exact free-energy reflection reuses the positive local/far-right
 bounds. One positive accuracy is chosen before every scheme; the positive
 pointwise deficit precedes all system sizes and disorders. Both signs, every
 breakpoint, first-level degeneracies and physical time zero are included.
-Uniform Theorem 2.4 assembly, Theorem 2.2 and the final formula remain open.
+Step 45 proves actual scalar continuity in time and overlap on each admissible
+trial strip, including the sign boundary, and identifies the full-lambda
+time-zero family. Finite compact covers now yield uniform gaps on specified
+left/right neighboring regions and compact left outside-trial regions.
+Adjacent-trial boundary compatibility and the complete uniform Theorem 2.4
+assembly, Theorem 2.2 and the final formula remain open.
 
 **Milestone 1 (Targets 1b, 1c) is *not* on this critical path.**  Target 4 is strictly
 stronger than 1c — convergence to `parisiValue` subsumes existence of a limit — and deriving
@@ -2555,25 +2560,65 @@ added; the same four original placeholders remain, including Theorem 2.2.
 The updated blueprint compiles to 53 pages without LaTeX or box warnings.
 Original targets and dependency pins are unchanged.
 
+### Step 45 — continuous scalar witnesses and compact subregion bounds
+
+Eight new modules connect the actual Section 5 scalar comparisons to finite
+compact covers. They do not assume continuity of the finite-size constrained
+free energy, nor continuity of a chosen mass or lambda witness.
+
+- [x] `Section5InterleavedScalarContinuity`: actual tagged `(t,u)` continuity
+  on each closed admissible trial strip, joining both signs at zero by exact
+  zero-variance deletion. This does not yet identify different trial indices
+  at their common breakpoint.
+- [x] `Section5InterleavedTimeZero`: full-lambda identification at time zero,
+  stationary quadratic scalar gain, and a padded final-trial gain using only
+  original-scheme minimality. Two existing insertion-array identities are
+  exposed unchanged for reuse.
+- [x] `Section5InterleavedMajorant`: the actual arbitrary-lambda scalar deficit
+  bounds the original constrained free energy, uniformly before system size.
+- [x] `Section5ScalarComparisonContinuity` and
+  `Section5ScalarComparisonWitness`: continuous fixed-mass left/right scalar
+  comparisons and strict witnesses under the proved optimality and smallness
+  conditions. The downward left-mass branch requires positive preceding mass.
+- [x] `Section5CompactWitness`: a finite-subcover theorem for pointwise strict
+  continuous scalar witnesses, including the empty compact set.
+- [x] `Section5ScalarComparisonCompact`: one positive gap on each compact
+  neighboring region satisfying the stated far-left/right smallness conditions,
+  chosen before the point, system size and disorder.
+- [x] `Section5InterleavedCompact`: a reusable compact-trial adapter with
+  explicit scalar positivity input; also a concrete left outside-trial bound
+  on compact subsets of `0 ≤ t ≤ t₀`, `q_(j-1) ≤ u < q_j`, `j < r`, using
+  strict masses, the physical overlap gap and actual stationarity. Time zero
+  is included. The upper trial endpoint is not included in this concrete result.
+- [ ] Join adjacent-trial breakpoints and assemble all remaining signed,
+  first-level and padded terminal compact regions with the local quadratic
+  bounds to obtain the single Theorem 2.4 bound.
+- [ ] Close the original Theorem 2.2 placeholder and audit the final formula.
+
+**Step 45 validation:** `bash scripts/check.sh` passes (3229 supporting jobs,
+4024 target jobs). All eight new modules compile without warnings. Thirty-three
+new results and two exposed unchanged helpers have allowed-set guards, bringing
+the total to 1384 checks (928 allowed-set and 456 explicit print guards).
+Independent review checked empty compact sets, gap quantifiers, the genuine
+time-zero witness and the half-open trial limitation. The same four original
+placeholders remain; no axiom or placeholder was added. The updated blueprint
+compiles to 54 pages without LaTeX or box warnings.
+
 **Remaining work, following the Annals argument:**
 
 1. Prove the a priori two-replica bound of Theorem 2.4 using §3–§5 and the scheme's
    optimality. The imported RS-level `twoReplica_GT_bound` is not this general result.
-   Next concrete step: compactness over time/overlap using continuous scalar
-   upper comparisons independent of system size. Step 44 completes all
+   Next concrete step: join trial boundaries and complete the compact cover
+   using the scalar comparisons established in Step 45. Step 44 completes all
    Proposition 5.7 interval/sign/boundary assembly for the reduced schemes.
    Do not assume continuity in `u` of the actual finite-size constrained
    free energy: its attainable constraint set changes with `u`.
-   Reuse `mixedScalarCascade_good` and `splitScalarCascade_good` for joint
-   scalar parameter/lambda/field continuity. Freeze each chosen mass/lambda
-   witness; no new joint-in-mass regularity is needed for that step. Still
-   prove the actual tagged `(t,u)` specialization, breakpoint/sign matching
-   by zero-variance deletion, and a time-zero scalar lambda identification.
-   The zero-lambda mixed deficit vanishes at time zero, so the separate
-   pointwise time-zero pressure bound is not by itself a neighborhood witness.
-   The checked arbitrary-lambda endpoint comparison and existing stationary
-   lambda gain are the reuse candidates. Then apply finite compact covers
-   away from `q_r` and the already proved local quadratic bounds near `q_r`.
+   Step 45 reuses `mixedScalarCascade_good` and `splitScalarCascade_good` for
+   actual fixed-witness continuity, proves the sign matching and full-lambda
+   time-zero identification, and supplies finite compact covers on individual
+   domains. Do not rebuild these. Different trial indices still need matching
+   at their common breakpoints, followed by all-domain coverage away from
+   `q_r` and the already proved local quadratic bounds near `q_r`.
    Step 43 proves the actual simultaneous Gaussian-averaged
    mixed derivative, its signed covariance identity and inequality, and
    closed-interval transport to the original constrained free energy.

@@ -1265,6 +1265,50 @@ already wrapped locally, rather than assuming that final theorem applies.
 Mathlib finite-subcover/minimum lemmas can supply the eventual compactness
 step after the actual neighborhood-stable comparisons are established.
 
+## Step 45: actual scalar continuity and compact witness bounds
+
+`Section5InterleavedScalarContinuity` specializes the existing
+`mixedScalarCascade_good` / `GTFrame.GoodFam` continuity to the actual tagged
+time/overlap family. Parameter composition and deletion of zero-variance steps
+allow the two sign charts to agree at zero. This is continuity within each
+admissible trial strip, not yet compatibility of different trial indices.
+
+`Section5ScalarComparisonContinuity` similarly reuses the existing split
+scalar family for fixed-mass left/right comparisons; no joint-in-mass
+regularity or RS-only continuity theorem is imported. Strict witnesses in
+`Section5ScalarComparisonWitness` reuse the proved left mass derivative,
+right convexity, original optimality and lambda quadratic gain.
+
+`Section5InterleavedTimeZero` uses existing zero-variance filtering and the
+physical scalar cascade to identify the full-lambda family, preserving both
+fields and all signs. `section5Mass_eq_insert` and
+`section5FrozenVariance_eq_insert` are exposed unchanged from
+`TalagrandSecondInterpolation`. The padded endpoint uses the original
+stationarity theorem and exact padding identities, not padded minimality.
+
+`Section5CompactWitness` uses Mathlib's
+`IsCompact.elim_finite_subcover`, subtype compactness and `Finset.inf'` to
+select one positive gap from continuous fixed-index scalar witnesses.
+`Section5InterleavedMajorant`, `Section5InterleavedCompact` and
+`Section5ScalarComparisonCompact` transport this gap to the actual constrained
+free energy before the point, system size and disorder. The generic trial
+adapter retains explicit scalar positivity; the concrete wrappers prove it
+on their specified subregions. No continuity of constrained free energy in
+overlap is asserted. Full signed/boundary domain assembly remains open.
+No dependency pin or original target is changed.
+
+**Next-step reuse audit (not a completed proof):** at `|u| = q_j`, adjacent
+trial cumulative overlap arrays agree. Only interpolation tag `j` changes
+mass/mode, and its variance is zero. Reuse
+`mixedVectorListCascade_filter` from `Section5InterleavedEndpoint` to delete
+it; compare the remaining stable-sorted tag lists using `Tuple.eq_sort_iff`
+and `List.Pairwise.eq_of_mem_iff`, following `Section5InterleavingFilter`.
+Then the existing `mixedVectorListCascade_ofFn` and
+`mixedVectorCascade_eq_sum` with one site identify the actual scalar families.
+The missing sorted-filter compatibility lemma still needs proof. Do not use
+the sorted scalar reference as an equality for the actual mixed family: it
+is only an upper bound. The last adjacent interval needs exact padding.
+
 ## Historical copies and local ports
 
 All vendored files are Apache-2.0.  Original headers are retained unchanged.

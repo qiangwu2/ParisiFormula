@@ -120,6 +120,8 @@ zero is included. The uniform Theorem 2.4 bound, Theorem 2.2 and the final
 Parisi formula are not certified.
 -/
 import Targets.Section5Proposition57
+import Targets.Section5InterleavedCompact
+import Targets.Section5ScalarComparisonCompact
 import Targets.ReplicaMeasure
 import Targets.CoupledReplicaHessian
 import Targets.CoupledReplicaHeat
@@ -274,6 +276,41 @@ accepts results which need fewer of those axioms. -/
 run_cmd do
   let allowed := #[``propext, ``Classical.choice, ``Quot.sound]
   for name in [
+    ``SpinGlass.Targets.exists_constrainedPhi_compact_left_gap,
+    ``SpinGlass.Targets.exists_constrainedPhi_compact_right_gap,
+    ``SpinGlass.Targets.continuous_section5V_variance_lambda,
+    ``SpinGlass.Targets.continuous_section5RightV_variance_lambda,
+    ``SpinGlass.Targets.continuous_section5LeftComparison,
+    ``SpinGlass.Targets.continuous_section5RightComparison,
+    ``SpinGlass.Targets.continuous_section5LeftComparisonDeficit,
+    ``SpinGlass.Targets.continuous_section5RightComparisonDeficit,
+    ``SpinGlass.Targets.constrainedPhi_le_section5LeftComparison,
+    ``SpinGlass.Targets.constrainedPhi_le_section5RightComparison,
+    ``SpinGlass.Targets.section5FieldCascade_zero_eq_physical,
+    ``SpinGlass.Targets.section5InterleavedScalarV_time_zero,
+    ``SpinGlass.Targets.section5InterleavedScalarV_time_zero_lambda_gain_Q,
+    ``SpinGlass.Targets.section5InterleavedScalarV_time_zero_lambda_gain_of_min,
+    ``SpinGlass.Targets.section5InterleavedScalarV_padded_time_zero_lambda_gain_of_min,
+    ``SpinGlass.Targets.exists_uniform_positive_of_compact_witnesses,
+    ``SpinGlass.Targets.continuousOn_section5InterleavedLambdaDeficit_trial,
+    ``SpinGlass.Targets.exists_uniform_constrainedPhi_gap_on_compact_trial,
+    ``SpinGlass.Targets.exists_uniform_constrainedPhi_left_outside_trial,
+    ``SpinGlass.Targets.exists_section5LeftMass_improvement,
+    ``SpinGlass.Targets.exists_section5LeftComparison_witness_of_gap,
+    ``SpinGlass.Targets.exists_section5RightComparison_witness_of_gap,
+    ``SpinGlass.Targets.section5InterleavedLambdaDeficit_zero,
+    ``SpinGlass.Targets.constrainedPhi_le_guerraPsi_sub_interleavedLambdaDeficit,
+    ``SpinGlass.Targets.mixedScalarCascade_comp,
+    ``SpinGlass.Targets.mixedScalarCascade_succ_of_variance_zero,
+    ``SpinGlass.Targets.mixedScalarCascade_congr_modes_on_nonzero,
+    ``SpinGlass.Targets.section5InterleavedScalarV_eq_chart,
+    ``SpinGlass.Targets.continuous_section5InterleavedScalarChart,
+    ``SpinGlass.Targets.continuousOn_section5InterleavedScalarV_nonneg,
+    ``SpinGlass.Targets.continuousOn_section5InterleavedScalarV_neg,
+    ``SpinGlass.Targets.section5InterleavedScalarChart_zero_sign,
+    ``SpinGlass.Targets.continuousOn_section5InterleavedScalarV_trial,
+    ``SpinGlass.Targets.section5Mass_eq_insert,
+    ``SpinGlass.Targets.section5FrozenVariance_eq_insert,
     ``SpinGlass.Targets.exists_constrainedPhi_initial_signed_gap,
     ``SpinGlass.Targets.exists_constrainedPhi_gap_right_outside_full,
     ``SpinGlass.Targets.coupledCascade_padOneLast_succ,

@@ -20,8 +20,9 @@ Sherrington–Kirkpatrick (SK) model with exact covariance.
   Proposition 5.7's outside-neighbor bound is now checked for the reduced
   near-minimizing schemes used in the proof, including both signs, all trial
   intervals, zero first overlap and time zero. Its positive deficit is
-  independent of system size. The next step is the uniform bound of
-  Theorem 2.4; Theorem 2.2 and the final formula remain open.
+  independent of system size. Continuous scalar comparisons now give uniform
+  gaps on compact subregions. Joining the boundary cases into the full
+  Theorem 2.4 bound remains; Theorem 2.2 and the final formula are still open.
 
 **The full Parisi formula is not yet formalised.** Completed results have
 build-time axiom checks; open proof placeholders remain. A successful build

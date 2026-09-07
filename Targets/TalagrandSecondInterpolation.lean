@@ -60,7 +60,7 @@ theorem section5Interpolation_zero [IsProbabilityMeasure (ℙ : Measure Ω)] {k 
     integral_const, probReal_univ, smul_eq_mul, one_mul,
     section5FieldEndpoint, one_div]
 
-private theorem section5Mass_eq_insert {k : ℕ} (s : RSBScheme k) {r : ℕ}
+theorem section5Mass_eq_insert {k : ℕ} (s : RSBScheme k) {r : ℕ}
     (hr : r ≤ k + 1) (m : ℝ) {j : ℕ} (hj : j < k + 3) :
     section5Mass s r m (k + 2 - j) =
       insertLevel (fun i => if i < k + 2 - r then s.m (k + 1 - i)
@@ -81,7 +81,7 @@ private theorem section5Mass_eq_insert {k : ℕ} (s : RSBScheme k) {r : ℕ}
       congr 2
       omega
 
-private theorem section5FrozenVariance_eq_insert {k : ℕ} (s : RSBScheme k)
+theorem section5FrozenVariance_eq_insert {k : ℕ} (s : RSBScheme k)
     (β t : ℝ) {r : ℕ} (hr : r ≤ k + 1)
     {j : ℕ} (hj : j < k + 3) :
     section5FrozenVariance s β t r (k + 2 - j) =
