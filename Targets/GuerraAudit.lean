@@ -122,6 +122,7 @@ Parisi formula are not certified.
 import Targets.Section5Proposition57
 import Targets.Section5InterleavedCompact
 import Targets.Section5ScalarComparisonCompact
+import Targets.Section5AdjacentBoundary
 import Targets.ReplicaMeasure
 import Targets.CoupledReplicaHessian
 import Targets.CoupledReplicaHeat
@@ -311,6 +312,8 @@ run_cmd do
     ``SpinGlass.Targets.continuousOn_section5InterleavedScalarV_trial,
     ``SpinGlass.Targets.section5Mass_eq_insert,
     ``SpinGlass.Targets.section5FrozenVariance_eq_insert,
+    ``SpinGlass.Targets.section5Rho_adjacent_boundary,
+    ``SpinGlass.Targets.section5Rho_adjacent_boundary_all,
     ``SpinGlass.Targets.exists_constrainedPhi_initial_signed_gap,
     ``SpinGlass.Targets.exists_constrainedPhi_gap_right_outside_full,
     ``SpinGlass.Targets.coupledCascade_padOneLast_succ,

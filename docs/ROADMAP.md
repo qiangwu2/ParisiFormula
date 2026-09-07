@@ -2590,6 +2590,10 @@ free energy, nor continuity of a chosen mass or lambda witness.
   on compact subsets of `0 ≤ t ≤ t₀`, `q_(j-1) ≤ u < q_j`, `j < r`, using
   strict masses, the physical overlap gap and actual stationarity. Time zero
   is included. The upper trial endpoint is not included in this concrete result.
+- [x] `Section5AdjacentBoundary`: at a shared breakpoint `u = q_j`, the two
+  inserted overlap sequences agree pointwise. This is the exact overlap
+  component of adjacent-trial gluing; the sorted tagged cascade identity is
+  still open.
 - [ ] Join adjacent-trial breakpoints and assemble all remaining signed,
   first-level and padded terminal compact regions with the local quadratic
   bounds to obtain the single Theorem 2.4 bound.

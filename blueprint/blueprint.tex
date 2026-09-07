@@ -2432,6 +2432,18 @@ breakpoints or assemble every signed and terminal domain with the local
 quadratic bounds. No continuity is asserted for the changing finite-size
 overlap constraint.
 
+\begin{lemma}[Adjacent inserted-overlap boundary]
+\lean{SpinGlass.Targets.section5Rho\_adjacent\_boundary}\leanok
+At the shared breakpoint $u=q_j$, inserting $u$ at level $j$ or at level
+$j+1$ gives the same cumulative overlap sequence:
+\[
+  \rho_{j}(p;q_j)=\rho_{j+1}(p;q_j)\qquad(p\ge0).
+\]
+This is only the overlap component of the adjacent-trial gluing; equality of
+the sorted tagged Gaussian operators still requires deleting the changed
+zero-variance interpolation tag and comparing the surviving stable sorts.
+\end{lemma}
+
 \begin{lemma}[Closed-interval concavity and the supporting line (5.34)]
 \lean{SpinGlass.Targets.concaveOn\_section4U}\leanok
 \lean{SpinGlass.Targets.section4U\_sub\_ge\_supportingLine}\leanok

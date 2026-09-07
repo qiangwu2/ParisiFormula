@@ -1297,6 +1297,11 @@ on their specified subregions. No continuity of constrained free energy in
 overlap is asserted. Full signed/boundary domain assembly remains open.
 No dependency pin or original target is changed.
 
+`Section5AdjacentBoundary` now checks the elementary overlap identity used by
+the gluing route: `section5Rho s j (q_j) p = section5Rho s (j+1) (q_j) p`
+for every position. It deliberately does not identify the sorted tagged
+operators.
+
 **Next-step reuse audit (not a completed proof):** at `|u| = q_j`, adjacent
 trial cumulative overlap arrays agree. Only interpolation tag `j` changes
 mass/mode, and its variance is zero. Reuse
