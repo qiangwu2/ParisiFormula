@@ -1,6 +1,6 @@
-import Targets.Section4RightFactor
+import Targets.Section4TerminalFactors
 import Targets.Section5RightPressureGain
-import Targets.Section5RightLambdaFactor
+import Targets.Section5TerminalLambda
 
 /-!
 # The local right overlap estimate of Proposition 5.2
@@ -9,6 +9,8 @@ The reflected next-level factor has positive variance derivative. Its actual
 lambda slope therefore has derivative `t β² R - 1`, as on the left interval.
 The proved universal Lipschitz estimate, endpoint stationarity and endpoint
 curvature give the local negative slope and its quadratic pressure gain.
+Redundant terminal padding extends these statements to every physical level,
+including the possibly nontrivial interval `[q_(k+1),1]`.
 -/
 
 open MeasureTheory ProbabilityTheory Real
@@ -32,7 +34,7 @@ private theorem right_split_mem {k : ℕ} (s : RSBScheme k) (β : ℝ)
 /-- The actual right slope has its inward derivative at both overlap
 endpoints, including time zero and degenerate physical variance intervals. -/
 theorem hasDerivWithinAt_section5RightSlope {k : ℕ} (s : RSBScheme k) (β h : ℝ)
-    {r : ℕ} (hr : r ≤ k) {t u : ℝ} (ht : t ∈ Set.Icc 0 1)
+    {r : ℕ} (hr : r ≤ k + 1) {t u : ℝ} (ht : t ∈ Set.Icc 0 1)
     (hu : u ∈ Set.Icc (s.q r) (s.q (r + 1))) :
     HasDerivWithinAt (section5RightSlope s β h r t)
       (t * β ^ 2 * section4RightR s β h r (t * (β ^ 2 * (u - s.q r))) - 1)
@@ -41,7 +43,7 @@ theorem hasDerivWithinAt_section5RightSlope {k : ℕ} (s : RSBScheme k) (β h : 
       (Set.Icc (s.q r) (s.q (r + 1)))
       (Set.Icc 0 (β ^ 2 * (s.q (r + 1) - s.q r))) :=
     fun z hz => right_split_mem s β ht hz
-  have H := (hasDerivWithinAt_section4RightQ s β h hr (hmap hu)).comp u
+  have H := (hasDerivWithinAt_section4RightQ_all_levels s β h hr (hmap hu)).comp u
     ((((hasDerivAt_id u).sub_const (s.q r)).const_mul (β ^ 2)).const_mul t).hasDerivWithinAt hmap
   unfold section5RightSlope
   convert! H.sub ((hasDerivAt_id u).hasDerivWithinAt) using 1
@@ -51,7 +53,7 @@ theorem hasDerivWithinAt_section5RightSlope {k : ℕ} (s : RSBScheme k) (β h : 
 stationarity and curvature inequalities remain inputs; the full-interval
 Hessian Lipschitz estimate is already proved with the universal constant 535. -/
 theorem section5RightSlope_le_local_of_endpoint_curvature
-    {k : ℕ} (s : RSBScheme k) (β h : ℝ) {r : ℕ} (hr : r ≤ k)
+    {k : ℕ} (s : RSBScheme k) (β h : ℝ) {r : ℕ} (hr : r ≤ k + 1)
     {t t₀ u e : ℝ} (ht : t ∈ Set.Icc 0 t₀) (ht₀ : t₀ < 1) (he : 0 ≤ e)
     (hu : u ∈ Set.Icc (s.q r) (s.q (r + 1)))
     (hQ : section4RightQ s β h r 0 = s.q r)
@@ -76,7 +78,7 @@ theorem section5RightSlope_le_local_of_endpoint_curvature
     have hvle : t * (β ^ 2 * (z - s.q r)) ≤ β ^ 2 * (u - s.q r) :=
       (mul_le_of_le_one_left (mul_nonneg (sq_nonneg β) (sub_nonneg.mpr hz.1)) ht1.2).trans
         (mul_le_mul_of_nonneg_left (sub_le_sub_right hz.2 _) (sq_nonneg β))
-    have H := (abs_le.mp (section4RightR_lipschitz_uniform s β h hr hv hzero)).2
+    have H := (abs_le.mp (section4RightR_lipschitz_uniform_all_levels s β h hr hv hzero)).2
     rw [sub_zero, abs_of_nonneg hv.1] at H
     have HL := mul_le_mul_of_nonneg_left hvle (by norm_num : (0 : ℝ) ≤ 535)
     have HR : section4RightR s β h r (t * (β ^ 2 * (z - s.q r))) ≤
@@ -114,13 +116,13 @@ variable [IsProbabilityMeasure (ℙ : Measure Ω)]
 factor. This transports a proved derivative identity, not an assumed bridge. -/
 theorem constrainedPhi_le_two_guerraPsi_sub_right_factor_sq
     (hn : 0 < n) (s : RSBScheme k) (β h : ℝ) (sk : SKDisorder (Ω := Ω) n β h)
-    {r : ℕ} (hr0 : 1 ≤ r) (hr : r ≤ k) {t u : ℝ}
+    {r : ℕ} (hr0 : 1 ≤ r) (hr : r ≤ k + 1) {t u : ℝ}
     (ht : t ∈ Set.Icc 0 1) (hu : u ∈ Set.Icc (s.q r) (s.q (r + 1)))
     [Nonempty (AT.ConstrainedPair n u)] :
     constrainedPhi n s β h sk.U (k + 2 - r) t u ≤
       2 * guerraPsi s β h t - (section5RightSlope s β h r t u) ^ 2 / 2 := by
   have H := constrainedPhi_le_guerraPsi_right_lambda_gain hn s β h sk hr0 (by omega) ht hu
-  rw [deriv_section5RightV_zero_eq_Q s β h hr (right_split_mem s β ht hu)] at H
+  rw [deriv_section5RightV_zero_eq_Q_all_levels s β h hr (right_split_mem s β ht hu)] at H
   exact H
 
 /-- Proposition 5.2's local quadratic gain for the actual constrained free
@@ -129,7 +131,7 @@ All factor differentiation, regularity, lambda identities and interpolation
 are proved; the estimate holds at time zero and both overlap endpoints. -/
 theorem constrainedPhi_local_right_of_endpoint_curvature
     (hn : 0 < n) (s : RSBScheme k) (β h : ℝ) (sk : SKDisorder (Ω := Ω) n β h)
-    {r : ℕ} (hr0 : 1 ≤ r) (hr : r ≤ k) {t t₀ u e : ℝ}
+    {r : ℕ} (hr0 : 1 ≤ r) (hr : r ≤ k + 1) {t t₀ u e : ℝ}
     (ht : t ∈ Set.Icc 0 t₀) (ht₀ : t₀ < 1) (he : 0 ≤ e)
     (hu : u ∈ Set.Icc (s.q r) (s.q (r + 1)))
     [Nonempty (AT.ConstrainedPair n u)]

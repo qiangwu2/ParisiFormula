@@ -66,8 +66,8 @@ endpoint Hessian calculus and depth-uniform regularity are checked. Lemma~4.9's
 interior third derivative and closed-interval Taylor control now supply
 Proposition~4.10 without an assumed regularity bound. The local-left and initial
 estimates (Propositions~5.1 and~5.3) are checked. The local-right estimate is
-checked at nonterminal levels with a positive left overlap gap. Its terminal
-and zero-first-overlap extensions, remaining overlap/sign cases and uniform
+checked at every level with a positive left overlap gap, including the terminal
+interval. Its zero-first-overlap extension, remaining overlap/sign cases and uniform
 assembly into Theorem~2.4 remain open.
 
 Dependencies are Mathlib and the pinned RSAT library
@@ -1527,14 +1527,15 @@ throughout $[0,\beta^2q_1]$. The slope bound therefore holds on the entire
 initial overlap interval. Coincident endpoints give zero deficit directly.
 \end{proof}
 
-\begin{lemma}[The local-right estimate by reflection; stated nonboundary scope]
+\begin{lemma}[The local-right estimate, including the terminal interval]
 \lean{SpinGlass.Targets.section5RightV\_baseline\_eq\_reflected\_next}\leanok
-\lean{SpinGlass.Targets.section4THessianSquare\_neighbor\_full\_eq\_zero}\leanok
+\lean{SpinGlass.Targets.section4THessianSquare\_neighbor\_full\_eq\_zero\_all\_levels}\leanok
 \lean{SpinGlass.Targets.constrainedPhi\_local\_right\_uniform}\leanok
-For $1\le r\le k$, put $a=\beta^2(q_{r+1}-q_r)$ and define the actual
+For $1\le r\le k+1$, put $a=\beta^2(q_{r+1}-q_r)$ and define the actual
 reflected factors $Q_+(v)=Q_{r+1}(a-v)$ and $R_+(v)=R_{r+1}(a-v)$,
-with baseline mass $m_r$. The entire right baseline lambda family agrees
-with the next left family at variance $a-v$. Moreover,
+with baseline mass $m_r$. For $r\le k$, the entire right baseline lambda family
+agrees with the next left family at variance $a-v$; at the terminal level the
+same identification is obtained on the exactly padded scheme. Moreover,
 \[
  Q_+'(v)=R_+(v),\qquad
  |R_+(v)-R_+(w)|\le535|v-w|,
@@ -1558,22 +1559,34 @@ the local-right estimate holds:
 Here $\beta\ne0$, $u$ is attainable, and $L_1$ is the same constant as above.
 \end{lemma}
 \begin{proof}
-The paired mass arrays and sharing cutoffs agree exactly; only the split
+For $r\le k$, the paired mass arrays and sharing cutoffs agree exactly; only the split
 variance is reversed. Reuse the checked left lambda derivative and factor
 calculus. At full inner variance the scalar derivative recursion is the
 original next scalar derivative; the zero outer variance evaluates directly.
 This proves the neighboring endpoint identities through all remaining means.
+For $r=k+1$, append a redundant mass-one level at overlap one. The added
+innermost step has zero variance. Exact identities shift the scalar recursion
+and its first two derivatives, the full paired lambda family, and the normalized
+$Q/R$ recursions by one level. Thus the same factor calculus and endpoint
+identities apply to the original terminal interval. Only the original scheme's
+minimality is used; minimality of the padded scheme is not asserted.
 Stationarity and curvature therefore transfer from the original level.
 The right slope $Q_+(t\beta^2(u-q_r))-u$ has derivative
 $t\beta^2R_+(t\beta^2(u-q_r))-1$. Locally it is at most
 $-(1-t_0)/2$, so the slope is at most $-(1-t_0)(u-q_r)/2$.
 Apply the checked right lambda square gain for the actual constrained free energy.
 \end{proof}
-\textbf{Still open:} the terminal right interval and first-overlap-zero
-curvature extension. In the Lean indexing $q_{k+2}=1$, not $q_{k+1}=1$,
-so the terminal right interval cannot be discarded as a singleton.
+\textbf{Still open:} the first-overlap-zero curvature extension.
 The positive-left-gap curvature theorem also cannot be applied at $q_1=0$.
 Thus unrestricted Proposition~5.2 is not claimed here.
+The checked zero-variance identities identify $Q_1(0)$ and $R_1(0)$ with
+the squares of the genuine scalar first and second derivatives. Stationarity
+forces the first derivative to vanish at $q_1=0$, including when $k=0$.
+The remaining curvature inequality requires a one-sided right variation;
+its unequal inner and outer masses prevent direct use of the baseline
+$Q'=-R$ identity.
+\lean{SpinGlass.Targets.section4THessianSquare\_initial\_zero\_eq\_sq}\leanok
+\lean{SpinGlass.Targets.parisiFDeriv\_initial\_zero\_of\_min}\leanok
 
 \begin{lemma}[Closed-interval concavity and the supporting line (5.34)]
 \lean{SpinGlass.Targets.concaveOn\_section4U}\leanok

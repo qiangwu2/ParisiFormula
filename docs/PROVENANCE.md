@@ -752,7 +752,7 @@ stationarity and curvature from the original scheme via the endpoint identities.
 The resulting quadratic deficit has the same beta-only constant as the left
 estimate and remains relative to `2ψ`, not `2φ`.
 
-**Scope boundary:** the uniform result requires `1 ≤ r ≤ k` and a positive
+**Scope at the Step 34 checkpoint:** the uniform result requires `1 ≤ r ≤ k` and a positive
 left overlap gap. The scheme's terminal overlap is `q(k+2)=1`; one cannot
 discard the right interval at `r=k+1`. Also the existing curvature theorem
 cannot be applied when the first overlap equals zero. These extensions remain
@@ -762,6 +762,47 @@ but equality of the whole shifted `Q/R` and paired recursions is not proved.
 The existing `section4TVarianceQ_terminalBase_endpoint` only matches one
 endpoint of a modified scheme and is insufficient for that purpose.
 No original targets, dependency pins or upstream sources were changed.
+
+## Step 35: terminal padding reuses the checked right-interval proof
+
+`RSBSchemeTerminalPadding.lean` appends mass one and repeats terminal overlap
+one. The new innermost scalar step has zero variance. The existing
+`parisiStep_zero_var` gives the exact recursion shift; uniqueness of genuine
+derivatives gives the first- and second-derivative shifts. All original physical
+masses and overlaps are preserved. No minimization statement about the padded
+scheme is introduced.
+
+`Section4TerminalFactors.lean` transports the entire split scalar recursion and
+normalized squared-slope/squared-Hessian factors. The identities include the
+auxiliary left index `k+2`, which was outside the earlier calculus theorem's
+range. Applying the existing nonterminal calculus to the padded scheme gives
+the original terminal right factor's inward derivative, continuity, universal
+535 Lipschitz bound and neighboring endpoint identities.
+
+`Section5TerminalLambda.lean` deletes one zero-variance independent step in the
+actual paired recursion. This lemma allows arbitrary masses, including zero.
+Reusing `splitScalarCascade_congr_at` proves equality of the entire right lambda
+family for arbitrary inserted mass and split variance. Thus the genuine
+zero-lambda derivative, not just the value at zero, is transported exactly.
+
+The existing `Section5LocalRight.lean` and `Section5RightUniform.lean` proofs
+now accept `r ≤ k+1` in place of `r ≤ k`. The mean-value and pressure-gain
+arguments are reused unchanged. Stationarity, curvature, near-optimality,
+constrained free energy and `2ψ` all refer to the original scheme. This closes
+the terminal interval with a positive left gap, including a nontrivial
+`[q_(k+1),1]`; it does not close unrestricted Proposition 5.2.
+
+**Remaining reuse mismatch:** at `q_1=0`, the admissible same-level right
+variation has inner mass `m_1` and outer mass zero. The existing equal-mass
+baseline derivative `Q′=-R` is not its derivative. The relevant comparator is
+already available from `section4Phi_stationarityBase_min` or, when `k=0`,
+`section4Phi_terminalBase_min`. What remains is the endpoint derivative of its
+squared-gradient expectation and the resulting one-sided curvature inequality.
+`Section4ZeroOverlap.lean` reuses zero-variance evaluation and all-level
+stationarity to prove that the initial `Q/R` factors are scalar derivative
+squares and that the first derivative vanishes. These are checked reductions,
+not a proof of the still-missing curvature inequality.
+No new Gaussian framework or different proof route is justified by this gap.
 
 ## Historical copies and local ports
 

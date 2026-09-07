@@ -74,7 +74,7 @@ At the end of Step 27, replica identification, `U″`, uniform optimality estima
 and the remaining overlap regimes were still missing. Steps 29--30 close the
 derivative and interpolation gaps described in the current frontier below.
 
-**Current checked frontier (Step 34):** Proposition 4.6, closed-interval
+**Current checked frontier (Step 35):** Proposition 4.6, closed-interval
 concavity, both transported lambda gains and the positive-baseline far-left
 strict bound are checked. Stationarity now includes the final compulsory-mass
 level. Exact mass/interior-overlap reduction supplies its inward directions
@@ -89,10 +89,11 @@ local-left and entire initial-interval quadratic deficits for the actual
 constrained free energy relative to `2ψ`, with explicit beta-only constants.
 The right baseline is now identified exactly with the reflected next left
 interval, and neighboring endpoint factors agree. This proves the local-right
-quadratic estimate for `1 ≤ r ≤ k` with `q_(r-1) < q_r`, using the same
-beta-only constant as Proposition 5.1. The terminal right interval and
-first-overlap-zero curvature still need extensions; unrestricted Proposition
-5.2 is not yet complete. Those boundaries, the remaining overlap/sign cases,
+quadratic estimate for `1 ≤ r ≤ k+1` with `q_(r-1) < q_r`, using the same
+beta-only constant as Proposition 5.1. Exact redundant terminal padding now
+includes the possibly nontrivial interval `[q_(k+1),1]` without assuming
+minimality of the padded scheme. First-overlap-zero curvature still needs an
+extension; unrestricted Proposition 5.2 is not yet complete. That boundary, the remaining overlap/sign cases,
 uniform Theorem 2.4 assembly, Theorem 2.2 and the final formula remain open.
 
 **Milestone 1 (Targets 1b, 1c) is *not* on this critical path.**  Target 4 is strictly
@@ -1798,23 +1799,60 @@ placeholders were introduced; the original four placeholders and dependency
 pins are unchanged. The original theorem statements were not weakened.
 The updated blueprint compiles to 38 pages without LaTeX warnings.
 
+**Step 35 (2026-09-06): terminal local-right extension by redundant padding.**
+
+`RSBSchemeTerminalPadding.lean` adds a terminal mass-one, zero-variance step
+and proves exact shifts of the scalar recursion and its genuine first two
+derivatives. `Section4TerminalFactors.lean` transports the full split recursion
+and actual `Q/R` factors, including the auxiliary left index `k+2`. The original
+terminal right factors therefore inherit the endpoint-safe derivative and
+universal 535 Lipschitz bound from the checked nonterminal theory.
+
+`Section5TerminalLambda.lean` proves deletion of a zero-variance independent
+step, including zero masses, and equality of the entire original/padded right
+lambda family. The existing local-right slope and actual pressure proofs now
+apply at every physical level `1 ≤ r ≤ k+1`. The uniform theorem still uses
+the original scheme's minimality and near-optimality, with its positive left
+gap; no padded-scheme minimality or pressure identity is assumed.
+
+`Section4ZeroOverlap.lean` supplies a separate boundary reduction: at `q_1=0`,
+the actual initial `Q/R` factors are squares of the genuine scalar first/second
+derivatives, and fixed-level stationarity forces the scalar first derivative
+to vanish. These identities include `k=0` but do not prove the remaining
+one-sided curvature inequality.
+
+**Step 35 checked/open checklist:**
+
+* [x] Exact scalar, paired lambda and whole-factor terminal padding identities.
+* [x] Right factor calculus, neighboring endpoints and actual lambda identification
+  at the terminal interval, including its endpoints and degenerate intervals.
+* [x] Local-right quadratic deficit at all physical levels with a positive left gap.
+* [x] Scalar-square endpoint identities and vanishing scalar slope at zero first overlap.
+* [ ] Curvature when the first overlap is zero; stationarity alone is not enough.
+* [ ] Remaining far-overlap/sign cases and uniform assembly into Theorem 2.4.
+* [ ] Theorem 2.2 and the unconditional final Parisi formula.
+
+**Step 35 validation:** `bash scripts/check.sh` passes (3229 supporting-library
+jobs and 3925 target-build jobs). All 30 public results in the four new modules
+are guarded, for 740 guarded results overall, including the strengthened
+local-right statements. No new warnings in the changed proof modules, proof
+placeholders, project axioms or dependency changes were introduced. The same
+four original placeholders remain. The updated blueprint compiles to 38 pages
+without LaTeX warnings.
+
 **Remaining work, following the Annals argument:**
 
 1. Prove the a priori two-replica bound of Theorem 2.4 using §3–§5 and the scheme's
    optimality. The imported RS-level `twoReplica_GT_bound` is not this general result.
-   Next concrete step: extend Step 34's dual local estimate to the terminal
-   interval and the first-overlap-zero boundary. The existing left calculus
-   stops at index `k+1`, whereas terminal reflection needs the auxiliary index
-   `k+2`; the actual terminal right interval need not be degenerate. For the
-   terminal case, the shortest identified candidate is adding a redundant
-   terminal mass-one, zero-variance level and proving whole-interval equality
-   of the shifted scalar, paired and `Q/R` recursions. This would reuse the
-   nonterminal calculus without asserting minimality of the padded scheme;
-   original-scheme curvature is already available when its left gap is positive.
-   `section4TVarianceQ_terminalBase_endpoint` alone is only an endpoint
-   identity and does not supply this whole-interval bridge. For the
-   zero first overlap, obtain curvature from a genuine admissible right
-   variation instead of assuming a positive left gap. Then complete the
+   Next concrete step: extend the dual local estimate to the first-overlap-zero
+   boundary. Step 35 closes the terminal interval by exact scalar, paired and
+   factor padding identities; do not repeat that bridge or assume padded
+   minimality. For the zero first overlap, obtain curvature from a genuine
+   admissible right variation instead of assuming a positive left gap. The
+   relevant competitor has inner mass `m_1` and outer mass zero, so the existing
+   equal-mass baseline identity `Q′=-R` is not its derivative. At a stationary
+   zero first overlap, the needed right derivative of its squared-gradient
+   expectation is the squared scalar Hessian. Then complete the
    far-overlap and signed cases. Uniform regularity,
    Proposition 4.10 and the left/initial estimates are now checked in Step 33;
    do not redo those arguments or the stationarity reduction.

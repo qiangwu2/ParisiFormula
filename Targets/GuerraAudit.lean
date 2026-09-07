@@ -73,9 +73,10 @@ separately. Further guards certify Propositions 5.1 and 5.3 for the actual
 constrained free energy relative to 2 psi, using an explicit beta-only constant.
 The initial interval uses Jensen. Further guards identify the actual right
 baseline lambda family by reflection, match neighboring Q/R endpoints and
-prove the local-right quadratic estimate for nonterminal positive-left-gap
-levels. These results do not cover the terminal right interval or curvature
-when the first overlap is zero. Those boundary extensions, other overlap/sign
+prove the local-right quadratic estimate for every positive-left-gap level,
+including the terminal interval through exact redundant padding of the scalar,
+paired and factor recursions. They do not prove curvature when the first
+overlap is zero. That boundary extension, other overlap/sign
 regimes and the uniform Theorem 2.4 assembly remain open.
 The full Parisi formula is deliberately not listed: Theorem 2.2 is still open.
 -/
@@ -168,6 +169,7 @@ import Targets.Section4NeighborFactors
 import Targets.Section5RightLambdaFactor
 import Targets.Section5LocalRight
 import Targets.Section5RightUniform
+import Targets.Section4ZeroOverlap
 
 /-! The new critical-path results are checked against the same three standard
 axioms as the explicit print guards below. Checking the allowed set also
@@ -175,6 +177,36 @@ accepts results which need fewer of those axioms. -/
 run_cmd do
   let allowed := #[``propext, ``Classical.choice, ``Quot.sound]
   for name in [
+    ``SpinGlass.Targets.section4TVarianceQ_initial_zero_eq_sq,
+    ``SpinGlass.Targets.section4THessianSquare_initial_zero_eq_sq,
+    ``SpinGlass.Targets.parisiFDeriv_initial_zero_of_min,
+    ``SpinGlass.Targets.RSBScheme.padOneLast_m,
+    ``SpinGlass.Targets.RSBScheme.padOneLast_q,
+    ``SpinGlass.Targets.parisiF_padOneLast_succ,
+    ``SpinGlass.Targets.parisiFDeriv_padOneLast_succ,
+    ``SpinGlass.Targets.parisiFSecond_padOneLast_succ,
+    ``SpinGlass.Targets.section4Cascade_padOneLast_succ,
+    ``SpinGlass.Targets.section4VarianceQ_padOneLast,
+    ``SpinGlass.Targets.section4VarianceR_padOneLast,
+    ``SpinGlass.Targets.section4TVarianceQ_padOneLast,
+    ``SpinGlass.Targets.section4THessianSquare_padOneLast,
+    ``SpinGlass.Targets.section4RightQ_padOneLast,
+    ``SpinGlass.Targets.section4RightR_padOneLast,
+    ``SpinGlass.Targets.hasDerivWithinAt_section4RightQ_all_levels,
+    ``SpinGlass.Targets.continuousOn_section4RightQ_all_levels,
+    ``SpinGlass.Targets.section4RightR_lipschitz_uniform_all_levels,
+    ``SpinGlass.Targets.section4RightQ_padOneLast_zero,
+    ``SpinGlass.Targets.section4RightR_padOneLast_zero,
+    ``SpinGlass.Targets.section4TVarianceQ_neighbor_full_eq_zero_all_levels,
+    ``SpinGlass.Targets.section4THessianSquare_neighbor_full_eq_zero_all_levels,
+    ``SpinGlass.Targets.splitScalarCascade_delete_zero_first,
+    ``SpinGlass.Targets.section5RightMass_padOneLast,
+    ``SpinGlass.Targets.section5RightVariance_padOneLast,
+    ``SpinGlass.Targets.section5RightV_padOneLast,
+    ``SpinGlass.Targets.hasDerivAt_section5RightV_zero_Q_padded,
+    ``SpinGlass.Targets.deriv_section5RightV_zero_eq_Q_padded,
+    ``SpinGlass.Targets.hasDerivAt_section5RightV_zero_Q_all_levels,
+    ``SpinGlass.Targets.deriv_section5RightV_zero_eq_Q_all_levels,
     ``SpinGlass.Targets.hasDerivWithinAt_section5RightSlope,
     ``SpinGlass.Targets.section5RightSlope_le_local_of_endpoint_curvature,
     ``SpinGlass.Targets.constrainedPhi_le_two_guerraPsi_sub_right_factor_sq,

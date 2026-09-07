@@ -11,8 +11,9 @@ Sherrington–Kirkpatrick (SK) model with exact covariance.
 - **In progress:** Theorem 2.2. Quantitative optimality, stationarity at every
   level after exact scheme reduction, uniform curvature, and the local-left
   and initial-interval estimates (Propositions 5.1 and 5.3) are checked.
-  The local-right estimate is also checked for nonterminal levels with a
-  positive left overlap gap. Its boundary extensions, the remaining overlap/sign
+  The local-right estimate is also checked at every level with a positive
+  left overlap gap, including the terminal interval. The zero-first-overlap
+  curvature case, the remaining overlap/sign
   cases, and their uniform assembly into Theorem 2.4 are still open.
 
 **The full Parisi formula is not yet formalised.** Completed results have

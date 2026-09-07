@@ -3,16 +3,16 @@ import Targets.Section5LeftUniform
 import Targets.Section4NeighborFactors
 
 /-!
-# The uniform local-right estimate at nonterminal positive-left-gap levels
+# The uniform local-right estimate at all positive-left-gap levels
 
 The dual baseline is the reflected next interval. Neighboring endpoint
 identities transfer the original minimizer's stationarity and curvature to
 that baseline. Thus the proved right lambda gain has a beta-only quadratic
 deficit, with the same constant as the left estimate.
 
-The final statement currently requires `r ≤ k` and a positive left overlap
-gap. The terminal right interval and first-overlap-zero curvature require
-separate extensions; this file does not claim the unrestricted Proposition 5.2.
+Terminal padding includes `r = k+1` without assuming minimality of the padded
+scheme. A positive left overlap gap is still required: first-overlap-zero
+curvature remains separate, so this is not unrestricted Proposition 5.2.
 -/
 
 open MeasureTheory ProbabilityTheory Real
@@ -23,11 +23,11 @@ variable {n k : ℕ} {Ω : Type*} [MeasureSpace Ω]
 variable [IsProbabilityMeasure (ℙ : Measure Ω)]
 
 /-- The local-right bound with the proved universal regularity constant.
-The left gap and nonterminal hypotheses specify the current completed scope;
+The positive left gap specifies the current completed scope;
 no derivative, Lipschitz, lambda identification or pressure bound is assumed. -/
 theorem constrainedPhi_local_right_uniform
     (hn : 0 < n) (s : RSBScheme k) (β h ε : ℝ) (sk : SKDisorder (Ω := Ω) n β h)
-    {r : ℕ} (hr0 : 1 ≤ r) (hr : r ≤ k) (hβ : β ≠ 0)
+    {r : ℕ} (hr0 : 1 ≤ r) (hr : r ≤ k + 1) (hβ : β ≠ 0)
     (hm : s.m (r - 1) < s.m r) (hleft : s.q (r - 1) < s.q r)
     (hright : s.q r < s.q (r + 1) ∨ s.q r = 1)
     {t t₀ u : ℝ} (ht : t ∈ Set.Icc 0 t₀) (ht₀ : t₀ < 1)
@@ -70,14 +70,14 @@ theorem constrainedPhi_local_right_uniform
     have H := mul_le_mul_of_nonneg_right hc.2.1 (sub_nonneg.mpr hu.1)
     nlinarith only [H, hlocal]
   have hQ : section4RightQ s β h r 0 = s.q r := by
-    rw [section4RightQ, sub_zero, section4TVarianceQ_neighbor_full_eq_zero s β h hr0 hr]
+    rw [section4RightQ, sub_zero, section4TVarianceQ_neighbor_full_eq_zero_all_levels s β h hr0 hr]
     exact section4TVarianceQ_zero_eq_overlap_of_min_all_levels s β h hr0 (by omega)
       hβ hm (Or.inl hleft) hright hmin
   have Hcurv := section4FirstVariation_curvature_bound_uniform s β h ε hr0 (by omega)
     hβ hm hleft hright hmin hnear
   simp only [section4FirstVariationD2, sub_self, mul_zero] at Hcurv
   have hR : β ^ 2 * section4RightR s β h r 0 ≤ 1 + e := by
-    rw [section4RightR, sub_zero, section4THessianSquare_neighbor_full_eq_zero s β h hr0 hr]
+    rw [section4RightR, sub_zero, section4THessianSquare_neighbor_full_eq_zero_all_levels s β h hr0 hr]
     have H : β ^ 2 * section4THessianSquare s β h r 0 - 1 ≤
         (4 * (β ^ 6 * 535 / 2 + section4OptimalityBound β) * ε ^ (1 / 6 : ℝ)) / β ^ 2 := by
       apply (le_div_iff₀ hB).mpr
