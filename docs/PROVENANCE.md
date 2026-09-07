@@ -804,6 +804,21 @@ squares and that the first derivative vanishes. These are checked reductions,
 not a proof of the still-missing curvature inequality.
 No new Gaussian framework or different proof route is justified by this gap.
 
+**Candidate next proof, not yet formalized:** write
+`S(v,x) = stepD1 A A' m v x`, with positive total variance `a` and
+`S(a,h)=0`. For fixed Gaussian coordinate `z`, apply the existing
+`hasDerivAt_stepD1_variance_curve` to `S(a-θ²,h+θz)` at `θ=0`.
+The variance velocity is zero and the derivative is the scalar Hessian times
+`z`. `HasDerivAt.tendsto_slope_zero_right` then supplies the difference-quotient
+limit. The existing `abs_stepD1Variance_le_on_Icc` on `[a/2,a]` and the scalar
+C2 spatial bound suggest domination by a constant times `(1+|z|)²` after
+squaring; `memLp_id_gaussianReal 2` supplies integrability. Dominated convergence
+with `θ=√u`, followed by `hasDerivWithinAt_iff_tendsto_slope`, would establish
+the missing inward derivative of the squared-gradient expectation. A
+one-sided second-order minimum argument would then give the curvature
+inequality. This route reuses positive-variance calculus; neither the limiting
+argument nor the resulting curvature inequality is claimed checked yet.
+
 ## Historical copies and local ports
 
 All vendored files are Apache-2.0.  Original headers are retained unchanged.
