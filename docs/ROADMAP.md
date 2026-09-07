@@ -74,7 +74,7 @@ At the end of Step 27, replica identification, `U″`, uniform optimality estima
 and the remaining overlap regimes were still missing. Steps 29--30 close the
 derivative and interpolation gaps described in the current frontier below.
 
-**Current checked frontier (Step 39):** Proposition 4.6, closed-interval
+**Current checked frontier (Step 40):** Proposition 4.6, closed-interval
 concavity, both transported lambda gains and the positive-baseline far-left
 strict bound are checked. Stationarity now includes the final compulsory-mass
 level. Exact mass/interior-overlap reduction supplies its inward directions
@@ -107,8 +107,12 @@ exact SK spin reflection and conditioning on the frozen positive shared field
 reuse the actual covariance inequality with arbitrary external fields. This
 transports the retained-field zero-time gain to the original constrained free
 energy, using the original minimality and near-minimality assumptions.
-Proposition 5.7's outside-neighbor cases, uniform Theorem 2.4 assembly,
-Theorem 2.2 and the final formula remain open.
+For Proposition 5.7, the tagged mass interleaving, its correction and variance
+grouping, genuine non-strict Gaussian operator interchange (5.46), and finite
+scalar sorting are checked. Strict scalar convexity and Gaussian equality
+rigidity are also available. These do not yet prove the full strict interleaved
+pressure comparison. Proposition 5.7's outside-neighbor cases, uniform
+Theorem 2.4 assembly, Theorem 2.2 and the final formula remain open.
 
 **Milestone 1 (Targets 1b, 1c) is *not* on this critical path.**  Target 4 is strictly
 stronger than 1c — convergence to `parisiValue` subsumes existence of a limit — and deriving
@@ -2077,13 +2081,90 @@ pin changed, no axiom or proof placeholder was added, and the same four
 original placeholders remain. The updated blueprint compiles to 43 pages
 with no LaTeX warnings or box warnings.
 
+### Step 40 — Proposition 5.7: mass interleaving and scalar operator sorting
+
+This checkpoint develops the new construction on Talagrand's pp. 257--262;
+**Proposition 5.7 itself remains open**. It is not a repetition of the completed
+neighbor-interval or signed-initial estimates.
+
+`Section5Interleaving` constructs a genuine stable permutation of the physical
+and interpolating mass lists using Mathlib's `Tuple.sort`. Every entry retains
+its source and original index, including accidental equality between a full
+mass and a half mass. The two source lists embed in increasing order. The
+sorted masses have endpoints zero and one, and the actual tagged variances
+are nonnegative. The correction identity (5.36) and weighted original-level
+variance grouping (5.49) are checked, including repeated mass values.
+The left/right order obstructions at the end of the paper are also checked
+with both witness variances explicitly positive. Ordering is required only
+on positive-variance tags. The merged cumulative overlaps and the connection
+from actual cascade equality to these order conditions remain to be proved.
+
+`ParisiStepInterchange` proves the actual non-strict Gaussian operator
+comparison (5.46) from Mathlib Hölder and Tonelli. It includes equal masses,
+zero lower mass, and zero variances. `ParisiCascadeSorting` applies it
+repeatedly to the actual finite composition: sorting by increasing mass
+raises the scalar recursion. Equal-mass Gaussian steps merge exactly at any
+position. This is the sorting mechanism needed for (5.50), not yet the
+identification of the sorted interleaved recursion with the original one.
+
+`ParisiStrictConvexity` proves positive Hessians, strictly increasing slopes,
+strict convexity and evenness for the actual scalar recursions before or after
+sorting. `GaussianCauchySchwarzEquality` proves proportionality of continuous
+Gaussian profiles when Cauchy--Schwarz is an equality, by a vanishing square
+integral and Gaussian absolute continuity. No equality case is postulated.
+
+`Section5PairScalarComparison` now supplies Lemma 5.10's three non-strict
+one-step comparisons and strictness propagation for the actual smooth scalar
+inputs. Independent steps preserve the scalar mass; shared/opposite steps
+double it. Genuine equality rigidity gives strict shared/opposite comparison
+off the appropriate diagonal when mass and variance are positive. Gaussian
+non-atomicity spreads strictness off the two diagonals through an independent
+step, including mass zero. Explicit growth, differentiability and increasing
+slope hypotheses are supplied for actual inputs by the scalar modules, not
+assumed as missing comparison conclusions.
+
+The strict version of the scalar interchange must be proved on the actual
+strictly convex inputs. Nonconstancy alone is insufficient: affine inputs
+also give equality in the operator interchange. The non-strict zero-mass
+limit does not prove strictness at zero mass. Neither observation changes
+the actual Parisi target or supplies its missing strict comparison.
+
+**Checked / open checklist:**
+
+- [x] Tagged stable interleaving, source embeddings, and mass endpoints.
+- [x] Actual tagged variances, correction (5.36), and variance grouping (5.49).
+- [x] Non-strict operator interchange (5.46), including degenerate faces.
+- [x] Actual finite scalar sorting and exact equal-mass merging.
+- [x] Strict convexity/evenness of the scalar inputs and Gaussian equality rigidity.
+- [x] Lemma 5.10's one-step comparisons and strictness propagation on actual inputs.
+- [x] Outside-neighbor finite-order obstructions with positive witness variances.
+- [ ] Strict operator interchange on the actual inputs, including lower mass zero.
+- [ ] Full paired recursion comparison and sorted-recursion identification.
+- [ ] Interleaved interpolation, original-pressure endpoint transport, and all
+      outside-neighbor boundary/sign cases: Proposition 5.7.
+- [ ] Uniform Theorem 2.4 assembly, then Theorem 2.2 and the final formula.
+
+**Step 40 validation:** `bash scripts/check.sh` passes (3229 supporting-library
+jobs and 3960 target jobs). All six new modules compile without warnings.
+The 68 added standard-axiom regression guards bring the total to 958.
+No target statement or dependency pin changed, and no axiom or proof
+placeholder was added; the same four original placeholders remain.
+The updated blueprint compiles to 46 pages without LaTeX or box warnings.
+
 **Remaining work, following the Annals argument:**
 
 1. Prove the a priori two-replica bound of Theorem 2.4 using §3–§5 and the scheme's
    optimality. The imported RS-level `twoReplica_GT_bound` is not this general result.
-   Next concrete step: construct the interleaved mass sequences and strict
-   comparison for the outside-neighbor cases (Proposition 5.7), followed by
-   compactness over time/overlap. Step 39 closes Proposition 5.4 through exact
+   Next concrete step: prove strict scalar operator interchange on the actual
+   strictly convex inputs, then propagate the paired comparison through the
+   tagged construction and identify its sorted scalar recursion. Complete the
+   interleaved interpolation's original-pressure transport and the boundary/sign
+   cases for Proposition 5.7, followed by compactness over time/overlap.
+   Step 40 already supplies stable tagged sorting, correction/variance grouping,
+   one-step paired comparisons, non-strict scalar interchange and finite
+   sorting; do not rebuild those. The merged cumulative overlaps and exact
+   Gaussian-step deletion must still be connected to this tagged data.
+   Step 39 closes Proposition 5.4 through exact
    reflection and frozen-field conditioning; no separate general signed
    pressure derivative is needed for that case. Step 37 closes the far-right strict improvement
    (Proposition 5.6), including its actual mass derivative and optimality input;

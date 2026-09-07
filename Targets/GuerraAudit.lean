@@ -96,7 +96,13 @@ inequality now supply the actual signed endpoint transport. Proposition 5.4
 is certified under the original minimizing assumptions for reduced schemes,
 with an explicit quadratic deficit in the negative initial overlap. This does
 not assert a general signed version of Theorem 3.1.
-The full Parisi formula is deliberately not listed: Theorem 2.2 is still open.
+Further guards certify Proposition 5.7's stable tagged mass data, correction
+and variance grouping; actual one-step paired/scalar comparisons and their
+strictness propagation; positive scalar Hessians and Gaussian equality
+rigidity; and non-strict scalar interchange and finite sorting. They do not
+assert strict scalar interchange, a complete interleaved interpolation, or
+Proposition 5.7 itself. The full Parisi formula is deliberately not listed:
+Theorem 2.2 is still open.
 -/
 import Targets.ReplicaMeasure
 import Targets.CoupledReplicaHessian
@@ -195,6 +201,9 @@ import Targets.Section5FarRight
 import Targets.Section5RetainedSignedSlope
 import Targets.Section5SignedInitialEndpoint
 import Targets.Section5InitialSigned
+import Targets.ParisiCascadeSorting
+import Targets.Section5Interleaving
+import Targets.Section5PairScalarComparison
 
 /-! The new critical-path results are checked against the same three standard
 axioms as the explicit print guards below. Checking the allowed set also
@@ -202,6 +211,74 @@ accepts results which need fewer of those axioms. -/
 run_cmd do
   let allowed := #[``propext, ``Classical.choice, ``Quot.sound]
   for name in [
+    ``SpinGlass.Targets.parisiListCascade_nil,
+    ``SpinGlass.Targets.parisiListCascade_cons,
+    ``SpinGlass.Targets.parisiListCascade_append,
+    ``SpinGlass.Targets.parisiListCascade_props,
+    ``SpinGlass.Targets.hasLinearGrowth_parisiListCascade,
+    ``SpinGlass.Targets.measurable_parisiListCascade,
+    ``SpinGlass.Targets.parisiListCascade_mono,
+    ``SpinGlass.Targets.parisiListCascade_merge_cons,
+    ``SpinGlass.Targets.parisiListCascade_merge,
+    ``SpinGlass.Targets.parisiListCascade_orderedInsert_le,
+    ``SpinGlass.Targets.parisiListCascade_insertionSort_le,
+    ``SpinGlass.Targets.stepD2_pos,
+    ``SpinGlass.Targets.strictConvexOn_of_hasParisiC2_pos,
+    ``SpinGlass.Targets.log_cosh_second_pos,
+    ``SpinGlass.Targets.parisiFSecond_pos,
+    ``SpinGlass.Targets.strictConvexOn_parisiF,
+    ``SpinGlass.Targets.strictMono_parisiFDeriv,
+    ``SpinGlass.Targets.scalarFieldCascade_C2_pos,
+    ``SpinGlass.Targets.strictConvexOn_scalarFieldCascade,
+    ``SpinGlass.Targets.strictMono_scalarFieldCascadeSlope,
+    ``SpinGlass.Targets.parisiStep_even,
+    ``SpinGlass.Targets.scalarFieldCascade_even,
+    ``SpinGlass.Targets.parisiF_even,
+    ``SpinGlass.Targets.eq_of_sub_translate_eq_const_of_strictMono_deriv,
+    ``SpinGlass.Targets.eq_mul_of_gaussian_cauchySchwarz_eq,
+    ``SpinGlass.Targets.lintegral_minkowski_of_finite,
+    ``SpinGlass.Targets.parisiStep_interchange_of_pos_lt,
+    ``SpinGlass.Targets.parisiStep_interchange_zero,
+    ``SpinGlass.Targets.parisiStep_interchange,
+    ``SpinGlass.Targets.parisiStep_interchange_parisiF,
+    ``SpinGlass.Targets.parisiStep_add_le_double_mass,
+    ``SpinGlass.Targets.parisiStep_lt_of_ae_lt,
+    ``SpinGlass.Targets.gtScalarStep_eq_parisiStep_shift,
+    ``SpinGlass.Targets.gtScalarStep_lt_of_ae_lt,
+    ``SpinGlass.Targets.gtScalarStep_shared_le,
+    ``SpinGlass.Targets.gtScalarStep_opposite_le,
+    ``SpinGlass.Targets.independentStepPi_one_le_scalar,
+    ``SpinGlass.Targets.independentStepPi_lt_of_ae_lt,
+    ``SpinGlass.Targets.independentStepPi_one_lt_scalar_of_off_diagonals,
+    ``SpinGlass.Targets.exists_sub_eq_const_of_parisiStep_add_eq,
+    ``SpinGlass.Targets.gtScalarStep_shared_lt_of_strictMono_deriv,
+    ``SpinGlass.Targets.gtScalarStep_opposite_lt_of_strictMono_deriv,
+    ``SpinGlass.Targets.stableSort_position_lt_of_le,
+    ``SpinGlass.Targets.section5Interleaving_card,
+    ``SpinGlass.Targets.section5InterleavedMass_eq_sort,
+    ``SpinGlass.Targets.monotone_section5InterleavedMass,
+    ``SpinGlass.Targets.section5InterleavedMass_at_tag,
+    ``SpinGlass.Targets.monotone_section5PhysicalMass,
+    ``SpinGlass.Targets.monotone_section5InterpolatingMass,
+    ``SpinGlass.Targets.strictMono_section5Interleaving_physical,
+    ``SpinGlass.Targets.strictMono_section5Interleaving_interpolating,
+    ``SpinGlass.Targets.section5Interleaving_physical_before_interpolating_of_eq,
+    ``SpinGlass.Targets.section5PhysicalMass_mem_Icc,
+    ``SpinGlass.Targets.section5TaggedMass_mem_Icc,
+    ``SpinGlass.Targets.section5InterleavedMass_mem_Icc,
+    ``SpinGlass.Targets.section5InterleavedMass_zero,
+    ``SpinGlass.Targets.section5InterleavedMass_last,
+    ``SpinGlass.Targets.section5Interleaving_sum,
+    ``SpinGlass.Targets.section5TagScalarMass_eq_original,
+    ``SpinGlass.Targets.section5TagOriginalLevel_le,
+    ``SpinGlass.Targets.section5TaggedVariance_nonneg,
+    ``SpinGlass.Targets.section5Interleaving_correction,
+    ``SpinGlass.Targets.section5Interleaving_variance_grouping,
+    ``SpinGlass.Targets.section5Interleaving_variance_grouping_by_mass,
+    ``SpinGlass.Targets.section5InterleavingScalarOrder_of_monotone,
+    ``SpinGlass.Targets.section5Interleaving_equality_orders_incompatible,
+    ``SpinGlass.Targets.section5Interleaving_left_outside_obstruction,
+    ``SpinGlass.Targets.section5Interleaving_right_outside_obstruction,
     ``SpinGlass.Targets.constrainedPhi_initial_signed_of_endpoint_curvature,
     ``SpinGlass.Targets.constrainedPhi_initial_signed_uniform,
     ``SpinGlass.Targets.constrainedPhi_initial_signed_lt,

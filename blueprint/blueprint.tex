@@ -71,8 +71,10 @@ zero first overlap and the terminal interval. The far-right strict improvement
 (Proposition~5.6) is also checked, with a deficit chosen before system size
 and disorder. The negative initial interval (Proposition~5.4) is now checked
 for reduced schemes by exact SK reflection and conditioning, preserving the
-original shared field and free energy. The outside-neighbor case
-(Proposition~5.7) and uniform assembly into Theorem~2.4 remain open.
+original shared field and free energy. For Proposition~5.7, the tagged mass
+construction, correction/variance grouping, non-strict scalar operator
+interchange and finite sorting are checked. The full strict interleaved
+comparison and uniform assembly into Theorem~2.4 remain open.
 
 Dependencies are Mathlib and the pinned RSAT library
 (\texttt{njimaMath/research\_public}), with local ports originating in
@@ -704,9 +706,10 @@ the actual lambda derivative of this $V$ at fixed $m$.
 \end{proof}
 These endpoint results alone do not assert the intervening covariance derivative
 bound. The right-interval construction and both actual interior-time pressure
-derivatives are proved in the subsequent modules. The negative-overlap case
-and Proposition~5.7's additional scheme remain open; the uniform bound of
-Lemma~5.9 is proved below.
+derivatives and the negative initial-overlap case are proved in the subsequent
+modules. Proposition~5.7's interleaved-pressure construction remains open;
+its tagged mass data and scalar sorting are checked below, as is the uniform
+bound of Lemma~5.9.
 
 \begin{lemma}[Constrained terminal derivatives and the SK covariance trace]
 \lean{SpinGlass.Targets.hasDerivAt\_constrainedPairFieldBase\_second}\leanok
@@ -1898,6 +1901,117 @@ estimate also includes $u=0$, but the displayed deficit vanishes there;
 the uniform assembly of Theorem~2.4 is a separate remaining obligation.
 \end{proof}
 
+\begin{lemma}[Tagged mass interleaving for Proposition 5.7]
+\lean{SpinGlass.Targets.monotone\_section5InterleavedMass}\leanok
+\lean{SpinGlass.Targets.section5Interleaving\_correction}\leanok
+\lean{SpinGlass.Targets.section5Interleaving\_variance\_grouping}\leanok
+Use the paper's indices. The physical list contains $k+1$ masses and the
+inserted interpolation list contains $k+2$. Their tagged union admits a
+stable nondecreasing ordering with endpoints zero and one. The source
+embeddings preserve order, including all equal-mass ties. Attaching the
+original frozen variances to physical tags and the inserted variances to
+interpolation tags gives nonnegative variances for $0\le t\le1$ and
+$q_{s-1}\le |u|\le q_s$.
+
+The correction sum is exactly (5.36). After doubling the scalar mass of a
+shared tag, every resulting mass is an original $m_p$. For every weight
+function $W$ on original levels, the assigned variances satisfy
+\[
+ \sum_\ell W(p_\ell)a_\ell
+   =\sum_{p=0}^{k}W(p)\beta^2(q_{p+1}-q_p).
+\]
+Thus (5.49) also holds with repeated numerical masses, by grouping all their
+original levels together. The local Lean scheme has paper depth $k+1$, so
+its tagged union has $2k+5$ entries.
+\end{lemma}
+\begin{proof}
+Use Mathlib's stable tuple sort on the concatenated lists, retaining source
+and index tags. Exact finite-sum transport through its permutation reduces
+the identities to the already checked insertion correction and telescoping
+variance sums. No tag is identified with another merely because their
+numerical masses agree.
+\end{proof}
+
+\begin{lemma}[Scalar operator interchange and sorting: (5.46)]
+\lean{SpinGlass.Targets.parisiStep\_interchange}\leanok
+\lean{SpinGlass.Targets.parisiListCascade\_insertionSort\_le}\leanok
+\lean{SpinGlass.Targets.parisiListCascade\_merge}\leanok
+Let $Q$ be measurable with linear growth, $a,a'\ge0$, and $0\le m'\le m$.
+Then the actual Gaussian Parisi operators satisfy
+\[
+ T_{m,a}T_{m',a'}Q\le T_{m',a'}T_{m,a}Q.
+\]
+Consequently, sorting a finite outermost-first list of nonnegative-mass,
+nonnegative-variance operators by increasing mass raises its composition.
+Adjacent equal-mass operators merge their variances exactly, even at mass zero.
+\end{lemma}
+\begin{proof}
+For $0<m'<m$, integral Minkowski follows from Mathlib's H\"older inequality
+and Tonelli. Linear growth ensures the required exponential integrals are
+finite and identifies them with the nested log means. Analytic continuation
+and monotonicity in the lower mass give the case $m'=0$; the Gaussian
+semigroup handles equal masses. Induction over insertion sort repeatedly
+applies this actual interchange and scalar order preservation.
+\end{proof}
+This is the non-strict comparison, not the strict equality characterization
+needed in (5.47). Nonconstancy alone would be insufficient there: affine
+inputs also give equality. Strictness must be proved on the actual strictly
+convex scalar inputs, including a separate argument at lower mass zero.
+
+\begin{lemma}[Strict curvature and Gaussian equality rigidity]
+\lean{SpinGlass.Targets.scalarFieldCascade\_C2\_pos}\leanok
+\lean{SpinGlass.Targets.strictConvexOn\_scalarFieldCascade}\leanok
+\lean{SpinGlass.Targets.scalarFieldCascade\_even}\leanok
+\lean{SpinGlass.Targets.eq\_mul\_of\_gaussian\_cauchySchwarz\_eq}\leanok
+Every finite scalar recursion from $\log\cosh$ with masses in $[0,1]$ has a
+strictly positive actual Hessian, a strictly increasing slope, and is even
+and strictly convex. The mass order need not be sorted, and zero variances
+are included. Moreover, equality in Gaussian Cauchy--Schwarz for continuous
+profiles $f,g$, with $g>0$ and the three required moments integrable, implies
+$f=cg$ everywhere for some constant $c$.
+\end{lemma}
+\begin{proof}
+Positive input curvature gives a positive tilted Hessian mean; the additional
+mass-weighted slope variance is nonnegative. Induct over the actual scalar
+recursion and apply the second-derivative criterion for strict convexity.
+Gaussian reflection preserves evenness. For equality rigidity, integrate
+$(f-cg)^2$ with $c=\E[fg]/\E[g^2]$. Equality makes this integral zero.
+Gaussian absolute continuity transfers the resulting almost-everywhere
+identity to Lebesgue measure; continuity makes it pointwise.
+\end{proof}
+\begin{lemma}[One-step paired comparison: Lemma 5.10 on actual scalar inputs]
+\lean{SpinGlass.Targets.independentStepPi\_one\_le\_scalar}\leanok
+\lean{SpinGlass.Targets.gtScalarStep\_shared\_le}\leanok
+\lean{SpinGlass.Targets.gtScalarStep\_opposite\_le}\leanok
+\lean{SpinGlass.Targets.independentStepPi\_one\_lt\_scalar\_of\_off\_diagonals}\leanok
+\lean{SpinGlass.Targets.gtScalarStep\_shared\_lt\_of\_strictMono\_deriv}\leanok
+\lean{SpinGlass.Targets.gtScalarStep\_opposite\_lt\_of\_strictMono\_deriv}\leanok
+Suppose $D(x,y)\le G(x)+G(y)$, with measurable linear-growth inputs and
+the corresponding Gaussian integrability. At raw paired mass $m\ge0$,
+the independent step is bounded by $T_{m,a}G(x)+T_{m,a}G(y)$, and the shared
+and opposite-shared steps by $T_{2m,a}G(x)+T_{2m,a}G(y)$.
+
+For the genuine differentiable scalar inputs with strictly increasing slope,
+if $m,a>0$, shared comparison is strict when $x\ne y$. With even $G$,
+opposite comparison is strict when $x\ne-y$. If the input comparison is
+strict off $x=\pm y$ and $a>0$, the independent step makes it strict
+everywhere, including at mass zero. An almost-everywhere strict comparison
+also propagates through any signed or independent Gaussian step.
+\end{lemma}
+\begin{proof}
+Use independence for product factorization and Gaussian Cauchy--Schwarz for
+the shared cases. Equality forces proportional translated exponential
+profiles. Their logarithmic difference is constant, so the actual strictly
+increasing derivative forces equal shifts. Reflection gives the opposite
+case. For independent propagation, non-atomicity makes both exceptional
+diagonals null; strict integral monotonicity then applies. All exponential
+integrability follows from the stated growth bounds.
+\end{proof}
+The one-step estimates do not yet give the full paired-recursion comparison.
+That propagation, strict scalar interchange,
+identification of the sorted recursion with the original Parisi recursion,
+and interleaved-pressure endpoint transport are still needed for Proposition~5.7.
+
 \begin{lemma}[Closed-interval concavity and the supporting line (5.34)]
 \lean{SpinGlass.Targets.concaveOn\_section4U}\leanok
 \lean{SpinGlass.Targets.section4U\_sub\_ge\_supportingLine}\leanok
@@ -2396,8 +2510,10 @@ the local-left/initial quadratic estimates are now checked. The dual local
 estimate includes both its terminal and zero-first-overlap boundaries, and
 the actual dual mass variation now proves the far-right Proposition~5.6.
 Proposition~5.4 is now checked by exact reflection and frozen-field conditioning.
-Complete the interleaved-mass outside-neighbor construction (Proposition~5.7)
-and the compact-uniform assembly. The scalar stationarity reduction is
+The tagged interleaving and non-strict scalar sorting for Proposition~5.7
+are checked. Complete strict scalar interchange, the paired-recursion and
+sorted-recursion identifications, the interleaved-pressure transport and
+boundary/sign cases, then the compact-uniform assembly. The scalar stationarity reduction is
 already checked and does not impose new restrictions on Theorem~2.2.
 The active RSAT dependency includes
 \texttt{SpinGlass.AT.twoReplica\_GT\_bound} and Gaussian concentration results;

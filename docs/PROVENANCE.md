@@ -1001,6 +1001,48 @@ This is an exact SK reformulation of the signed interpolation in
 Talagrand's Proposition 5.4, not an alternative route to the Parisi formula.
 No dependency pins or upstream sources are changed.
 
+## Step 40: Proposition 5.7's tagged construction and scalar sorting
+
+The construction follows
+[Talagrand, pp. 257--262](https://annals.math.princeton.edu/wp-content/uploads/annals-v163-n1-p04.pdf#page=37).
+`Section5Interleaving` uses Mathlib's stable `Tuple.sort` permutation instead
+of implementing a merge algorithm. Source tags preserve equal entries, and
+existing Section 5 mass/overlap arrays and correction telescoping give (5.36).
+Grouping by original level, then by numerical mass, retains repeated masses
+in (5.49); it does not assume distinct values or nonzero variances.
+
+No ready-made interchange theorem for these actual scalar Parisi operators
+was found in the locked dependencies. `ParisiStepInterchange` derives the
+needed integral Minkowski inequality from Mathlib's ENNReal Hölder inequality
+and Tonelli. Existing local exponential integrability and measurable growth
+identify the Gaussian log means. Analytic mass-zero continuation and mass
+monotonicity handle the zero lower mass; the existing Gaussian semigroup
+handles equal masses. `ParisiCascadeSorting` reuses Mathlib's insertion sort
+and the actual interchange theorem to compare finite operator compositions.
+No Lp-valued Gaussian family or separate Gaussian integration theory is built.
+
+`ParisiStrictConvexity` reuses the existing tilted Hessian formula, its
+nonnegative variance term, and Mathlib's second-derivative convexity criterion.
+`GaussianCauchySchwarzEquality` uses a vanishing normalized-square integral
+and Mathlib's equivalence of positive-variance Gaussian and Lebesgue null sets
+to obtain pointwise proportionality of continuous profiles.
+
+`Section5PairScalarComparison` proves Lemma 5.10's inequalities using the
+existing independent-step factorization, scalar order preservation, and
+Mathlib Gaussian Cauchy--Schwarz. Gaussian non-atomicity supplies strict
+independent spreading; the proved equality rigidity and increasing scalar
+slopes supply shared/opposite strictness, with positive mass/variance
+hypotheses retained. These are raw logarithmic-Laplace masses: independent
+comparison keeps the mass, shared comparison doubles it. The finite-order
+obstructions retain positive witness variances and do not assume that the
+actual interleaved-pressure equality implies those order conditions.
+
+The strict interchange statement (5.47) is not claimed for arbitrary
+nonconstant inputs: affine functions also give equality. The required
+strictly convex actual scalar inputs are now proved, but their strict
+interchange and the full interleaved-pressure assembly remain obligations.
+No dependency revisions, original targets, or upstream sources are changed.
+
 ## Historical copies and local ports
 
 All vendored files are Apache-2.0.  Original headers are retained unchanged.

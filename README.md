@@ -17,6 +17,8 @@ Sherrington–Kirkpatrick (SK) model with exact covariance.
   including the terminal mass and a deficit independent of system size.
   The negative initial interval (Proposition 5.4) is now checked for reduced
   schemes, preserving the original shared field and free energy.
+  For Proposition 5.7, the tagged mass construction, one-step paired
+  comparisons and non-strict scalar sorting are checked; the full proof is not.
   The outside-neighbor cases (Proposition 5.7) and uniform assembly into
   Theorem 2.4 remain open.
 
