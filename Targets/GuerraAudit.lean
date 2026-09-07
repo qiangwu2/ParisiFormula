@@ -65,8 +65,14 @@ at every level of an equivalent reduced minimizer. They also certify actual
 Hessian-square continuity and inward Q'=-R at the variance endpoints, genuine
 first/second derivatives of f, and cubic Taylor/curvature estimates conditional
 on Lipschitz regularity of the actual R. The initial interval uses an integral
-bound, not an assumed sign for f(0). A depth-uniform Lipschitz constant for R
-and the other overlap regimes are not proved by these conditional guards.
+bound, not an assumed sign for f(0). New uniform C3/C4 and Gaussian-flow
+guards now supply the actual universal R Lipschitz constant 535. Thus cubic
+Taylor and Proposition 4.10 no longer assume regularity. The genuine interior
+third derivative, beta zero, and endpoint-safe Taylor control are checked
+separately. Further guards certify Propositions 5.1 and 5.3 for the actual
+constrained free energy relative to 2 psi, using an explicit beta-only constant.
+The initial interval uses Jensen; the dual and other overlap/sign regimes and
+the uniform Theorem 2.4 assembly remain open.
 The full Parisi formula is deliberately not listed: Theorem 2.2 is still open.
 -/
 import Targets.ReplicaMeasure
@@ -139,6 +145,20 @@ import Targets.Section4Curvature
 import Targets.Section4CubicTaylor
 import Targets.Section4InitialCurvature
 import Targets.Section4CurvatureRegularity
+import Targets.ParisiThirdUniform
+import Targets.ParisiFourthUniform
+import Targets.ParisiHessianVariance
+import Targets.ParisiHessianVarianceBound
+import Targets.ParisiHessianSquareFlow
+import Targets.Section4HessianLipschitz
+import Targets.Section4HessianDerivative
+import Targets.Section4ThirdVariation
+import Targets.Section4InitialHessian
+import Targets.Section4HessianUniform
+import Targets.Section4CurvatureUniform
+import Targets.Section5LocalLeft
+import Targets.Section5InitialLeft
+import Targets.Section5LeftUniform
 
 /-! The new critical-path results are checked against the same three standard
 axioms as the explicit print guards below. Checking the allowed set also
@@ -146,6 +166,91 @@ accepts results which need fewer of those axioms. -/
 run_cmd do
   let allowed := #[``propext, ``Classical.choice, ``Quot.sound]
   for name in [
+    ``SpinGlass.Targets.parisiStep_zero_sq_le,
+    ``SpinGlass.Targets.parisiStep_zero_split_square_le,
+    ``SpinGlass.Targets.stepD2_zero_mass_eq_parisiStep,
+    ``SpinGlass.Targets.section4THessianSquare_initial_le_zero,
+    ``SpinGlass.Targets.section4FirstVariation_cubic_taylor_uniform,
+    ``SpinGlass.Targets.section4FirstVariation_curvature_bound_uniform,
+    ``SpinGlass.Targets.scalarObservableHeat_abs_le,
+    ``SpinGlass.Targets.hasDerivAt_tiltP_variance_heat,
+    ``SpinGlass.Targets.scalarTiltMean_variance_derivative_bound,
+    ``SpinGlass.Targets.abs_stepD2Variance_le_of_C4,
+    ``SpinGlass.Targets.abs_stepD2Variance_parisiF_le,
+    ``SpinGlass.Targets.hasDerivAt_stepD3_parisiF_uniform,
+    ``SpinGlass.Targets.section4HessianInitialDerivative_props,
+    ``SpinGlass.Targets.hasDerivAt_section4THessianSquare_uniform,
+    ``SpinGlass.Targets.abs_deriv_section4THessianSquare_le_uniform,
+    ``SpinGlass.Targets.section4THessianSquare_lipschitz_uniform,
+    ``SpinGlass.Targets.abs_deriv3_section4FirstVariation_le_uniform,
+    ``SpinGlass.Targets.section4VarianceR_baseline_deriv_props,
+    ``SpinGlass.Targets.hasDerivAt_section4THessianSquare_of_initial_derivative,
+    ``SpinGlass.Targets.abs_deriv_section4THessianSquare_le_of_initial_derivative,
+    ``SpinGlass.Targets.hasDerivAt_splitBaselineHessianSquare_before_ibp,
+    ``SpinGlass.Targets.measurable_splitBaselineHessianDerivative,
+    ``SpinGlass.Targets.abs_splitBaselineHessianDerivative_le,
+    ``SpinGlass.Targets.abs_deriv_splitBaselineHessianSquare_le,
+    ``SpinGlass.Targets.section5LeftSlope_initial_ge_of_endpoint_curvature,
+    ``SpinGlass.Targets.constrainedPhi_initial_left_of_endpoint_curvature,
+    ``SpinGlass.Targets.constrainedPhi_initial_left_of_hessian_lipschitz,
+    ``SpinGlass.Targets.pairedTiltMean_abs_sub_le,
+    ``SpinGlass.Targets.section4VarianceR_baseline_lipschitz_of_initial_factor,
+    ``SpinGlass.Targets.section4THessianSquare_lipschitz_of_initial_factor,
+    ``SpinGlass.Targets.section4VarianceR_initial_eq_scalar_integral,
+    ``SpinGlass.Targets.section4THessianSquare_lipschitz_of_scalar_integral,
+    ``SpinGlass.Targets.abs_sub_le_of_derivative_bound_on_open_interval,
+    ``SpinGlass.Targets.section4THessianSquare_lipschitz_of_initial_derivative,
+    ``SpinGlass.Targets.abs_parisiFourthPolynomial_le,
+    ``SpinGlass.Targets.hasDerivAt_stepD3Uniform,
+    ``SpinGlass.Targets.parisiFourthPolynomial_stepD4Uniform,
+    ``SpinGlass.Targets.abs_stepD4Uniform_le,
+    ``SpinGlass.Targets.continuous_stepD4Uniform_variance_spatial,
+    ``SpinGlass.Targets.parisiFourthPolynomial_mass_change,
+    ``SpinGlass.Targets.parisiFourthPolynomial_lower_mass_bound,
+    ``SpinGlass.Targets.parisiFFourth_props,
+    ``SpinGlass.Targets.hasDerivAt_parisiFThird,
+    ``SpinGlass.Targets.continuous_parisiFFourth,
+    ``SpinGlass.Targets.abs_parisiFFourth_le_43,
+    ``SpinGlass.Targets.abs_stepD4Uniform_parisiF_le,
+    ``SpinGlass.Targets.hasDerivAt_stepD3Uniform_parisiF,
+    ``SpinGlass.Targets.constrainedPhi_local_left_uniform,
+    ``SpinGlass.Targets.constrainedPhi_initial_left_uniform,
+    ``SpinGlass.Targets.hasDerivAt_gaussian_weighted_exp_variance,
+    ``SpinGlass.Targets.hasDerivAt_stepD2_variance,
+    ``SpinGlass.Targets.continuousOn_stepD2Variance,
+    ``SpinGlass.Targets.continuousOn_stepD3_variance_spatial,
+    ``SpinGlass.Targets.hasFDerivAt_stepD2_variance_spatial,
+    ``SpinGlass.Targets.hasDerivAt_stepD2_variance_curve,
+    ``SpinGlass.Targets.hasDerivAt_deriv_section4FirstVariation,
+    ``SpinGlass.Targets.hasDerivAt_section4FirstVariationD2_of_hessian_derivative,
+    ``SpinGlass.Targets.hasDerivAt_deriv2_section4FirstVariation_of_hessian_derivative,
+    ``SpinGlass.Targets.abs_deriv3_section4FirstVariation_le_of_hessian_derivative,
+    ``SpinGlass.Targets.hasDerivAt_deriv2_section4FirstVariation_beta_zero,
+    ``SpinGlass.Targets.abs_deriv3_section4FirstVariation_le_of_initial_derivative,
+    ``SpinGlass.Targets.hasDerivWithinAt_section5LeftSlope,
+    ``SpinGlass.Targets.section5LeftSlope_ge_local_of_endpoint_curvature,
+    ``SpinGlass.Targets.constrainedPhi_local_left_of_endpoint_curvature,
+    ``SpinGlass.Targets.section5LocalLeftConstant_pos,
+    ``SpinGlass.Targets.constrainedPhi_local_left_of_hessian_lipschitz,
+    ``SpinGlass.Targets.hasDerivAt_tiltP_spatial,
+    ``SpinGlass.Targets.hasDerivAt_scalarTiltMean_spatial,
+    ``SpinGlass.Targets.hasDerivAt_stepD2_uniform,
+    ``SpinGlass.Targets.scalarTiltMean_abs_le,
+    ``SpinGlass.Targets.continuous_scalarTiltMean_joint,
+    ``SpinGlass.Targets.parisiThirdPolynomial_mass_change,
+    ``SpinGlass.Targets.parisiThirdPolynomial_lower_mass_bound,
+    ``SpinGlass.Targets.parisiThirdPolynomial_stepD3Uniform,
+    ``SpinGlass.Targets.parisiFThird_props,
+    ``SpinGlass.Targets.hasDerivAt_parisiFSecond,
+    ``SpinGlass.Targets.continuous_parisiFThird,
+    ``SpinGlass.Targets.abs_parisiFThird_le_six,
+    ``SpinGlass.Targets.abs_parisiThirdPolynomial_le,
+    ``SpinGlass.Targets.abs_stepD3Uniform_le,
+    ``SpinGlass.Targets.continuous_stepD3Uniform_variance_spatial,
+    ``SpinGlass.Targets.hasDerivAt_stepD2_parisiF_uniform,
+    ``SpinGlass.Targets.abs_stepD3Uniform_parisiF_le,
+    ``SpinGlass.Targets.stepD3_eq_stepD3Uniform,
+    ``SpinGlass.Targets.abs_stepD3_parisiF_le_uniform,
     ``SpinGlass.Targets.pairFieldPotential_independent_contraction,
     ``SpinGlass.Targets.pairFieldPotential_shared_contraction,
     ``SpinGlass.Targets.pairFieldCovariance_diagonal,

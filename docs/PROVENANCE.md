@@ -675,6 +675,57 @@ and remaining overlap cases of Section 5, uniform Theorem 2.4 and unconditional
 Theorem 2.2 are still separate obligations. No dependency pins, original target
 statements or upstream sources changed.
 
+## Step 33: uniform derivatives and the local-left/initial estimates
+
+The source comparison is Talagrand (2006), Lemma 4.9 and Proposition 4.10
+(pp. 250--251), and the proofs of Propositions 5.1 and 5.3 (pp. 255--256).
+This checkpoint follows the paper's derivative/optimality/Jensen argument;
+it does not replace it with a different proof of the Parisi formula.
+
+**Reuse:** `ParisiThirdUniform.lean` applies the existing finite-coordinate
+dominated differentiation theorem to normalized scalar observables.
+`ParisiFourthUniform.lean` reuses that rule, the existing `HasParisiC2`
+invariant and normalized-mean bounds. The new exponential derivative
+polynomials obey exact averaging identities at fixed mass. Their mass-change
+bounds telescope along the existing monotone masses, yielding genuine
+depth-independent C3/C4 bounds 6 and 43, including zero mass/variance.
+These are new bridges for actual finite Parisi inputs, not copied upstream
+smoothness assertions. The coarser extra-step bounds 14 and 143 are used only
+once; iterating those coarse bounds would not prove depth independence.
+
+`ParisiHessianVariance.lean` reuses local Gaussian domination and joint
+continuity. `ParisiHessianVarianceBound.lean` applies the existing Gaussian
+variance heat-generator theorem with its factor `1/2`, giving the actual
+Hessian variance bound 83. `ParisiHessianSquareFlow.lean` reuses
+`integral_gaussian_mul_tilted_observable` to eliminate the inverse square-root
+outer variance after actual differentiation under the integral. The resulting
+constant is `2*83 + 14² + 143 + 2*14 + 2 = 535`. Measurability and local
+domination of the actual derivative integrand are proved, including mass zero.
+
+`Section4HessianDerivative.lean` reuses `hasDerivAt_pairedSecondMean` and the
+proved zero baseline outer velocity. `Section4HessianLipschitz.lean` uses
+positive normalized-mean contraction and Mathlib's scalar mean-value theorem;
+existing endpoint continuity extends the interior bound to the full closed
+interval without differentiating outside the physical domain. The actual
+integration in `Section4HessianUniform.lean` supplies all regularity premises.
+`Section4ThirdVariation.lean` verifies the positive chain factor `β⁶/2` and
+handles β=0 separately. `Section4CurvatureUniform.lean` reuses Step 32's
+deterministic argument; Proposition 4.10 no longer assumes Lipschitz regularity.
+
+`Section4InitialHessian.lean` reuses the existing weighted Cauchy--Schwarz
+inequality at zero mass and `parisiStep_add` to prove the actual `R(v)≤R(0)`.
+`Section5LocalLeft.lean` and `Section5InitialLeft.lean` combine the actual
+slope derivative with the already checked pressure gain. `Section5LeftUniform.lean`
+discharges regularity and supplies a beta-only constant for Propositions 5.1
+and 5.3. All free-energy bounds retain the baseline `2ψ`, not `2φ`.
+
+**Remaining boundary:** the genuine third derivative is asserted on the open
+physical overlap interval; closed-interval Taylor estimates use inward
+derivatives and continuity. Dual and remaining far-overlap/sign estimates and
+uniform Theorem 2.4 assembly are not implied by the completed left/initial
+cases. Theorem 2.2 remains open. No dependency pins, original target statements,
+upstream sources or original placeholders changed.
+
 ## Historical copies and local ports
 
 All vendored files are Apache-2.0.  Original headers are retained unchanged.

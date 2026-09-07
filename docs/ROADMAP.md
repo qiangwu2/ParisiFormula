@@ -74,18 +74,21 @@ At the end of Step 27, replica identification, `U″`, uniform optimality estima
 and the remaining overlap regimes were still missing. Steps 29--30 close the
 derivative and interpolation gaps described in the current frontier below.
 
-**Current checked frontier (Step 32):** Proposition 4.6, closed-interval
+**Current checked frontier (Step 33):** Proposition 4.6, closed-interval
 concavity, both transported lambda gains and the positive-baseline far-left
 strict bound are checked. Stationarity now includes the final compulsory-mass
 level. Exact mass/interior-overlap reduction supplies its inward directions
 without restricting the original Theorem 2.2 schemes. The actual Hessian-square
 factor `R` is continuous up to the variance endpoints, with inward `Q′=-R`.
-The cubic Taylor estimate and Proposition 4.10's sixth-root curvature bound
-are checked at every positive-gap level **conditional on Lipschitz regularity
-of the actual `R`**. A depth-uniform Lipschitz constant for `R` remains the
-next analytic input; Lemma 4.9 and unconditional Proposition 4.10 are not yet
-proved. The other overlap estimates, Theorem 2.4, Theorem 2.2 and the final
-formula remain open.
+The actual scalar third/fourth derivatives now have depth-uniform bounds,
+and Gaussian Stein gives the actual `R` a universal Lipschitz constant 535.
+Lemma 4.9's genuine interior third-derivative bound and the closed-interval
+cubic Taylor estimate are checked. Proposition 4.10's sixth-root curvature
+bound no longer assumes regularity. Propositions 5.1 and 5.3 now give the
+local-left and entire initial-interval quadratic deficits for the actual
+constrained free energy relative to `2ψ`, with explicit beta-only constants.
+The dual and remaining overlap/sign cases, uniform Theorem 2.4 assembly,
+Theorem 2.2 and the final formula remain open.
 
 **Milestone 1 (Targets 1b, 1c) is *not* on this critical path.**  Target 4 is strictly
 stronger than 1c — convergence to `parisiValue` subsumes existence of a limit — and deriving
@@ -1689,16 +1692,76 @@ unchanged. The updated blueprint compiles to 35 pages without LaTeX warnings;
 README, roadmap, blueprint and provenance distinguish conditional curvature
 from the still-unproved uniform regularity input.
 
+**Step 33 (2026-09-06): uniform regularity and the left-overlap estimates.**
+
+* `ParisiThirdUniform.lean` and `ParisiFourthUniform.lean` construct genuine
+  third and fourth spatial derivatives of every actual scalar Parisi input,
+  bounded by 6 and 43 independently of depth. The normalized exponential
+  derivative polynomials contract at fixed mass; changing mass costs at most
+  `5 Δm` and `42 Δm`, which telescope. Zero masses and variances are included.
+  An additional physical smoothing has derivative bounds 14 and 143.
+* `ParisiHessianVariance.lean` differentiates the actual smoothed Hessian
+  jointly in variance and field. `ParisiHessianVarianceBound.lean` reuses the
+  Gaussian heat generator to remove inverse-variance losses: with input
+  C3/C4 bounds `K3,K4`, the Hessian variance derivative is bounded by
+  `K4+4K3+16`, hence 83 on actual inputs.
+* `ParisiHessianSquareFlow.lean` differentiates the actual equal-mass scalar
+  Hessian-square integral with local Gaussian domination. Gaussian Stein
+  gives `|R_initial′| ≤ 2 K2 + K3² + K4 + 2 K3 + 2`, hence 535.
+  `Section4HessianDerivative.lean` and `Section4HessianLipschitz.lean` transport
+  the derivative and bound through fixed normalized outer means without loss.
+  `Section4HessianUniform.lean` supplies every input from the actual recursion:
+  no C4, derivative, or Lipschitz hypothesis remains in its final results.
+  Endpoint continuity gives the closed-interval bound, including singleton
+  intervals. `Section4ThirdVariation.lean` identifies the genuine interior
+  derivative `f''' = β⁶ R′/2`, handling β=0 separately. Ordinary derivatives
+  outside the clamped endpoints are not asserted.
+* `Section4CurvatureUniform.lean` discharges Step 32's analytic premise.
+  Cubic Taylor has constant `535 β⁶/2`; Proposition 4.10 gives
+  `-f″(q_r) ≤ 2(535 β⁶/2 + L_opt(β)) ε^(1/6)` at every physical positive-gap
+  level with the genuine inward stationarity directions. Initial/final levels
+  and ε=0 are included. The original target statements are unchanged.
+* `Section5LocalLeft.lean` proves the actual local lambda-slope estimate and
+  quadratic pressure deficit. `Section4InitialHessian.lean` reuses the existing
+  weighted Cauchy--Schwarz inequality and zero-mass Gaussian semigroup to prove
+  `R(v) ≤ R(0)` on the entire initial interval. `Section5InitialLeft.lean` uses
+  this Jensen comparison without a local-overlap smallness assumption.
+  `Section5LeftUniform.lean` supplies the proved constant 535, completing the
+  SK forms of Propositions 5.1 and 5.3 with the explicit beta-only constant
+  `section5LocalLeftConstant β 535`. These estimates retain minimality,
+  near-optimality, time and admissibility hypotheses; they do not assert
+  Theorem 2.4 for the other overlap cases.
+
+**Step 33 checked/open checklist:**
+
+* [x] Uniform actual scalar C3/C4 bounds, including zero mass and variance.
+* [x] Actual interior `R′` and closed-interval `R` Lipschitz bound, independent of depth.
+* [x] Lemma 4.9's interior third derivative and endpoint-safe cubic Taylor control.
+* [x] Proposition 4.10 without an unproved regularity premise.
+* [x] Local-left Proposition 5.1 and full initial-interval Proposition 5.3.
+* [ ] Dual local/terminal estimates and remaining far-overlap/sign cases.
+* [ ] Uniform Theorem 2.4 assembly and transfer to the original schemes.
+* [ ] Unconditional Theorem 2.2 and final Parisi-formula dependency audit.
+
+**Step 33 validation:** `bash scripts/check.sh` passes (3229 supporting-library
+jobs and 3916 target-build jobs). All 85 public results from the 14 new modules
+have standard-axiom guards, bringing the guarded total to 690. The new modules
+compile without their own warnings. Independent reviews checked the telescoping
+C3/C4 invariants, actual initial Jensen identity, Gaussian normalization and
+Stein calculation, no-loss transport, beta-zero case and endpoint conventions.
+The original four placeholders, target statements and dependency pins remain
+unchanged. The updated blueprint compiles to 37 pages without LaTeX warnings;
+README, roadmap, blueprint and provenance record the new checked/open boundary.
+
 **Remaining work, following the Annals argument:**
 
 1. Prove the a priori two-replica bound of Theorem 2.4 using §3–§5 and the scheme's
    optimality. The imported RS-level `twoReplica_GT_bound` is not this general result.
-   Next concrete step: prove a beta-only Lipschitz bound for the actual
-   Hessian-square factor on the full physical variance interval, including zero.
-   Step 32 then supplies the cubic Taylor and sixth-root curvature estimates
-   without further deterministic analysis. Lemma 4.9 and unconditional
-   Proposition 4.10 remain open. Proposition 4.6 and stationarity after exact
-   reduction are checked; do not redo those arguments.
+   Next concrete step: complete the dual local estimate (Proposition 5.2),
+   reusing the checked right-interval interpolation and endpoint gain, then
+   the remaining terminal/far-overlap and signed cases. Uniform regularity,
+   Proposition 4.10 and the left/initial estimates are now checked in Step 33;
+   do not redo those arguments or the stationarity reduction.
    The actual positive-overlap interpolation estimate (5.9), its dual,
    square completion, mass telescoping and endpoint transport are now
    available, as are the actual nested baseline mass derivative, first variation,
@@ -1707,14 +1770,14 @@ from the still-unproved uniform regularity input.
    endpoint. The actual scalar insertion and optimality input inequalities are
    now available, as are `U′=Q`, its inward endpoint form and Lemma 5.8. Use
    the checked `Q′`/`U″` negative-square identities, endpoint-safe Hessian
-   calculus and uniform mass bounds to prove the remaining regularity input.
-   The positive-variance third-spatial bound scales as `1/√v` and does not
-   give the required zero-inclusive uniform constant. The full nested
-   second mass bound and its depth-uniform invariant are checked in Step 30;
-   do not redo the scalar cumulant or nested derivative theory. Then complete
-   the initial/dual scalar cases and remaining overlap/sign cases. Step 31
+   calculus and new depth-uniform C3/C4 bounds. The old `1/√v` spatial
+   estimate is superseded on actual inputs by Step 33's uniform bounds.
+   The full nested second mass bound and its depth-uniform invariant are
+   checked in Step 30; do not redo the scalar cumulant or nested derivative
+   theory. Complete the dual and remaining overlap/sign cases. Step 31
    transports both lambda gains and proves the positive-baseline far-left
-   strict bound, but not compactness or a local quadratic overlap bound. Both neighbor
+   strict bound; Step 33 adds the local-left quadratic bound, but compactness
+   remains open. Both neighbor
    interval endpoint constructions and both correction adapters are checked.
    Do not replace `2ψ(t)`
    with `2φ(t)`.

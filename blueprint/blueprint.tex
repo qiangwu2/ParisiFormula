@@ -62,10 +62,11 @@ Three older placeholders remain off this critical path: Guerra--Toninelli
 monotonicity, the standalone thermodynamic-limit target, and a uniform Lipschitz
 estimate for the scheme. Fixed-level continuity and existence of a minimizer are proved.
 Stationarity now holds at every level after exact scheme reduction. The actual
-endpoint Hessian calculus, cubic Taylor and sixth-root curvature deduction are
-checked, the latter two conditional on an explicit Lipschitz bound for the
-actual Hessian-square factor. Its depth-uniform bound (Lemma~4.9), unconditional
-Proposition~4.10 and the remaining Section~5 overlap estimates are still open.
+endpoint Hessian calculus and depth-uniform regularity are checked. Lemma~4.9's
+interior third derivative and closed-interval Taylor control now supply
+Proposition~4.10 without an assumed regularity bound. The local-left and initial
+estimates (Propositions~5.1 and~5.3) are checked. The dual and remaining
+overlap/sign cases, and their uniform assembly into Theorem~2.4, remain open.
 
 Dependencies are Mathlib and the pinned RSAT library
 (\texttt{njimaMath/research\_public}), with local ports originating in
@@ -1031,7 +1032,7 @@ in (4.37), obtaining exactly (4.46).
 This proves first mass differentiation. The identities for $U'$ and $U''$
 and uniform first/second mass bounds, together with Proposition~4.6, are
 proved below. Stationarity is completed after exact scheme reduction;
-Proposition~4.10 is proved only conditional on actual Hessian-square regularity.
+Proposition~4.10 is completed below using proved uniform Hessian-square regularity.
 
 \begin{lemma}[Uniform scalar mass bounds and the first half of Lemma 4.5]
 \lean{SpinGlass.Targets.parisiStep\_parisiF\_mass\_derivatives\_uniform}\leanok
@@ -1427,11 +1428,102 @@ This handles the short initial interval; the long one uses the same interior
 Taylor test. At $\varepsilon=0$ a sufficiently small positive test distance
 rules out negative endpoint curvature, without division by the tolerance.
 \end{proof}
-\textbf{Unproved input:} a Lipschitz constant for the actual $R$ depending only
-on $\beta$, uniformly in depth and on the full interval including zero.
-Continuity and the available $1/\sqrt v$ third-spatial bound do not supply it.
-Thus Lemma~4.9 and unconditional Proposition~4.10 remain open; the formalised
-conditional deduction does not assert that this input has been constructed.
+The regularity hypothesis in this intermediate lemma is discharged by the
+following checked results; it is not assumed in the final curvature theorem.
+
+\begin{lemma}[Uniform scalar derivatives and the actual Hessian-square flow]
+\lean{SpinGlass.Targets.abs\_parisiFThird\_le\_six}\leanok
+\lean{SpinGlass.Targets.abs\_parisiFFourth\_le\_43}\leanok
+\lean{SpinGlass.Targets.section4THessianSquare\_lipschitz\_uniform}\leanok
+Every actual scalar Parisi input $A$ has genuine spatial derivatives with
+$|A'''|\le6$ and $|A''''|\le43$, independently of depth. One further physical
+smoothing $B=T_{m,v}A$ has $|B'''|\le14$, $|B''''|\le143$ and
+$|\partial_v B''|\le83$ for $v>0$. The actual Section~4 factor satisfies
+\[
+ |R'(v)|\le535\quad(0<v<a),\qquad
+ |R(v)-R(w)|\le535|v-w|\quad(v,w\in[0,a]).
+\]
+The latter includes both endpoints and degenerate intervals. Zero masses
+and variances are retained in the spatial regularity statements.
+\end{lemma}
+\begin{proof}
+The exponential derivative polynomials
+\[
+ J_3(m)=A'''+3mA'A''+m^2(A')^3,
+\]
+\[
+ J_4(m)=A''''+4mA'A'''+3m(A'')^2+6m^2(A')^2A''+m^3(A')^4
+\]
+contract under the normalized scalar mean at fixed mass. Their mass-change
+bounds are $5\Delta m$ and $42\Delta m$. Starting with $J_3(1)=\tanh$
+and $J_4(1)=1$, monotone mass telescoping gives the depth-independent bounds.
+The Gaussian heat generator bounds the actual Hessian variance derivative.
+For $S=B'$, $T=B''$, $E=B'''$, differentiate the actual initial integral
+\[
+ R_{\mathrm{initial}}(v)=\mathbb E\bigl[T(x+\sqrt{a-v}\,g)^2W(g)\bigr].
+\]
+The weight $W$ is the actual equal-mass normalized tilt. Local domination
+justifies differentiation. Gaussian Stein applied to
+$G=2TE+mT^2S$ removes the inverse outer variance. With bounds $K_2,K_3,K_4$
+for $\partial_vT,E,E'$, the result is
+$2K_2+K_3^2+K_4+2K_3+2=535$.
+All unchanged outer normalized means preserve this bound. Existing endpoint
+continuity and the mean-value theorem give the closed-interval estimate.
+\end{proof}
+
+\begin{lemma}[Lemma 4.9 and Proposition 4.10 with proved regularity]
+\lean{SpinGlass.Targets.abs\_deriv3\_section4FirstVariation\_le\_uniform}\leanok
+\lean{SpinGlass.Targets.section4FirstVariation\_cubic\_taylor\_uniform}\leanok
+\lean{SpinGlass.Targets.section4FirstVariation\_curvature\_bound\_uniform}\leanok
+For $m_{r-1}<1$ and $u\in(q_{r-1},q_r)$ the genuine third derivative satisfies
+\[
+ f'''(u)=\frac{\beta^6}{2}R'(\beta^2(q_r-u)),\qquad
+ |f'''(u)|\le\frac{535\beta^6}{2}.
+\]
+At $\beta=0$ it is zero. Closed-interval cubic Taylor holds with
+$C=535\beta^6/2$. Under the minimality, near-optimality and inward-direction
+hypotheses above, Proposition~4.10 holds with that same $C$, without an
+assumed derivative or Lipschitz estimate.
+\end{lemma}
+\begin{proof}
+The two signs in the reversed variance coordinate cancel. The genuine
+interior second derivative agrees locally with the explicit curvature
+coefficient; differentiate it and use the proved bound. Apply the previously
+checked endpoint-safe Taylor and short/long-gap curvature argument.
+Ordinary derivatives outside the clamped endpoints are not asserted.
+\end{proof}
+
+\begin{lemma}[The local-left and initial estimates, Propositions 5.1 and 5.3]
+\lean{SpinGlass.Targets.section4THessianSquare\_initial\_le\_zero}\leanok
+\lean{SpinGlass.Targets.constrainedPhi\_local\_left\_uniform}\leanok
+\lean{SpinGlass.Targets.constrainedPhi\_initial\_left\_uniform}\leanok
+Let the actual scheme be a fixed-level minimizer within $\varepsilon$ of
+the global infimum, with $\beta\ne0$, $m_{r-1}<m_r$ and the stated right
+inward direction. Put
+\[
+ L_1(\beta)=32+4\cdot535\beta^4+
+ \frac{16(535\beta^6/2+L_{\mathrm{opt}}(\beta))}{\beta^2}.
+\]
+For attainable $u\in[q_{r-1},q_r]$, $0\le t\le t_0<1$, and
+\[
+ L_1(\beta)\varepsilon^{1/6}\le1-t_0,\qquad
+ L_1(\beta)(q_r-u)\le1-t_0,
+\]
+the actual constrained free energy obeys
+\[
+ \Phi_N(t,u)\le2\psi(t)-\frac{(1-t_0)^2}{L_1(\beta)}(u-q_r)^2.
+\]
+For $r=1$, the local-overlap smallness condition can be omitted entirely.
+\end{lemma}
+\begin{proof}
+The actual lambda slope is $Q(t\beta^2(q_r-u))-u$, with inward derivative
+$t\beta^2R(t\beta^2(q_r-u))-1$. Stationarity, curvature and the uniform
+Lipschitz bound imply a slope at least $(1-t_0)(q_r-u)/2$ locally. Apply
+the checked square gain in the actual constrained free energy.
+For $r=1$, $m_0=0$: Jensen and the Gaussian semigroup give $R(v)\le R(0)$
+throughout $[0,\beta^2q_1]$. The slope bound therefore holds on the entire
+initial overlap interval. Coincident endpoints give zero deficit directly.
+\end{proof}
 
 \begin{lemma}[Closed-interval concavity and the supporting line (5.34)]
 \lean{SpinGlass.Targets.concaveOn\_section4U}\leanok
@@ -1926,10 +2018,10 @@ mass-variation estimates are covered by the checked results above.
 The remaining work follows Proposition~2.3 and the coupled-replica concentration
 argument in \S3--\S5 of \cite{Tal06}: prove the a priori bound of Theorem~2.4,
 then apply the checked conditional deduction of Proposition~2.3 and the exact
-mass/interior-overlap reduction. The next analytic input is the depth-uniform
-Lipschitz bound for the actual Hessian-square factor. The local quadratic,
-initial/dual and remaining overlap/sign estimates in Section~5 must then be
-completed and assembled uniformly. The scalar stationarity reduction is
+mass/interior-overlap reduction. Uniform Hessian regularity, curvature and
+the local-left/initial quadratic estimates are now checked. The next step is
+the dual local estimate, followed by the remaining terminal/far-overlap and
+signed cases, and their uniform assembly. The scalar stationarity reduction is
 already checked and does not impose new restrictions on Theorem~2.2.
 The active RSAT dependency includes
 \texttt{SpinGlass.AT.twoReplica\_GT\_bound} and Gaussian concentration results;
