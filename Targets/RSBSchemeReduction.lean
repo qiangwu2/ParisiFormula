@@ -217,8 +217,9 @@ variable [IsProbabilityMeasure (ℙ : Measure Ω)]
 /-- The original Theorem 2.2 quantifiers now follow from a quadratic pressure
 bound proved only for schemes with positive first mass. Leading zero masses
 are removed exactly, with preservation of near-optimality, fixed-level
-minimality, and the actual pressure. The quadratic bound is still unproved;
-no other strictness condition is silently imposed on it. -/
+minimality, and the actual pressure. The quadratic bound remains an explicit
+input to this reusable theorem and is supplied downstream by Theorem 2.4; no
+other strictness condition is silently imposed on it. -/
 theorem talagrand_theorem_2_2_of_positive_mass_quadratic_bound (β h : ℝ)
     (sk : ∀ n : ℕ, SKDisorder (Ω := Ω) n β h) {t₀ : ℝ} (ht₀ : t₀ < 1)
     (hquad : ∃ ε > (0 : ℝ), ∀ {k : ℕ} (s : RSBScheme k), 0 < s.m 1 →

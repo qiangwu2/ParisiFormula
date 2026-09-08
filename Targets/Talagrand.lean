@@ -3261,8 +3261,11 @@ level, `φ_N(t) → ψ(t)` as `N → ∞` for every `0 ≤ t ≤ t₀`.
 
 This is the content of the paper's §3–§5, deduced there from Proposition 2.3 (the
 coupled-replica overlap concentration `μ_r((R_{1,2} - q_r)² ≥ K(ψ(t) - φ(t)) + ε₁) ≤ ε₁`).
-The mass-weighted concentration-to-convergence deduction is now proved in
-`Targets/TalagrandConvergence.lean`; the concentration input remains open.
+The mass-weighted concentration-to-convergence deduction is proved in
+`Targets/TalagrandConvergence.lean`. The completed Theorem 2.4 is connected to
+that deduction downstream in `Targets/TalagrandTheorem22Integration.lean`, which
+proves this exact conclusion. This canonical declaration awaits the import-graph
+refactor that makes the downstream proof available here.
 -/
 theorem talagrand_theorem_2_2 (β h : ℝ) (hβ : 0 < β)
     (sk : ∀ N : ℕ, SKDisorder (Ω := Ω) N β h) {t₀ : ℝ} (ht₀ : t₀ < 1) :

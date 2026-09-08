@@ -51,13 +51,13 @@ identified explicitly. The active theorem statement is in
 \texttt{Targets/Talagrand.lean}; its supporting modules are described in the roadmap.
 \texttt{Targets/Milestones.lean} also contains older, off-path targets.
 
-\textbf{Status (6 September 2026).} The exact-covariance SK version of Theorem~2.1,
-Guerra's RSB upper bound, and its limiting consequence are proved.
-\texttt{Targets/GuerraAudit.lean} guards their standard-axiom-only dependencies.
-Theorem~2.2 remains open, so the full Parisi formula is still conditional.
-Its concentration-to-convergence deduction is now proved separately in
-\texttt{Targets/TalagrandConvergence.lean}, with the concentration estimate
-retained as an explicit, unproved hypothesis.
+\textbf{Status (7 September 2026).} The exact-covariance SK version of Theorem~2.1,
+Guerra's RSB upper bound, and Theorem~2.4 are proved. A downstream integration
+theorem combines Theorem~2.4, Proposition~2.3 and the checked convergence argument
+to prove exactly the mathematical conclusion of Theorem~2.2. All these results
+pass the standard-axiom audit in \texttt{Targets/GuerraAudit.lean}. The canonical
+Theorem~2.2 declaration still contains its placeholder pending an import-graph
+refactor, so the canonical Parisi-formula theorem remains conditional.
 Three older placeholders remain off this critical path: Guerra--Toninelli
 monotonicity, the standalone thermodynamic-limit target, and a uniform Lipschitz
 estimate for the scheme. Fixed-level continuity and existence of a minimizer are proved.
@@ -371,7 +371,7 @@ existence of a limit. Nonemptiness and boundedness below of the defining set of
 \texttt{parisiValue} are proved in \texttt{Targets/Milestones.lean}.
 \end{theorem}
 
-\section{Milestone 4: Theorem 2.2 remains open}
+\section{Milestone 4: Theorem 2.2 integration is checked}
 
 \paragraph{Route decision (fixed).}  We formalise \textbf{Talagrand's} proof
 \cite{Tal06}.  Panchenko's route \cite{Pan13} is out of scope for now.  Consequently the
@@ -389,7 +389,18 @@ exists $\varepsilon>0$ such that, whenever a scheme $s$ satisfies
 \qquad \mathcal P_k(s)\le\mathcal P_k(s')\quad\text{for all schemes $s'$ at level $k$},
 \]
 one has $\varphi_N(t)\to\psi_s(t)$ for every $0\le t\le t_0$.
-The proof remains open.
+The canonical declaration still contains its proof placeholder because it occurs
+upstream of the completed Section~5 development in the current import graph.
+\end{theorem}
+
+\begin{theorem}[Theorem 2.2 downstream integration; formalised]
+\lean{SpinGlass.Targets.talagrand\_theorem\_2\_2\_from\_theorem\_2\_4}\leanok
+Under the hypotheses and with the conclusion of Theorem~\ref{thm:two-two},
+$\varphi_N(t)\to\psi_s(t)$ for every $0\le t\le t_0$. This theorem has the exact
+mathematical type of the canonical target. It applies the completed Theorem~2.4
+to the strict mass/overlap reduction, which already contains Proposition~2.3 and
+the concentration-to-convergence deduction. Only relocation to the canonical
+public declaration remains.
 \end{theorem}
 
 \begin{lemma}[Concentration-to-convergence implication]\label{lem:concentration-convergence}
@@ -404,7 +415,8 @@ sufficiently large $N$, uniformly for $0<t<t_0$,
 T_N\bigl(t,Kg_N(t)+\eta\bigr)\le\eta.
 \]
 Then $\varphi_N\to\psi_s$ uniformly on $[0,t_0]$.
-This is a proved implication; the displayed hypothesis is not yet proved.
+This is a proved implication. The displayed hypothesis is now supplied downstream
+from Theorem~2.4 by the finite-overlap and exact-scheme-reduction modules.
 \end{lemma}
 
 \begin{proof}[Formalised deduction corresponding to (2.20)--(2.22)]
@@ -419,8 +431,9 @@ The integrating-factor estimate in \texttt{guerraGap\_le\_mul\_exp} uses
 only interior derivatives and endpoint continuity. Taking $\eta$ arbitrarily
 small proves uniform convergence. The theorem
 \texttt{talagrand\_theorem\_2\_2\_of\_overlap\_concentration} assembles
-the near-optimality and fixed-level-minimality quantifiers, still under the
-explicit concentration hypothesis. Its proof has no placeholder dependencies.
+the near-optimality and fixed-level-minimality quantifiers under the explicit
+concentration hypothesis. The new downstream integration theorem discharges that
+hypothesis through Theorem~2.4 and has no placeholder dependencies.
 \end{proof}
 
 \begin{theorem}[Parisi formula; conditional deduction \cite{Tal06}]
@@ -475,8 +488,9 @@ and $\mu^{(d)}$ for the normalized replica expectation at that depth. Then
 The weights are nonnegative and sum to one; the depth-zero weight vanishes.
 Thus a bound by $\delta$ on each genuine per-level overlap tail implies
 $T_N(t,a)\le\delta$, the precise input to Lemma~\ref{lem:concentration-convergence}.
-This connection is proved in \texttt{Targets/ReplicaMeasure.lean}; the per-level
-concentration bounds themselves remain open.
+This connection is proved in \texttt{Targets/ReplicaMeasure.lean};
+\texttt{Targets/TalagrandOverlapTail.lean} obtains the per-level bounds from
+Theorem~2.4 and Proposition~2.5.
 \end{lemma}
 
 \begin{lemma}[Deterministic comparison in Talagrand Lemma 2.6]
@@ -2947,25 +2961,13 @@ bound only for these reduced schemes. The baseline mass at $r=1$ is
 nevertheless $m_0=0$. Both its scalar derivative and the uniform nested
 mass-variation estimates are covered by the checked results above.
 
-The remaining work follows Proposition~2.3 and the coupled-replica concentration
-argument in \S3--\S5 of \cite{Tal06}: prove the a priori bound of Theorem~2.4,
-then apply the checked conditional deduction of Proposition~2.3 and the exact
-mass/interior-overlap reduction. Uniform Hessian regularity, curvature and
-the local-left/initial quadratic estimates are now checked. The dual local
-estimate includes both its terminal and zero-first-overlap boundaries, and
-the actual dual mass variation now proves the far-right Proposition~5.6.
-Proposition~5.4 is now checked by exact reflection and frozen-field conditioning.
-Strict scalar interchange and sorting, the mixed paired recursion, sorted
-scalar identification, cumulative tagged overlaps, the original-pressure
-endpoint and the time-zero deficit for Proposition~5.7 are checked.
-The actual mixed-pressure derivative inequality and endpoint transport are
-now checked. Complete the remaining final-trial-interval and first-level
-boundary/sign cases, then the compact-uniform assembly. The scalar stationarity reduction is
-already checked and does not impose new restrictions on Theorem~2.2.
-The active RSAT dependency includes
-\texttt{SpinGlass.AT.twoReplica\_GT\_bound} and Gaussian concentration results;
-these are supporting ingredients, not an existing proof of Theorem~2.2.
-The detailed next-step record is maintained in \texttt{docs/ROADMAP.md}.
+The analytic work through Proposition~2.3, Theorem~2.4 and the exact scheme
+reduction is now checked. The remaining critical-path task is architectural:
+reorganise the acyclic module graph so that the downstream integration proof can
+replace the original \texttt{talagrand\_theorem\_2\_2} placeholder without changing
+its public name. The final Parisi-formula deduction is already written against that
+canonical name and will then receive its placeholder-free dependency audit. The
+detailed next-step record is maintained in \texttt{docs/ROADMAP.md}.
 
 \begin{thebibliography}{9}
 \bibitem{Gue03} F.~Guerra, Broken replica symmetry bounds in the mean field spin glass

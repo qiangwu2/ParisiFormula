@@ -9,10 +9,12 @@ Sherrington–Kirkpatrick (SK) model with exact covariance.
 - **Proved:** the SK version of Theorem 2.1, Guerra's RSB upper bound,
   Proposition 5.7, and Talagrand's uniform quadratic estimate (Theorem 2.4).
   The Theorem 2.4 proof covers every overlap sign, breakpoint, physical level,
-  terminal case, and the zero-first-overlap boundary.
-- **In progress:** Theorem 2.2 and the final lower-bound deduction. The remaining
-  central input is the overlap-concentration step; the reduction from Theorem 2.4
-  to the required finite-RSB convergence statement is already formalised.
+  terminal case, and the zero-first-overlap boundary. The downstream integration
+  theorem now combines Theorem 2.4, Proposition 2.3 and the convergence argument
+  to prove the exact mathematical conclusion of Theorem 2.2.
+- **In progress:** the import-graph refactor that moves this checked conclusion
+  to the canonical `talagrand_theorem_2_2` declaration, followed by the final
+  Parisi-formula dependency audit.
 
 **The full Parisi formula is not yet formalised.** Completed results have
 build-time axiom checks; open proof placeholders remain. A successful build
@@ -52,8 +54,10 @@ project in VS Code with the Lean 4 extension.
 
 - [Targets/](Targets/) — main formalisation and supporting proof modules.
   The completed Theorem 2.4 entry point is
-  [TalagrandTheorem24.lean](Targets/TalagrandTheorem24.lean); the remaining
-  Theorem 2.2 target is in [Talagrand.lean](Targets/Talagrand.lean).
+  [TalagrandTheorem24.lean](Targets/TalagrandTheorem24.lean), and
+  [TalagrandTheorem22Integration.lean](Targets/TalagrandTheorem22Integration.lean)
+  proves the exact Theorem 2.2 conclusion downstream. The canonical Theorem 2.2
+  declaration remains in [Talagrand.lean](Targets/Talagrand.lean).
   [GuerraAudit.lean](Targets/GuerraAudit.lean) checks completed-result dependencies.
 - [ParisiFormula/](ParisiFormula/) — supporting library, without proof placeholders.
 - [Roadmap](docs/ROADMAP.md) — proof plan, detailed checkpoints and remaining work.

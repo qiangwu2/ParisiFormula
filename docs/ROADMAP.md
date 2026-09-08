@@ -12,17 +12,22 @@ the value given by the Parisi formula (`parisi_formula` in Lean). It follows fro
 * **liminf ≥** — Talagrand's coupled-replica lower bound (Milestone 4), whose induction on
   the number of RSB levels needs **Target 2b-i** (continuity of `𝒫_k` in the parameters for
   fixed `k`, hence existence of a minimiser — Talagrand's (2.17)). **2b-i is proved**;
-  Theorem 2.2, the coupled-replica convergence argument, remains open.
+  the exact conclusion of Theorem 2.2 is now proved downstream, while its canonical
+  declaration still awaits the import-graph refactor.
 
-**Current critical path: prove `talagrand_theorem_2_2`.** Theorem 2.1, Targets 3 and 3',
-the minimizer, and `parisiValue` well-definedness are proved. `parisi_formula` is already
-deduced from these results and Theorem 2.2. The axiom guards in `Targets/GuerraAudit.lean`
-verify that Theorem 2.1 and the upper bounds have no placeholder dependencies.
+**Current critical path: move the checked downstream conclusion to the canonical
+`talagrand_theorem_2_2` declaration.** Theorem 2.1, Targets 3 and 3', the minimizer,
+Theorem 2.4, and the exact Theorem 2.2 integration theorem are proved. `parisi_formula`
+is already deduced from Theorem 2.2. The axiom guards in `Targets/GuerraAudit.lean`
+verify the completed critical-path results without placeholder dependencies.
 
-The convergence deduction within Theorem 2.2 is now proved in
+The convergence deduction within Theorem 2.2 is proved in
 `Targets/TalagrandConvergence.lean`, conditional on an explicit mass-weighted
-overlap-concentration estimate. The next missing input is that concentration estimate,
-not the differential-inequality argument. The unconditional Theorem 2.2 remains open.
+overlap-concentration estimate. `Targets/TalagrandOverlapTail.lean` derives that
+estimate from the quadratic bound, and `Targets/TalagrandTheorem22Integration.lean`
+now supplies the bound using Theorem 2.4. Thus the downstream theorem has exactly
+the unconditional Theorem 2.2 conclusion. The remaining issue is declaration placement
+in the acyclic module graph, not an unproved concentration estimate.
 
 The unrestricted coupled cascade and both identities in Lemma 2.7 are now proved in
 `Targets/CoupledCascade.lean`. `Targets/ReplicaMeasure.lean` identifies the individual
@@ -2713,14 +2718,14 @@ and it prunes a large branch of prerequisites — we do **not** need any of:
 * Ruelle probability cascades / Poisson–Dirichlet,
 * the Aizenman–Sims–Starr scheme.
 
-The next task is the proof of `talagrand_theorem_2_2` in `Targets/Talagrand.lean`,
-following Proposition 2.3 and the coupled-replica estimates of §3–§5. The current
-statement asks for convergence `φ_N(t) → ψ(t)` on `0 ≤ t ≤ t₀ < 1` for schemes that
-are sufficiently close to `parisiValue` and minimize at their own fixed level.
-The deduction from this theorem and Theorem 2.1 to `parisi_formula` is already written.
-The deduction from a mass-weighted Proposition 2.3 hypothesis to Theorem 2.2 is now
-also proved separately, as detailed in Step 13 above. Lemma 2.7 and the individual-to-
-mass-weighted replica conversion are proved in Step 14.
+The exact mathematical conclusion of `talagrand_theorem_2_2` is now proved in
+`Targets/TalagrandTheorem22Integration.lean`, following Proposition 2.3 and the
+coupled-replica estimates of §3–§5. The current canonical statement asks for convergence
+`φ_N(t) → ψ(t)` on `0 ≤ t ≤ t₀ < 1` for schemes that are sufficiently close to the
+value given by the Parisi formula and minimize at their own fixed level. The deduction
+from this theorem and Theorem 2.1 to `parisi_formula` is already written. The next task
+is to reorganize the import graph so this checked downstream proof replaces the
+canonical placeholder in `Targets/Talagrand.lean`.
 
 Supporting results available through the **active RSAT dependency** include:
 
@@ -2729,7 +2734,8 @@ Supporting results available through the **active RSAT dependency** include:
   `Lemmas/SpinGlass/gaussian_concentration.lean`;
 * the parameter-continuity framework under `Lemmas/AT/`.
 
-These are supporting ingredients, not an existing proof of the local Theorem 2.2.
+These are supporting ingredients reused by the now-checked downstream proof of
+Theorem 2.2; they do not individually state the local theorem.
 Their physical files are under `.lake/packages/QuantitativeStrictAT/RSAT/`; no new
 vendoring or mixing of the two historical forks is needed to import them.
 
@@ -2769,7 +2775,20 @@ quadratic estimate. The public theorem `talagrand_theorem_2_4` in
 quantifier order and depends only on Lean's standard logical axioms. No regional
 hypothesis or proof placeholder remains in Theorem 2.4.
 
-The next critical-path task is the concentration input needed by Theorem 2.2.
+### Step 52 — Theorem 2.4 to Theorem 2.2 integration (checked)
+
+`Targets/TalagrandTheorem22Integration.lean` proves
+`talagrand_theorem_2_2_from_theorem_2_4`, with exactly the parameters, hypotheses and
+conclusion of Talagrand's Theorem 2.2. The proof feeds
+`talagrand_theorem_2_4` into
+`talagrand_theorem_2_2_of_strict_mass_overlap_quadratic_bound`; that existing theorem
+performs the exact mass/overlap reduction, Proposition 2.3 overlap-tail deduction and
+concentration-to-convergence argument. The integration theorem depends only on
+`propext`, `Classical.choice` and `Quot.sound`, and is guarded by `GuerraAudit`.
+
+The next critical-path task is the import-graph refactor needed to replace the original
+`talagrand_theorem_2_2` placeholder with this checked proof while preserving the public
+name. No mathematical estimate remains between Theorem 2.4 and Theorem 2.2.
 
 ## Housekeeping (any time)
 

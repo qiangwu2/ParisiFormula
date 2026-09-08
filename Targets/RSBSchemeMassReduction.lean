@@ -263,7 +263,8 @@ variable [IsProbabilityMeasure (ℙ : Measure Ω)]
 
 /-- The original Theorem 2.2 quantifiers need a quadratic bound only for
 strictly increasing mass sequences. All mass coincidences are removed exactly;
-no extra strictness of the overlap sequence is inserted into the hypothesis. -/
+no extra strictness of the overlap sequence is inserted into the hypothesis.
+The completed Theorem 2.4 supplies this explicit input downstream. -/
 theorem talagrand_theorem_2_2_of_strict_mass_quadratic_bound (β h : ℝ)
     (sk : ∀ n : ℕ, SKDisorder (Ω := Ω) n β h) {t₀ : ℝ} (ht₀ : t₀ < 1)
     (hquad : ∃ ε > (0 : ℝ), ∀ {k : ℕ} (s : RSBScheme k),

@@ -288,7 +288,7 @@ import Targets.MixedVariancePressure
 import Targets.Section5InterleavedBound
 import Targets.Section5InterleavedPressure
 import Targets.Section5TaggedVelocity
-import Targets.TalagrandTheorem24
+import Targets.TalagrandTheorem22Integration
 
 /-! The new critical-path results are checked against the same three standard
 axioms as the explicit print guards below. Checking the allowed set also
@@ -1259,7 +1259,8 @@ run_cmd do
     ``SpinGlass.Targets.derivWithin2_section4FirstVariation_eq,
     ``SpinGlass.Targets.section4FirstVariationD_upper_zero_of_min,
     ``SpinGlass.Targets.section4FirstVariation_curvature_lower_bound_of_cubic_remainder,
-    ``SpinGlass.Targets.talagrand_theorem_2_4] do
+    ``SpinGlass.Targets.talagrand_theorem_2_4,
+    ``SpinGlass.Targets.talagrand_theorem_2_2_from_theorem_2_4] do
     for ax in ← Lean.collectAxioms name do
       unless allowed.contains ax do
         throwError "{name} depends on disallowed axiom {ax}"

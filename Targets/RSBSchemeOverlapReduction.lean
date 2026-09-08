@@ -191,8 +191,8 @@ variable [IsProbabilityMeasure (ℙ : Measure Ω)]
 
 /-- The original convergence statement needs the missing quadratic bound
 only for strict masses and strict interior overlaps. No extra strictness is
-assumed of the original near-minimizing scheme. The quadratic input itself
-remains the unproved Theorem 2.4, not a conclusion of this reduction. -/
+assumed of the original near-minimizing scheme. This reduction keeps the
+quadratic input explicit; the completed Theorem 2.4 supplies it downstream. -/
 theorem talagrand_theorem_2_2_of_strict_mass_overlap_quadratic_bound (β h : ℝ)
     (sk : ∀ n : ℕ, SKDisorder (Ω := Ω) n β h) {t₀ : ℝ} (ht₀ : t₀ < 1)
     (hquad : ∃ ε > (0 : ℝ), ∀ {k : ℕ} (s : RSBScheme k),

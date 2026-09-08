@@ -1,10 +1,11 @@
 /-
 # The finite-overlap deduction in Proposition 2.3
 
-Theorem 2.4 remains an explicit hypothesis. This module combines a quadratic
+Theorem 2.4 is kept as an explicit hypothesis in this reusable module. It combines a quadratic
 constrained-pressure bound with the proved Proposition 2.5, then sums over the
 actual finite set of attainable overlaps. It does not assert the missing
-quadratic bound or remove the strict-positive-mass restriction.
+quadratic bound or remove the strict-positive-mass restriction; both are supplied
+by downstream modules.
 -/
 import Targets.TalagrandProposition25
 import Targets.ReplicaMeasure

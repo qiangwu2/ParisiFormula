@@ -1423,3 +1423,13 @@ constants. `TalagrandTheorem24.lean` exports the unconditional
 `talagrand_theorem_2_4`; its axiom audit contains only `propext`,
 `Classical.choice`, and `Quot.sound`. No new external dependency or copied
 upstream source was used.
+
+## Step 52 Theorem 2.2 integration
+
+`TalagrandTheorem22Integration.lean` reuses the exact downstream interfaces already
+present in the project: `talagrand_theorem_2_4` supplies the uniform quadratic estimate,
+and `talagrand_theorem_2_2_of_strict_mass_overlap_quadratic_bound` supplies the exact
+scheme reduction, Proposition 2.3 overlap-tail estimate and convergence deduction. The
+result has the same mathematical statement as Theorem 2.2 and introduces no new
+analytic framework, dependency revision or copied source. Its remaining separation
+from the canonical declaration is solely an import-graph issue.
