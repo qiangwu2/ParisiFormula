@@ -73,6 +73,37 @@ theorem exists_uniform_constrainedPhi_gap_of_finite_compact_cover
   have hbound := (Classical.choose_spec (hgap j)).2 z hzj hn sk hatt
   linarith
 
+/- The level-indexed form avoids dependent casts when the physical replica
+level is already supplied as `d` (rather than represented as `k+2-r`). -/
+theorem exists_uniform_constrainedPhi_gap_of_finite_compact_cover_at_level
+    {J : Type*} [Fintype J] {k : ℕ} [IsProbabilityMeasure (ℙ : Measure Ω)]
+    (s : RSBScheme k) (β h : ℝ) (d : ℕ) (X : Set (ℝ × ℝ))
+    (S : J → Set (ℝ × ℝ))
+    (hS : ∀ j, IsCompact (S j))
+    (hcover : ∀ z ∈ X, ∃ j, z ∈ S j)
+    (hgap : ∀ j, ∃ δ > (0 : ℝ), ∀ z ∈ S j, ∀ {n : ℕ}, 0 < n →
+      ∀ sk : SKDisorder (Ω := Ω) n β h,
+      (∃ σ τ : Config n, overlap n σ τ = z.2) →
+      constrainedPhi n s β h sk.U d z.1 z.2 ≤
+        2 * guerraPsi s β h z.1 - δ) :
+    ∃ δ > (0 : ℝ), ∀ z ∈ X, ∀ {n : ℕ}, 0 < n →
+      ∀ sk : SKDisorder (Ω := Ω) n β h,
+      (∃ σ τ : Config n, overlap n σ τ = z.2) →
+      constrainedPhi n s β h sk.U d z.1 z.2 ≤
+        2 * guerraPsi s β h z.1 - δ := by
+  classical
+  let c : J → ℝ := fun j => Classical.choose (hgap j)
+  have hc : ∀ j, 0 < c j := fun j => (Classical.choose_spec (hgap j)).1
+  obtain ⟨δ, hδ, Hδ⟩ := exists_uniform_positive_of_finite_compact_witnesses
+    (S := S) (f := fun j (_ : Unit) (_z : ℝ × ℝ) => c j) hS
+    (fun _ _ => continuousOn_const) (fun j _ _ => ⟨(), hc j⟩)
+  refine ⟨δ, hδ, ?_⟩
+  intro z hz n hn sk hatt
+  obtain ⟨j, hzj⟩ := hcover z hz
+  obtain ⟨_, hδj⟩ := Hδ j z hzj
+  have H := (Classical.choose_spec (hgap j)).2 z hzj hn sk hatt
+  linarith
+
 /- The same finite minimum argument also preserves an eventual-in-`n`
 bound.  This is the form needed after each compact region has supplied its
 own finite-size threshold. -/

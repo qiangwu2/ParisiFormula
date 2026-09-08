@@ -347,6 +347,7 @@ run_cmd do
     ``SpinGlass.Targets.exists_uniform_positive_of_finite_compact_witnesses,
     ``SpinGlass.Targets.exists_uniform_gap_of_finite_compact_cover,
     ``SpinGlass.Targets.exists_uniform_constrainedPhi_gap_of_finite_compact_cover,
+    ``SpinGlass.Targets.exists_uniform_constrainedPhi_gap_of_finite_compact_cover_at_level,
     ``SpinGlass.Targets.exists_eventually_uniform_gap_of_finite_compact_cover,
     ``SpinGlass.Targets.exists_eventually_uniform_constrainedPhi_gap_of_finite_compact_cover,
     ``SpinGlass.Targets.exists_uniform_quadratic_bound_of_regional,

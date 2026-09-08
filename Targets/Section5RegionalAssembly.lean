@@ -197,17 +197,22 @@ theorem exists_uniform_quadratic_bound_of_local_and_finite_compact_cover
   classical
   let Xd : ℕ → Set (ℝ × ℝ) := fun d =>
     {z | z ∈ X ∧ η ≤ |z.2 - s.q (k + 2 - d)|}
-  let c : ℕ → ℝ := fun d => if hd : 1 ≤ d ∧ d ≤ k + 1 then
-    Classical.choose (exists_uniform_constrainedPhi_gap_of_finite_compact_cover_at_level
-      (Ω := Ω) s β h d (Xd d) (S d) (hS d)
-      (fun z hz => hcover d hd.1 hd.2 z hz.1 hz.2)
-      (fun j => hgap d j hd.1 hd.2)) else 1
-  have hc : ∀ d, 1 ≤ d → d ≤ k + 1 → 0 < c d := by
+  have hfinite : ∀ d, 1 ≤ d → d ≤ k + 1 →
+      ∃ δ > (0 : ℝ), ∀ z ∈ Xd d, ∀ {n : ℕ}, 0 < n →
+        ∀ sk : SKDisorder (Ω := Ω) n β h,
+        (∃ σ τ : Config n, overlap n σ τ = z.2) →
+        constrainedPhi n s β h sk.U d z.1 z.2 ≤
+          2 * guerraPsi s β h z.1 - δ := by
     intro d hd1 hdk
-    have H := (Classical.choose_spec (exists_uniform_constrainedPhi_gap_of_finite_compact_cover_at_level
+    exact exists_uniform_constrainedPhi_gap_of_finite_compact_cover_at_level
       (Ω := Ω) s β h d (Xd d) (S d) (hS d)
       (fun z hz => hcover d hd1 hdk z hz.1 hz.2)
-      (fun j => hgap d j hd1 hdk))).1
+      (fun j => hgap d j hd1 hdk)
+  let c : ℕ → ℝ := fun d => if hd : 1 ≤ d ∧ d ≤ k + 1 then
+    Classical.choose (hfinite d hd.1 hd.2) else 1
+  have hc : ∀ d, 1 ≤ d → d ≤ k + 1 → 0 < c d := by
+    intro d hd1 hdk
+    have H := (Classical.choose_spec (hfinite d hd1 hdk)).1
     simpa [c, hd1, hdk] using H
   have hcout : ∀ d, 1 ≤ d → d ≤ k + 1 → ∀ z ∈ Xd d, ∀ {n : ℕ}, 0 < n →
       ∀ sk : SKDisorder (Ω := Ω) n β h,
@@ -215,12 +220,8 @@ theorem exists_uniform_quadratic_bound_of_local_and_finite_compact_cover
       constrainedPhi n s β h sk.U d z.1 z.2 ≤
         2 * guerraPsi s β h z.1 - c d := by
     intro d hd1 hdk z hz n hn sk hatt
-    have H := (Classical.choose_spec (exists_uniform_constrainedPhi_gap_of_finite_compact_cover_at_level
-      (Ω := Ω) s β h d (Xd d) (S d) (hS d)
-      (fun z hz => hcover d hd1 hdk z hz.1 hz.2)
-      (fun j => hgap d j hd1 hdk))).2 z hz hn sk hatt
-    simp [c, hd1, hdk]
-    simpa using H
+    have H := (Classical.choose_spec (hfinite d hd1 hdk)).2 z hz hn sk hatt
+    simpa [c, hd1, hdk] using H
   apply exists_uniform_quadratic_bound_of_finite_regional s β h sk a c
     hη ha hc hlocal
   intro n hn t ht d hd1 hdk u hu hfar
