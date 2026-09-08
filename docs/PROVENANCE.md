@@ -1383,3 +1383,15 @@ repairs preserve the theorem statements:
 
 The covariance comparison lemmas `cov_deriv_diag` and `cov_deriv_offdiag_nonpos` were
 also made public for reuse.
+
+## Step 49 Section 5 compact-gluing additions
+
+`Section5AdjacentScalarFamily` proves the actual adjacent-trial scalar
+recursion equality at a common breakpoint, using stable tagged sorting and
+zero-variance deletion; `Section5AdjacentDeficit` transports it to arbitrary
+lambda deficits. `Section5AdjacentCompact` gives the corresponding continuous
+piecewise boundary family, and `Section5FiniteCompactCover` packages the
+finite minimum over trial intervals. `Section5NegativeCompact` supplies the
+positive-time negative-overlap compact bounds, including exact terminal padding.
+These are checked supporting results; the final all-region uniform Theorem 2.4
+assembly is not claimed complete.

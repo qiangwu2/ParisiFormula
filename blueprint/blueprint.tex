@@ -2427,30 +2427,35 @@ transports the scalar bound to the constrained free energy.
 \end{proof}
 
 The compact uniform quadratic bound of Theorem~2.4 remains open.
-The results above do not yet join different trial indices at their shared
-breakpoints or assemble every signed and terminal domain with the local
-quadratic bounds. No continuity is asserted for the changing finite-size
-overlap constraint.
+The adjacent trial indices are now joined at shared breakpoints by the
+following checked scalar and tagged-sort identities; the remaining signed,
+first-level and terminal domains still require assembly. No continuity is
+asserted for the changing finite-size overlap constraint.
 
 \begin{lemma}[Adjacent inserted-overlap boundary]
 \lean{SpinGlass.Targets.section5Rho\_adjacent\_boundary}\leanok
+\lean{SpinGlass.Targets.section5TaggedMass\_adjacent\_boundary\_of\_ne}\leanok
+\lean{SpinGlass.Targets.section5SortedTagList\_adjacent\_boundary\_erase}\leanok
+\lean{SpinGlass.Targets.section5InterleavedScalarV\_adjacent\_boundary}\leanok
+\lean{SpinGlass.Targets.section5InterleavedLambdaDeficit\_adjacent\_boundary}\leanok
 At the shared breakpoint $u=q_j$, inserting $u$ at level $j$ or at level
 $j+1$ gives the same cumulative overlap sequence:
 \[
   \rho_{j}(p;q_j)=\rho_{j+1}(p;q_j)\qquad(p\ge0).
 \]
-This is only the overlap component of the adjacent-trial gluing; equality of
-the sorted tagged Gaussian operators still requires deleting the changed
-zero-variance interpolation tag and comparing the surviving stable sorts.
+The changed interpolation tag has zero variance at the breakpoint. Stable
+tagged sorting and exact zero-variance deletion therefore identify the full
+scalar recursion, and the arbitrary-lambda deficit transports across the
+boundary.
 \end{lemma}
 
 The compact right outside-trial region is handled symmetrically, with a
 half-open lower overlap endpoint so that the interpolating variance is
-positive. Mathlib's stable insertion-sort permutation lemma now permits
-deleting one tagged entry, including equal mass ties. The scalar-list
-zero-variance filter and reverse-index bridge are also checked as supporting
-infrastructure. The remaining work is the reindexing between the two
-adjacent tagged trial types and the terminal padding case.
+positive. Mathlib's stable insertion-sort permutation lemma, scalar-list
+zero-variance filter, reverse-index bridge, terminal padding, finite compact
+cover bookkeeping, and positive-time negative-overlap compact adapter are
+checked. The remaining work is the global all-region assembly into the single
+quadratic Theorem~2.4 estimate.
 
 \begin{lemma}[Closed-interval concavity and the supporting line (5.34)]
 \lean{SpinGlass.Targets.concaveOn\_section4U}\leanok

@@ -143,8 +143,9 @@ Step 45 proves actual scalar continuity in time and overlap on each admissible
 trial strip, including the sign boundary, and identifies the full-lambda
 time-zero family. Finite compact covers now yield uniform gaps on specified
 left/right neighboring regions and compact left outside-trial regions.
-Adjacent-trial boundary compatibility and the complete uniform Theorem 2.4
-assembly, Theorem 2.2 and the final formula remain open.
+Adjacent-trial boundary compatibility is now checked in `Section5AdjacentScalarFamily`,
+`Section5AdjacentDeficit`, and `Section5AdjacentCompact`; the complete uniform
+Theorem 2.4 assembly, Theorem 2.2 and the final formula remain open.
 
 **Milestone 1 (Targets 1b, 1c) is *not* on this critical path.**  Target 4 is strictly
 stronger than 1c — convergence to `parisiValue` subsumes existence of a limit — and deriving
@@ -2610,15 +2611,23 @@ free energy, nor continuity of a chosen mass or lambda witness.
   transported through exact redundant mass-one padding.
 - [x] `Section5QuadraticAssembly`: an abstract local-quadratic plus uniform-
   outside-gap lemma converts regional estimates into one quadratic constant.
-- [ ] Join adjacent-trial breakpoints and assemble all remaining signed,
-  first-level and padded terminal compact regions with the local quadratic
-  bounds to obtain the single Theorem 2.4 bound.
+- [ ] Assemble all remaining signed, first-level and padded terminal compact
+  regions with the local quadratic bounds to obtain the single Theorem 2.4
+  bound. The adjacent breakpoint gluing itself is now checked.
 - [ ] Close the original Theorem 2.2 placeholder and audit the final formula.
+
+**Step 49 validation:** `bash scripts/check.sh` passes (8939 target jobs).
+Adjacent scalar-family equality, stable tagged-sort deletion, lambda-deficit
+transport, the glued continuous boundary family, finite compact-cover
+bookkeeping, terminal padding, and positive-time negative-overlap compact
+bounds compile and are guarded by `GuerraAudit`. No new placeholder or axiom
+was added; the same four original placeholders remain. The actual global
+all-region Theorem 2.4 assembly is still open.
 
 **Step 48 validation:** `bash scripts/check.sh` passes (3229 supporting jobs,
 8935 target jobs). Terminal compactness, quadratic assembly, stable-sort
 deletion, and scalar-list infrastructure compile without warnings. Forty-three
-new results and two exposed unchanged helpers have allowed-set guards, bringing
+new results and two exposed unchanged helpers had allowed-set guards, bringing
 the total to 1396 checks (940 allowed-set and 456 explicit print guards).
 The same four original placeholders remain; no axiom or placeholder was added.
 The blueprint remains warning-free at 54 pages. The actual Theorem 2.4

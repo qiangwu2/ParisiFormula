@@ -24,8 +24,10 @@ Sherrington–Kirkpatrick (SK) model with exact covariance.
   gaps on compact subregions, and the inserted overlap sequences agree at
   adjacent breakpoints, compact right outside-trial bounds, and the scalar
   zero-variance list bridge are checked.
-  Joining the sorted tagged boundary cases into the full
-  Theorem 2.4 bound remains; Theorem 2.2 and the final formula are still open.
+  Adjacent sorted-tag boundary gluing, lambda-deficit transport, finite compact
+  cover bookkeeping, terminal padding, and positive-time negative-overlap
+  compact bounds are now checked. The final all-region uniform Theorem 2.4
+  assembly remains; Theorem 2.2 and the final formula are still open.
 
 **The full Parisi formula is not yet formalised.** Completed results have
 build-time axiom checks; open proof placeholders remain. A successful build

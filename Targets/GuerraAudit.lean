@@ -123,6 +123,11 @@ import Targets.Section5Proposition57
 import Targets.Section5InterleavedCompact
 import Targets.Section5ScalarComparisonCompact
 import Targets.Section5AdjacentBoundary
+import Targets.Section5AdjacentScalarFamily
+import Targets.Section5AdjacentDeficit
+import Targets.Section5AdjacentCompact
+import Targets.Section5FiniteCompactCover
+import Targets.Section5NegativeCompact
 import Targets.Section5InterleavedRightCompact
 import Targets.Section5StableSortFilter
 import Targets.Section5AdjacentScalar
@@ -327,6 +332,14 @@ run_cmd do
     ``SpinGlass.Targets.mixedScalarStep'_zero_variance,
     ``SpinGlass.Targets.mixedScalarListCascade'_filter,
     ``SpinGlass.Targets.mixedScalarCascade'_ofFn_reverse,
+    ``SpinGlass.Targets.section5TagScalarMass_adjacent_boundary_of_ne,
+    ``SpinGlass.Targets.section5SortedTagList_adjacent_boundary_erase,
+    ``SpinGlass.Targets.section5InterleavedScalarV_adjacent_boundary,
+    ``SpinGlass.Targets.section5InterleavedLambdaDeficit_adjacent_boundary,
+    ``SpinGlass.Targets.continuousOn_section5InterleavedLambdaDeficit_adjacentGlue,
+    ``SpinGlass.Targets.exists_uniform_positive_of_finite_compact_witnesses,
+    ``SpinGlass.Targets.exists_uniform_constrainedPhi_negative_compact,
+    ``SpinGlass.Targets.exists_uniform_constrainedPhi_negative_terminal_compact_padded,
     ``SpinGlass.Targets.exists_uniform_constrainedPhi_right_terminal_padded,
     ``SpinGlass.Targets.exists_quadratic_constant_of_local_and_outside,
     ``SpinGlass.Targets.exists_constrainedPhi_initial_signed_gap,
