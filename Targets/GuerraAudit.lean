@@ -131,6 +131,7 @@ import Targets.Section5NegativeCompact
 import Targets.Section5NegativeQuadratic
 import Targets.Section5NegativeInitialCompact
 import Targets.Section5NegativeInitialBeyondCompact
+import Targets.Section5FarCompact
 import Targets.Section5LocalReducedAssembly
 import Targets.Section5FiniteGapCover
 import Targets.Section5RegionalAssembly
@@ -354,6 +355,8 @@ run_cmd do
     ``SpinGlass.Targets.exists_uniform_quadratic_bound_negative_trial,
     ``SpinGlass.Targets.exists_uniform_constrainedPhi_negative_initial_trial,
     ``SpinGlass.Targets.exists_uniform_constrainedPhi_negative_initial_beyond_compact,
+    ``SpinGlass.Targets.exists_uniform_constrainedPhi_compact_far_left,
+    ``SpinGlass.Targets.exists_uniform_constrainedPhi_compact_far_right,
     ``SpinGlass.Targets.exists_uniform_local_quadratic_reduced_min,
     ``SpinGlass.Targets.exists_uniform_constrainedPhi_right_terminal_padded,
     ``SpinGlass.Targets.exists_quadratic_constant_of_local_and_outside,
