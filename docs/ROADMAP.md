@@ -2746,6 +2746,16 @@ not on this legacy target or the separate Guerra–Toninelli limit proof.
       `bddBelow_parisiSet`, `parisiSet_nonempty`, `parisiValue_le`, `parisiValue_ge`.
       `parisiValue_le` is the form Target 3' consumes.
 
+### Step 50 — Compact boundary and regional assembly (checked)
+
+`Section5EndpointGlue`, `Section5FiniteGapCover`, `Section5LocalReducedAssembly`,
+and `Section5NegativeInitialCompact` are now compiled and guarded by `GuerraAudit`.
+They close the endpoint-safe compact bookkeeping, the reduced-scheme local
+quadratic neighborhood (including the first-level zero case), and the initial
+negative-overlap compact band.  The exact global Theorem 2.4 still requires the
+same-trial far-left/far-right pressure gains to be assembled into the finite
+outside cover; this remains the active proof task.
+
 ## Housekeeping (any time)
 
 - [ ] Set up `leanblueprint` so `blueprint/blueprint.tex` renders as a website with the

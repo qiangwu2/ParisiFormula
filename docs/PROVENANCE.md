@@ -1395,3 +1395,13 @@ finite minimum over trial intervals. `Section5NegativeCompact` supplies the
 positive-time negative-overlap compact bounds, including exact terminal padding.
 These are checked supporting results; the final all-region uniform Theorem 2.4
 assembly is not claimed complete.
+
+## Step 50 compact regional additions
+
+`Section5EndpointGlue` supplies continuous right-endpoint assignment for closed
+trial bands. `Section5FiniteGapCover` and the finite regional bridge preserve
+uniform constants through compact covers. `Section5LocalReducedAssembly` proves
+the reduced-scheme local quadratic neighborhood, while
+`Section5NegativeInitialCompact` and `Section5NegativeInitialBeyondCompact`
+cover the first physical level's negative bands. The same-trial far-left and
+far-right pressure-gain cover is still the remaining global Theorem 2.4 task.
