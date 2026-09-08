@@ -20,9 +20,10 @@ exact-covariance SK setting.** The numbered theorems and final formula have
 build-time axiom checks. Three older placeholders remain in `Targets/Milestones.lean`,
 but they are not dependencies of the Parisi-formula theorem.
 
-See the [roadmap](docs/ROADMAP.md) for the checked/open checklist, next steps
-and detailed progress. Development follows Talagrand's 2006 proof and reuses
-Mathlib and the locked RSAT dependency where possible.
+See the [roadmap](docs/ROADMAP.md) for the completed proof chain and the three
+optional declarations outside it. The detailed development checkpoints are
+preserved in the [roadmap history](docs/ROADMAP_HISTORY.md). Development follows
+Talagrand's 2006 proof and reuses Mathlib and the locked RSAT dependency where possible.
 
 ## Build
 
@@ -60,7 +61,8 @@ project in VS Code with the Lean 4 extension.
   [Talagrand.lean](Targets/Talagrand.lean) façade.
   [GuerraAudit.lean](Targets/GuerraAudit.lean) checks completed-result dependencies.
 - [ParisiFormula/](ParisiFormula/) — supporting library, without proof placeholders.
-- [Roadmap](docs/ROADMAP.md) — proof plan, detailed checkpoints and remaining work.
+- [Roadmap](docs/ROADMAP.md) — current proof status, verification and optional follow-up work.
+- [Roadmap history](docs/ROADMAP_HISTORY.md) — archived Steps 1–53 and their historical frontiers.
 - [Blueprint](blueprint/blueprint.tex) — mathematical outline with formalisation status.
 - [Provenance](docs/PROVENANCE.md) — dependency pins, source credits and reusable results.
 - [Working rules](AGENTS.md) — proof scope, reuse policy and verification requirements.
