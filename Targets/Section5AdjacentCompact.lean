@@ -79,7 +79,7 @@ theorem continuousOn_section5InterleavedLambdaDeficit_adjacentGlue {k : ℕ}
       exact frontier_le_subset_eq continuous_snd continuous_const hz.2
     dsimp [f, g]
     rw [heq]
-    exact section5InterleavedLambdaDeficit_adjacent_boundary s β h r hj z.1 ℓ
+    exact section5InterleavedLambdaDeficit_adjacent_boundary s β h r (j := j) hj z.1 ℓ
   have H := ContinuousOn.if (s := S) (p := p) (f := f) (g := g)
     hboundary hf hg
   change ContinuousOn (fun z => if p z then f z else g z) S at H
@@ -87,5 +87,59 @@ theorem continuousOn_section5InterleavedLambdaDeficit_adjacentGlue {k : ℕ}
     section5InterleavedLambdaDeficit s β h r j z.1 z.2 ℓ else
     section5InterleavedLambdaDeficit s β h r (j + 1) z.1 z.2 ℓ) S
   exact H
+
+/-/ A compact positive-overlap band spanning two adjacent trial intervals can
+be handled by the glued scalar witness.  The common breakpoint is included
+because the two scalar deficits agree there. -/
+theorem exists_uniform_constrainedPhi_gap_on_adjacent_trial
+    {Ω : Type*} [MeasureSpace Ω] [IsProbabilityMeasure (ℙ : Measure Ω)]
+    {k : ℕ} (s : RSBScheme k) (β h : ℝ) {r j : ℕ}
+    (hr0 : 1 ≤ r) (hr : r ≤ k + 1) (hj0 : 1 ≤ j)
+    (hj : j + 1 ≤ k + 1)
+    {S : Set (ℝ × ℝ)} (hS : IsCompact S)
+    (ht : ∀ z ∈ S, z.1 ∈ Icc (0 : ℝ) 1)
+    (huneg : ∀ z ∈ S, 0 ≤ z.2)
+    (hu : ∀ z ∈ S, z.2 ∈ Icc (s.q (j - 1)) (s.q (j + 1)))
+    (hpos : ∀ z ∈ S, ∃ ℓ,
+      0 < section5InterleavedLambdaDeficit_adjacentGlue (j := j) s β h r ℓ z) :
+    ∃ δ > 0, ∀ z ∈ S, ∀ {n : ℕ}, 0 < n →
+      ∀ sk : SKDisorder (Ω := Ω) n β h,
+      (∃ σ τ : Config n, overlap n σ τ = z.2) →
+      constrainedPhi n s β h sk.U (k + 2 - r) z.1 z.2 ≤
+        2 * guerraPsi s β h z.1 - δ := by
+  have hdom : S ⊆ {z : ℝ × ℝ | z.2 ∈ Icc (s.q (j - 1)) (s.q (j + 1))} := by
+    intro z hz
+    exact hu z hz
+  have hcont (ℓ : ℝ) : ContinuousOn
+      (section5InterleavedLambdaDeficit_adjacentGlue (j := j) s β h r ℓ) S :=
+    (continuousOn_section5InterleavedLambdaDeficit_adjacentGlue s β h r hj ℓ).mono hdom
+  obtain ⟨δ, hδ, H⟩ := exists_uniform_positive_of_compact_witnesses hS
+    (fun ℓ z => section5InterleavedLambdaDeficit_adjacentGlue (j := j) s β h r ℓ z)
+    hcont hpos
+  refine ⟨δ, hδ, ?_⟩
+  intro z hz n hn sk hatt
+  obtain ⟨ℓ, hℓ⟩ := H z hz
+  by_cases hleft : z.2 ≤ s.q j
+  · have htrial : |z.2| ∈ Icc (s.q (j - 1)) (s.q j) := by
+      rw [abs_of_nonneg (huneg z hz)]
+      exact ⟨(hu z hz).1, hleft⟩
+    have HB := constrainedPhi_le_guerraPsi_sub_interleavedLambdaDeficit hn s β h sk
+      hr0 hr (j := j) hj0 (by omega) (ht z hz) htrial hatt ℓ
+    have hglue : section5InterleavedLambdaDeficit_adjacentGlue (j := j) s β h r ℓ z =
+        section5InterleavedLambdaDeficit s β h r j z.1 z.2 ℓ := by
+      simp only [section5InterleavedLambdaDeficit_adjacentGlue, hleft, ↓reduceIte]
+    rw [hglue] at hℓ
+    linarith
+  · have hright : s.q j ≤ z.2 := le_of_not_ge hleft
+    have htrial : |z.2| ∈ Icc (s.q j) (s.q (j + 1)) := by
+      rw [abs_of_nonneg (huneg z hz)]
+      exact ⟨hright, (hu z hz).2⟩
+    have HB := constrainedPhi_le_guerraPsi_sub_interleavedLambdaDeficit hn s β h sk
+      hr0 hr (by omega) (j := j + 1) (by omega) (ht z hz) htrial hatt ℓ
+    have hglue : section5InterleavedLambdaDeficit_adjacentGlue (j := j) s β h r ℓ z =
+        section5InterleavedLambdaDeficit s β h r (j + 1) z.1 z.2 ℓ := by
+      simp only [section5InterleavedLambdaDeficit_adjacentGlue, hleft, ↓reduceIte]
+    rw [hglue] at hℓ
+    linarith
 
 end SpinGlass.Targets

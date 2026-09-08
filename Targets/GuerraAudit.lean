@@ -128,6 +128,11 @@ import Targets.Section5AdjacentDeficit
 import Targets.Section5AdjacentCompact
 import Targets.Section5FiniteCompactCover
 import Targets.Section5NegativeCompact
+import Targets.Section5NegativeQuadratic
+import Targets.Section5NegativeInitialCompact
+import Targets.Section5LocalReducedAssembly
+import Targets.Section5FiniteGapCover
+import Targets.Section5RegionalAssembly
 import Targets.Section5InterleavedRightCompact
 import Targets.Section5StableSortFilter
 import Targets.Section5AdjacentScalar
@@ -338,8 +343,16 @@ run_cmd do
     ``SpinGlass.Targets.section5InterleavedLambdaDeficit_adjacent_boundary,
     ``SpinGlass.Targets.continuousOn_section5InterleavedLambdaDeficit_adjacentGlue,
     ``SpinGlass.Targets.exists_uniform_positive_of_finite_compact_witnesses,
-    ``SpinGlass.Targets.exists_uniform_constrainedPhi_negative_compact,
-    ``SpinGlass.Targets.exists_uniform_constrainedPhi_negative_terminal_compact_padded,
+    ``SpinGlass.Targets.exists_uniform_gap_of_finite_compact_cover,
+    ``SpinGlass.Targets.exists_uniform_constrainedPhi_gap_of_finite_compact_cover,
+    ``SpinGlass.Targets.exists_eventually_uniform_gap_of_finite_compact_cover,
+    ``SpinGlass.Targets.exists_eventually_uniform_constrainedPhi_gap_of_finite_compact_cover,
+    ``SpinGlass.Targets.exists_uniform_quadratic_bound_of_regional,
+    ``SpinGlass.Targets.exists_uniform_quadratic_bound_of_finite_regional,
+    ``SpinGlass.Targets.exists_uniform_constrainedPhi_negative_trial,
+    ``SpinGlass.Targets.exists_uniform_quadratic_bound_negative_trial,
+    ``SpinGlass.Targets.exists_uniform_constrainedPhi_negative_initial_trial,
+    ``SpinGlass.Targets.exists_uniform_local_quadratic_reduced_min,
     ``SpinGlass.Targets.exists_uniform_constrainedPhi_right_terminal_padded,
     ``SpinGlass.Targets.exists_quadratic_constant_of_local_and_outside,
     ``SpinGlass.Targets.exists_constrainedPhi_initial_signed_gap,
