@@ -26,8 +26,11 @@ Sherrington–Kirkpatrick (SK) model with exact covariance.
   zero-variance list bridge are checked.
   Adjacent sorted-tag boundary gluing, lambda-deficit transport, finite compact
   cover bookkeeping, terminal padding, and positive-time negative-overlap
-  compact bounds are now checked. The final all-region uniform Theorem 2.4
-  assembly remains; Theorem 2.2 and the final formula are still open.
+  compact bounds are now checked. Initial negative-overlap compact bands and
+  same-trial far-left/far-right pressure-gap compact bounds are also checked;
+  the level-indexed finite-cover bridge now produces the exact eventual
+  quadratic-bound quantifier. The final all-region uniform Theorem 2.4
+  instantiation remains; Theorem 2.2 and the final formula are still open.
 
 **The full Parisi formula is not yet formalised.** Completed results have
 build-time axiom checks; open proof placeholders remain. A successful build

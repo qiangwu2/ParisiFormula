@@ -1405,3 +1405,9 @@ the reduced-scheme local quadratic neighborhood, while
 `Section5NegativeInitialCompact` and `Section5NegativeInitialBeyondCompact`
 cover the first physical level's negative bands. The same-trial far-left and
 far-right pressure-gain cover is still the remaining global Theorem 2.4 task.
+
+`Section5FarCompact` now packages those same-trial far-left and far-right
+pressure gains on compact bands. The level-indexed finite-cover bridge avoids
+dependent casts in the replica-level parameter and yields the exact common-
+constant quadratic-bound quantifier. The remaining work is the explicit finite
+region instantiation for all signs and endpoint bands.
