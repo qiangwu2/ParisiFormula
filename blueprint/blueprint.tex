@@ -2426,11 +2426,11 @@ need not be continuous. The actual arbitrary-lambda endpoint inequality
 transports the scalar bound to the constrained free energy.
 \end{proof}
 
-The compact uniform quadratic bound of Theorem~2.4 remains open.
-The adjacent trial indices are now joined at shared breakpoints by the
-following checked scalar and tagged-sort identities; the remaining signed,
-first-level and terminal domains still require assembly. No continuity is
-asserted for the changing finite-size overlap constraint.
+The compact uniform quadratic bound of Theorem~2.4 is now checked by the
+public Lean theorem cited below. Its finite assembly joins adjacent trial
+indices at shared breakpoints and includes the signed, first-level,
+near-terminal and terminal domains. No continuity is asserted for the
+changing finite-size overlap constraint.
 
 \begin{lemma}[Adjacent inserted-overlap boundary]
 \lean{SpinGlass.Targets.section5Rho\_adjacent\_boundary}\leanok
@@ -2454,8 +2454,8 @@ half-open lower overlap endpoint so that the interpolating variance is
 positive. Mathlib's stable insertion-sort permutation lemma, scalar-list
 zero-variance filter, reverse-index bridge, terminal padding, finite compact
 cover bookkeeping, and positive-time negative-overlap compact adapter are
-checked. The remaining work is the global all-region assembly into the single
-quadratic Theorem~2.4 estimate.
+checked. These pieces are assembled into the single quadratic estimate by
+\lean{SpinGlass.Targets.talagrand\_theorem\_2\_4}\leanok.
 
 \begin{lemma}[Closed-interval concavity and the supporting line (5.34)]
 \lean{SpinGlass.Targets.concaveOn\_section4U}\leanok

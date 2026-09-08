@@ -31,7 +31,8 @@ cascade and the deterministic part of Lemma 2.6 are now proved as well (Step 15)
 Gaussian concentration (Step 16) and its transfer to the abstract disorder (Step 17)
 are now proved. Lemma 2.6 holds on `[0,1]`, and Proposition 2.5 holds on `(0,1)` with
 an explicit size/time-independent constant. This is the time domain needed by the
-existing convergence deduction. The a priori bound of Theorem 2.4 is in progress:
+existing convergence deduction. The a priori bound of Theorem 2.4 is now complete;
+Steps 18--51 below record the construction:
 Step 18 supplies the §5 lambda endpoint construction and its comparison for the
 existing cascade, but not the second interpolation or the strict improvement.
 Step 19 reuses RSAT's general analytic framework to supply finite paired-field
@@ -74,7 +75,7 @@ At the end of Step 27, replica identification, `U″`, uniform optimality estima
 and the remaining overlap regimes were still missing. Steps 29--30 close the
 derivative and interpolation gaps described in the current frontier below.
 
-**Current checked frontier (Step 45):** Proposition 4.6, closed-interval
+**Current checked frontier (Step 51):** Proposition 4.6, closed-interval
 concavity, both transported lambda gains and the positive-baseline far-left
 strict bound are checked. Stationarity now includes the final compulsory-mass
 level. Exact mass/interior-overlap reduction supplies its inward directions
@@ -143,9 +144,10 @@ Step 45 proves actual scalar continuity in time and overlap on each admissible
 trial strip, including the sign boundary, and identifies the full-lambda
 time-zero family. Finite compact covers now yield uniform gaps on specified
 left/right neighboring regions and compact left outside-trial regions.
-Adjacent-trial boundary compatibility is now checked in `Section5AdjacentScalarFamily`,
-`Section5AdjacentDeficit`, and `Section5AdjacentCompact`; the complete uniform
-Theorem 2.4 assembly, Theorem 2.2 and the final formula remain open.
+Adjacent-trial boundary compatibility is checked in `Section5AdjacentScalarFamily`,
+`Section5AdjacentDeficit`, and `Section5AdjacentCompact`. The finite positive and
+negative region assemblies now prove the complete uniform Theorem 2.4 statement.
+Theorem 2.2 and the final formula remain open.
 
 **Milestone 1 (Targets 1b, 1c) is *not* on this critical path.**  Target 4 is strictly
 stronger than 1c — convergence to `parisiValue` subsumes existence of a limit — and deriving
@@ -2755,6 +2757,19 @@ quadratic neighborhood (including the first-level zero case), and the initial
 negative-overlap compact band.  The exact global Theorem 2.4 still requires the
 same-trial far-left/far-right pressure gains to be assembled into the finite
 outside cover; this remains the active proof task.
+
+### Step 51 — Talagrand Theorem 2.4 (checked)
+
+`Section5PositiveAwayCompleteCases` assembles the positive overlap region for
+every finite-RSB depth and physical level, including `k=0`, `r=1`, the near-last
+and terminal levels. `Section5ConcreteNegativeAway` supplies the negative region,
+and `Section5Theorem24Assembly` combines the uniform away gaps with the local
+quadratic estimate. The public theorem `talagrand_theorem_2_4` in
+`Targets/TalagrandTheorem24.lean` has Talagrand's eventual-in-system-size
+quantifier order and depends only on Lean's standard logical axioms. No regional
+hypothesis or proof placeholder remains in Theorem 2.4.
+
+The next critical-path task is the concentration input needed by Theorem 2.2.
 
 ## Housekeeping (any time)
 

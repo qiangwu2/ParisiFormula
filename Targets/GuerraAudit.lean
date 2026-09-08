@@ -78,8 +78,7 @@ including the terminal interval through exact redundant padding of the scalar,
 paired and factor recursions. Further guards prove the actual zero-first-overlap
 right comparator, its squared-slope endpoint derivative, and one-sided curvature.
 The local-right estimate now covers every level of a reduced scheme, including
-both boundary cases. Other overlap/sign regimes and the uniform Theorem 2.4
-assembly remain open.
+both boundary cases.
 Further guards certify actual right insertion, genuine first/second mass
 derivatives, depth-uniform Taylor control, and dual quantitative optimality.
 The normalized right factor is mass-continuous and identified at baseline;
@@ -116,8 +115,8 @@ reflection and reuse of the local/far-right bounds. The assembled Proposition
 5.7 bound covers reduced near-minimizing schemes, with one positive accuracy
 chosen before the scheme and a positive gap chosen before system size and
 disorder. Every overlap sign, trial breakpoint, first-level boundary and time
-zero is included. The uniform Theorem 2.4 bound, Theorem 2.2 and the final
-Parisi formula are not certified.
+zero is included. The all-region compact assembly and uniform Theorem 2.4
+bound are now certified. Theorem 2.2 and the final Parisi formula remain open.
 -/
 import Targets.Section5Proposition57
 import Targets.Section5InterleavedCompact
@@ -126,12 +125,14 @@ import Targets.Section5AdjacentBoundary
 import Targets.Section5AdjacentScalarFamily
 import Targets.Section5AdjacentDeficit
 import Targets.Section5AdjacentCompact
+import Targets.Section5AdjacentStrictCompact
 import Targets.Section5FiniteCompactCover
 import Targets.Section5NegativeCompact
 import Targets.Section5NegativeQuadratic
 import Targets.Section5NegativeInitialCompact
 import Targets.Section5NegativeInitialBeyondCompact
 import Targets.Section5FarCompact
+import Targets.Section5PhysicalNeighborEndpoint
 import Targets.Section5LocalReducedAssembly
 import Targets.Section5FiniteGapCover
 import Targets.Section5RegionalAssembly
@@ -287,6 +288,7 @@ import Targets.MixedVariancePressure
 import Targets.Section5InterleavedBound
 import Targets.Section5InterleavedPressure
 import Targets.Section5TaggedVelocity
+import Targets.TalagrandTheorem24
 
 /-! The new critical-path results are checked against the same three standard
 axioms as the explicit print guards below. Checking the allowed set also
@@ -344,6 +346,8 @@ run_cmd do
     ``SpinGlass.Targets.section5InterleavedScalarV_adjacent_boundary,
     ``SpinGlass.Targets.section5InterleavedLambdaDeficit_adjacent_boundary,
     ``SpinGlass.Targets.continuousOn_section5InterleavedLambdaDeficit_adjacentGlue,
+    ``SpinGlass.Targets.exists_uniform_constrainedPhi_gap_on_adjacent_left_strict,
+    ``SpinGlass.Targets.exists_uniform_constrainedPhi_gap_on_adjacent_right_strict,
     ``SpinGlass.Targets.exists_uniform_positive_of_finite_compact_witnesses,
     ``SpinGlass.Targets.exists_uniform_gap_of_finite_compact_cover,
     ``SpinGlass.Targets.exists_uniform_constrainedPhi_gap_of_finite_compact_cover,
@@ -358,6 +362,7 @@ run_cmd do
     ``SpinGlass.Targets.exists_uniform_constrainedPhi_negative_initial_beyond_compact,
     ``SpinGlass.Targets.exists_uniform_constrainedPhi_compact_far_left,
     ``SpinGlass.Targets.exists_uniform_constrainedPhi_compact_far_right,
+    ``SpinGlass.Targets.exists_constrainedPhi_gap_right_at_physical_neighbor,
     ``SpinGlass.Targets.exists_uniform_local_quadratic_reduced_min,
     ``SpinGlass.Targets.exists_uniform_constrainedPhi_right_terminal_padded,
     ``SpinGlass.Targets.exists_quadratic_constant_of_local_and_outside,
@@ -1253,7 +1258,8 @@ run_cmd do
     ``SpinGlass.Targets.hasDerivWithinAt_derivWithin_section4FirstVariation,
     ``SpinGlass.Targets.derivWithin2_section4FirstVariation_eq,
     ``SpinGlass.Targets.section4FirstVariationD_upper_zero_of_min,
-    ``SpinGlass.Targets.section4FirstVariation_curvature_lower_bound_of_cubic_remainder] do
+    ``SpinGlass.Targets.section4FirstVariation_curvature_lower_bound_of_cubic_remainder,
+    ``SpinGlass.Targets.talagrand_theorem_2_4] do
     for ax in ← Lean.collectAxioms name do
       unless allowed.contains ax do
         throwError "{name} depends on disallowed axiom {ax}"

@@ -54,7 +54,7 @@ transitive dependencies for the standard Lean axioms only.
 | Local `pairedIndependentMean_sum`, `pairedSharedMean_sum`, coordinate Stein, and mixed Hessian; Mathlib dominated differentiation | `CoupledDisorderInterpolation.lean` proves radial disorder linearity, scaled Stein and the actual outer-average disorder derivative with normalization `1/(2N)`. Field variances remain fixed. |
 | RSAT `GoodTriple`, `stepMD_le`, `stepMVar_nonneg`, and terminal `fLbaseDD = 1-fLbaseD²` | `CoupledLambdaCurvature.lean` supplies only the strengthened invariant `E ≤ 1-D²`. All analytic regularity is inherited. This gives Lemma 5.9 with constant 1, not RSAT's coarse depth-dependent bound. |
 | Mathlib `convexOn_univ_of_deriv2_nonneg`, `ConvexOn.isMinOn_of_rightDeriv_eq_zero` | Tangent-quadratic estimate and explicit lambda optimization; `TalagrandLambdaGain.lean` applies this to the actual time-zero second-interpolation endpoint. |
-| Local `talagrand_proposition_2_5`, replica-weighted-tail conversion, and endpoint-safe convergence; Mathlib exponential asymptotics | `TalagrandOverlapTail.lean` sums over at most `N+1` attainable Ising overlaps and proves the conditional concentration/convergence deduction. `RSBSchemeReduction.lean` removes its positive-first-mass restriction by exact equivalence; the uniform quadratic bound remains unproved. |
+| Local `talagrand_proposition_2_5`, replica-weighted-tail conversion, and endpoint-safe convergence; Mathlib exponential asymptotics | `TalagrandOverlapTail.lean` sums over at most `N+1` attainable Ising overlaps and proves the conditional concentration/convergence deduction. `RSBSchemeReduction.lean` removes its positive-first-mass restriction by exact equivalence; `TalagrandTheorem24.lean` now supplies the uniform quadratic bound. |
 | Mathlib `measurePreserving_arrowProdEquivProdArrow`, `Measure.pi_map_pi`, Gaussian convolution; local scalar semigroup | `RSBZeroMassPiSemigroup.lean` proves the N-site expectation semigroup. Leading zero-mass deletion preserves the actual pressure and Parisi data; exact zero-variance padding transfers fixed-level minimality. |
 
 The final `AT.twoReplica_GT_bound` has RS smart-path hypotheses (one overlap
@@ -1411,3 +1411,15 @@ pressure gains on compact bands. The level-indexed finite-cover bridge avoids
 dependent casts in the replica-level parameter and yields the exact common-
 constant quadratic-bound quantifier. The remaining work is the explicit finite
 region instantiation for all signs and endpoint bands.
+
+## Step 51 Theorem 2.4 assembly
+
+The new Section 5 assembly modules cover the positive and negative away
+regions, adjacent breakpoint boundaries, initial zero-overlap case, terminal
+padding, and every finite-RSB index configuration. `Section5UniformLocalRadius`
+chooses one local radius across physical levels, while
+`Section5Theorem24Assembly` takes the finite minimum of the local and away
+constants. `TalagrandTheorem24.lean` exports the unconditional
+`talagrand_theorem_2_4`; its axiom audit contains only `propext`,
+`Classical.choice`, and `Quot.sound`. No new external dependency or copied
+upstream source was used.

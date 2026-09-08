@@ -18,6 +18,20 @@ namespace SpinGlass.Targets
 variable {Ω : Type*} [MeasureSpace Ω]
 variable [IsProbabilityMeasure (ℙ : Measure Ω)]
 
+/-- The concrete radius used by the reduced local estimate.  The degenerate
+left endpoint `q₁ = 0` and right endpoint `qᵣ = 1` omit the corresponding
+zero-length neighboring interval. -/
+noncomputable def section5LocalReducedRadius {k : ℕ} (s : RSBScheme k)
+    (β t₀ : ℝ) (r : ℕ) : ℝ :=
+  if s.q r = 1 then
+    min ((1 - t₀) / section5LocalLeftConstant β 535)
+      (s.q r - s.q (r - 1))
+  else if r = 1 ∧ s.q 1 = 0 then
+    min ((1 - t₀) / section5LocalLeftConstant β 535) (s.q 2)
+  else
+    min ((1 - t₀) / section5LocalLeftConstant β 535)
+      (min (s.q r - s.q (r - 1)) (s.q (r + 1) - s.q r))
+
 theorem exists_uniform_local_quadratic_reduced_min
     {k : ℕ} (s : RSBScheme k) (β h ε : ℝ)
     (hβ : β ≠ 0) (hmass : ∀ p, p ≤ k → s.m p < s.m (p + 1))
@@ -27,7 +41,8 @@ theorem exists_uniform_local_quadratic_reduced_min
     {r : ℕ} (hr0 : 1 ≤ r) (hr : r ≤ k + 1)
     {t₀ : ℝ} (ht₀ : t₀ < 1)
     (hsmall : section5LocalLeftConstant β 535 * ε ^ (1 / 6 : ℝ) ≤ 1 - t₀) :
-    ∃ η > (0 : ℝ), ∀ {n : ℕ}, 0 < n →
+    ∃ η > (0 : ℝ), η = section5LocalReducedRadius s β t₀ r ∧
+      ∀ {n : ℕ}, 0 < n →
       ∀ sk : SKDisorder (Ω := Ω) n β h,
       ∀ t ∈ Ioo (0 : ℝ) t₀, ∀ u ∈ Icc (-1) 1,
       |u - s.q r| ≤ η →
@@ -48,7 +63,8 @@ theorem exists_uniform_local_quadratic_reduced_min
     have hη : 0 < η := by
       dsimp [η]
       exact lt_min (div_pos (sub_pos.mpr ht₀) hL) (sub_pos.mpr hleft)
-    refine ⟨η, hη, ?_⟩
+    refine ⟨η, hη, ?_, ?_⟩
+    · simp [section5LocalReducedRadius, hqr, η]
     intro n hn sk t ht u hu hdist hatt
     have huq : u ≤ s.q r := by
       rw [hqr]
@@ -93,7 +109,8 @@ theorem exists_uniform_local_quadratic_reduced_min
       have hη : 0 < η := by
         dsimp [η]
         exact lt_min (div_pos (sub_pos.mpr ht₀) hL) hq2
-      refine ⟨η, hη, ?_⟩
+      refine ⟨η, hη, ?_, ?_⟩
+      · simp [section5LocalReducedRadius, hqr, hq1, η]
       intro n hn sk t ht u hu hdist hatt
       letI : Nonempty (AT.ConstrainedPair n u) := by
         obtain ⟨σ, τ, hστ⟩ := hatt
@@ -166,7 +183,8 @@ theorem exists_uniform_local_quadratic_reduced_min
         dsimp [η]
         exact lt_min (div_pos (sub_pos.mpr ht₀) hL)
           (lt_min (sub_pos.mpr hleft) (sub_pos.mpr hqright))
-      refine ⟨η, hη, ?_⟩
+      refine ⟨η, hη, ?_, ?_⟩
+      · simp [section5LocalReducedRadius, hqr, hz, η]
       intro n hn sk t ht u hu hdist hatt
       letI : Nonempty (AT.ConstrainedPair n u) := by
         obtain ⟨σ, τ, hστ⟩ := hatt

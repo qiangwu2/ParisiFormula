@@ -6,31 +6,13 @@ Sherrington–Kirkpatrick (SK) model with exact covariance.
 
 ## Status
 
-- **Proved:** the SK version of Theorem 2.1 and Guerra's RSB upper bound,
-  including its thermodynamic upper-bound consequence.
-- **In progress:** Theorem 2.2. Quantitative optimality, stationarity at every
-  level after exact scheme reduction, uniform curvature, and the local-left
-  and initial-interval estimates (Propositions 5.1 and 5.3) are checked.
-  The local-right estimate (Proposition 5.2) is checked for the reduced schemes
-  used in the proof, including zero first overlap and the terminal interval.
-  The far-right strict improvement (Proposition 5.6) is also checked,
-  including the terminal mass and a deficit independent of system size.
-  The negative initial interval (Proposition 5.4) is now checked for reduced
-  schemes, preserving the original shared field and free energy.
-  Proposition 5.7's outside-neighbor bound is now checked for the reduced
-  near-minimizing schemes used in the proof, including both signs, all trial
-  intervals, zero first overlap and time zero. Its positive deficit is
-  independent of system size. Continuous scalar comparisons now give uniform
-  gaps on compact subregions, and the inserted overlap sequences agree at
-  adjacent breakpoints, compact right outside-trial bounds, and the scalar
-  zero-variance list bridge are checked.
-  Adjacent sorted-tag boundary gluing, lambda-deficit transport, finite compact
-  cover bookkeeping, terminal padding, and positive-time negative-overlap
-  compact bounds are now checked. Initial negative-overlap compact bands and
-  same-trial far-left/far-right pressure-gap compact bounds are also checked;
-  the level-indexed finite-cover bridge now produces the exact eventual
-  quadratic-bound quantifier. The final all-region uniform Theorem 2.4
-  instantiation remains; Theorem 2.2 and the final formula are still open.
+- **Proved:** the SK version of Theorem 2.1, Guerra's RSB upper bound,
+  Proposition 5.7, and Talagrand's uniform quadratic estimate (Theorem 2.4).
+  The Theorem 2.4 proof covers every overlap sign, breakpoint, physical level,
+  terminal case, and the zero-first-overlap boundary.
+- **In progress:** Theorem 2.2 and the final lower-bound deduction. The remaining
+  central input is the overlap-concentration step; the reduction from Theorem 2.4
+  to the required finite-RSB convergence statement is already formalised.
 
 **The full Parisi formula is not yet formalised.** Completed results have
 build-time axiom checks; open proof placeholders remain. A successful build
@@ -69,7 +51,9 @@ project in VS Code with the Lean 4 extension.
 ## Project guide
 
 - [Targets/](Targets/) — main formalisation and supporting proof modules.
-  Start with [Talagrand.lean](Targets/Talagrand.lean);
+  The completed Theorem 2.4 entry point is
+  [TalagrandTheorem24.lean](Targets/TalagrandTheorem24.lean); the remaining
+  Theorem 2.2 target is in [Talagrand.lean](Targets/Talagrand.lean).
   [GuerraAudit.lean](Targets/GuerraAudit.lean) checks completed-result dependencies.
 - [ParisiFormula/](ParisiFormula/) — supporting library, without proof placeholders.
 - [Roadmap](docs/ROADMAP.md) — proof plan, detailed checkpoints and remaining work.
