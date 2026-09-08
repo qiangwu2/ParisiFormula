@@ -1,4 +1,4 @@
-import Targets.Talagrand
+import Targets.TalagrandCore
 
 /-!
 # The convergence step in Talagrand's Theorem 2.2
@@ -6,9 +6,9 @@ import Targets.Talagrand
 This file formalises the deduction on p. 230 of Talagrand, *The Parisi formula*,
 Ann. of Math. 163 (2006), from overlap concentration to convergence of the finite
 cascade. Concentration is an explicit hypothesis, not an axiom or an established
-estimate. The exact unconditional conclusion is now obtained downstream in
-`Targets.TalagrandTheorem22Integration`; moving it to the canonical
-`talagrand_theorem_2_2` declaration remains an import-graph task.
+estimate. The exact unconditional conclusion is obtained downstream in
+`Targets.TalagrandTheorem22Integration` and exported under the canonical
+`talagrand_theorem_2_2` name by `Targets.TalagrandFinal`.
 
 The interpolation gap is the actual `guerraPsi - guerraPhi`, and its derivative
 is the explicit squared-overlap `guerraRemainder` from the completed Theorem 2.1.

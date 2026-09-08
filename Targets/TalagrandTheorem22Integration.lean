@@ -4,14 +4,13 @@ import Targets.RSBSchemeOverlapReduction
 /-!
 # Theorem 2.4 to Theorem 2.2 integration
 
-This module closes the downstream mathematical integration step without changing
-the canonical declaration in `Targets.Talagrand`.  The completed uniform
+This module closes the downstream mathematical integration step. The completed uniform
 quadratic estimate of Theorem 2.4 has exactly the hypothesis required by the
 strict-mass/strict-overlap reduction, which already contains Proposition 2.3 and
 the concentration-to-convergence argument.
 
-Moving the canonical `talagrand_theorem_2_2` declaration behind this module is a
-separate import-graph refactor.
+`Targets.TalagrandFinal` gives this conclusion the canonical
+`talagrand_theorem_2_2` name.
 -/
 
 open MeasureTheory ProbabilityTheory Real Set Filter Topology

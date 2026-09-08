@@ -5,7 +5,7 @@ The leading-zero-mass reduction requires equality of the actual N-site
 cascades, not merely their scalar endpoints. The Gaussian law is obtained
 coordinatewise from Mathlib's convolution and product-measure reindexing.
 -/
-import Targets.Talagrand
+import Targets.TalagrandCore
 import Targets.ParisiStepSemigroup
 
 open MeasureTheory ProbabilityTheory Real

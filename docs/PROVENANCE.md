@@ -1431,5 +1431,15 @@ present in the project: `talagrand_theorem_2_4` supplies the uniform quadratic e
 and `talagrand_theorem_2_2_of_strict_mass_overlap_quadratic_bound` supplies the exact
 scheme reduction, Proposition 2.3 overlap-tail estimate and convergence deduction. The
 result has the same mathematical statement as Theorem 2.2 and introduces no new
-analytic framework, dependency revision or copied source. Its remaining separation
-from the canonical declaration is solely an import-graph issue.
+analytic framework, dependency revision or copied source.
+
+## Step 53 final public theorem layer
+
+The former monolithic target was split without changing its mathematics.
+`TalagrandCore.lean` contains the definitions, Theorem 2.1, Guerra's upper bound and a
+proof of the final deduction parameterized by Theorem 2.2. Modules needed for Sections
+3--5 import this core. `TalagrandFinal.lean` imports the completed downstream chain,
+assigns the canonical `talagrand_theorem_2_2` name to the Step 52 result and applies the
+parameterized deduction to prove `parisi_formula`. `Talagrand.lean` remains the public
+façade. This is an internal dependency refactor: no external dependency, theorem
+hypothesis, normalization or source result changed.

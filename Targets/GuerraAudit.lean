@@ -1,11 +1,10 @@
 /-
-# Regression checks for the SK Guerra identity and the Theorem 2.2 supporting results
+# Regression checks for the completed SK Parisi-formula proof
 
 These guards are part of `lake build Targets`. They reject any reintroduced
-`sorryAx` or additional axiom in Theorem 2.1, its upper-bound consequences,
-Lemma 2.7, the replica-measure decomposition, Lemma 2.6, Proposition 2.5 on
-interior times, and the deduction of Theorem 2.2 from an explicit overlap-concentration hypothesis.
-The latter guards certify the implication, not its unproved concentration input.
+`sorryAx` or additional axiom in Theorems 2.1, 2.2 and 2.4, the Parisi formula,
+their upper-bound and lower-bound consequences, Lemma 2.7, the replica-measure
+decomposition, Lemma 2.6 and Proposition 2.5 on interior times.
 The Lemma 2.6 guards include Gaussian concentration and its change of law to
 the abstract disorder, not just a conditional or standard-coordinate estimate.
 The Section 5 guards cover both endpoints, the actual covariance derivative
@@ -116,7 +115,8 @@ reflection and reuse of the local/far-right bounds. The assembled Proposition
 chosen before the scheme and a positive gap chosen before system size and
 disorder. Every overlap sign, trial breakpoint, first-level boundary and time
 zero is included. The all-region compact assembly and uniform Theorem 2.4
-bound are now certified. Theorem 2.2 and the final Parisi formula remain open.
+bound are now certified. The canonical Theorem 2.2 and the final Parisi formula
+are also certified through the completed downstream integration.
 -/
 import Targets.Section5Proposition57
 import Targets.Section5InterleavedCompact
@@ -288,7 +288,7 @@ import Targets.MixedVariancePressure
 import Targets.Section5InterleavedBound
 import Targets.Section5InterleavedPressure
 import Targets.Section5TaggedVelocity
-import Targets.TalagrandTheorem22Integration
+import Targets.Talagrand
 
 /-! The new critical-path results are checked against the same three standard
 axioms as the explicit print guards below. Checking the allowed set also
@@ -1260,7 +1260,10 @@ run_cmd do
     ``SpinGlass.Targets.section4FirstVariationD_upper_zero_of_min,
     ``SpinGlass.Targets.section4FirstVariation_curvature_lower_bound_of_cubic_remainder,
     ``SpinGlass.Targets.talagrand_theorem_2_4,
-    ``SpinGlass.Targets.talagrand_theorem_2_2_from_theorem_2_4] do
+    ``SpinGlass.Targets.talagrand_theorem_2_2_from_theorem_2_4,
+    ``SpinGlass.Targets.parisi_formula_of_theorem_2_2,
+    ``SpinGlass.Targets.talagrand_theorem_2_2,
+    ``SpinGlass.Targets.parisi_formula] do
     for ax in ← Lean.collectAxioms name do
       unless allowed.contains ax do
         throwError "{name} depends on disallowed axiom {ax}"

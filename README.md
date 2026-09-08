@@ -7,18 +7,18 @@ Sherrington–Kirkpatrick (SK) model with exact covariance.
 ## Status
 
 - **Proved:** the SK version of Theorem 2.1, Guerra's RSB upper bound,
-  Proposition 5.7, and Talagrand's uniform quadratic estimate (Theorem 2.4).
+  Proposition 5.7, Talagrand's uniform quadratic estimate (Theorem 2.4),
+  Theorem 2.2, and the Parisi formula.
   The Theorem 2.4 proof covers every overlap sign, breakpoint, physical level,
-  terminal case, and the zero-first-overlap boundary. The downstream integration
-  theorem now combines Theorem 2.4, Proposition 2.3 and the convergence argument
-  to prove the exact mathematical conclusion of Theorem 2.2.
-- **In progress:** the import-graph refactor that moves this checked conclusion
-  to the canonical `talagrand_theorem_2_2` declaration, followed by the final
-  Parisi-formula dependency audit.
+  terminal case, and the zero-first-overlap boundary. Theorem 2.2 combines this
+  estimate with Proposition 2.3 and the convergence argument. The final theorem
+  then proves convergence of the free energy `F_N` to the value given by the
+  Parisi formula.
 
-**The full Parisi formula is not yet formalised.** Completed results have
-build-time axiom checks; open proof placeholders remain. A successful build
-does not mean the entire proof is complete.
+**The full critical-path proof is formalised in the project's stated
+exact-covariance SK setting.** The numbered theorems and final formula have
+build-time axiom checks. Three older placeholders remain in `Targets/Milestones.lean`,
+but they are not dependencies of the Parisi-formula theorem.
 
 See the [roadmap](docs/ROADMAP.md) for the checked/open checklist, next steps
 and detailed progress. Development follows Talagrand's 2006 proof and reuses
@@ -53,11 +53,11 @@ project in VS Code with the Lean 4 extension.
 ## Project guide
 
 - [Targets/](Targets/) — main formalisation and supporting proof modules.
-  The completed Theorem 2.4 entry point is
-  [TalagrandTheorem24.lean](Targets/TalagrandTheorem24.lean), and
-  [TalagrandTheorem22Integration.lean](Targets/TalagrandTheorem22Integration.lean)
-  proves the exact Theorem 2.2 conclusion downstream. The canonical Theorem 2.2
-  declaration remains in [Talagrand.lean](Targets/Talagrand.lean).
+  [TalagrandCore.lean](Targets/TalagrandCore.lean) contains the foundational
+  interpolation and upper bound; [TalagrandTheorem24.lean](Targets/TalagrandTheorem24.lean)
+  contains Theorem 2.4; and [TalagrandFinal.lean](Targets/TalagrandFinal.lean)
+  exports the canonical Theorem 2.2 and Parisi formula through the public
+  [Talagrand.lean](Targets/Talagrand.lean) façade.
   [GuerraAudit.lean](Targets/GuerraAudit.lean) checks completed-result dependencies.
 - [ParisiFormula/](ParisiFormula/) — supporting library, without proof placeholders.
 - [Roadmap](docs/ROADMAP.md) — proof plan, detailed checkpoints and remaining work.

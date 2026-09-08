@@ -13,12 +13,12 @@ import Mathlib.Probability.Distributions.Gaussian.Real
 This file contains the Parisi recursion, its fixed-level parameter continuity and
 minimizer, the replica-symmetric case, and the well-definedness of `parisiValue`.
 These are proved. Three legacy targets remain open: `Φ_monotoneOn`,
-`free_entropy_tendsto`, and `parisiFunctional_lipschitz`; none is used by the current
-final deduction in `Targets/Talagrand.lean`.
+`free_entropy_tendsto`, and `parisiFunctional_lipschitz`; none is used by the completed
+final deduction exported from `Targets/Talagrand.lean`.
 
-The completed SK Theorem 2.1, the still-open Theorem 2.2, and the deduction of the
-Parisi formula are in `Targets/Talagrand.lean`. `lake build Targets` builds both files
-and the axiom guards in `Targets/GuerraAudit.lean`; elaboration errors are not allowed.
+The completed SK Theorems 2.1, 2.2 and 2.4 and the Parisi formula are exported from
+`Targets/Talagrand.lean`. `lake build Targets` builds the full proof and the axiom
+guards in `Targets/GuerraAudit.lean`; elaboration errors are not allowed.
 
 ## Conventions (inherited from the RSAT dependency's `Lemmas.SpinGlass` modules)
 

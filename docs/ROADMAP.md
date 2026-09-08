@@ -12,22 +12,19 @@ the value given by the Parisi formula (`parisi_formula` in Lean). It follows fro
 * **liminf ≥** — Talagrand's coupled-replica lower bound (Milestone 4), whose induction on
   the number of RSB levels needs **Target 2b-i** (continuity of `𝒫_k` in the parameters for
   fixed `k`, hence existence of a minimiser — Talagrand's (2.17)). **2b-i is proved**;
-  the exact conclusion of Theorem 2.2 is now proved downstream, while its canonical
-  declaration still awaits the import-graph refactor.
+  Theorem 2.2 and the resulting lower bound are now proved.
 
-**Current critical path: move the checked downstream conclusion to the canonical
-`talagrand_theorem_2_2` declaration.** Theorem 2.1, Targets 3 and 3', the minimizer,
-Theorem 2.4, and the exact Theorem 2.2 integration theorem are proved. `parisi_formula`
-is already deduced from Theorem 2.2. The axiom guards in `Targets/GuerraAudit.lean`
-verify the completed critical-path results without placeholder dependencies.
+**Critical path complete.** Theorem 2.1, Targets 3 and 3', the minimizer,
+Theorems 2.2 and 2.4, and `parisi_formula` are proved. The axiom guards in
+`Targets/GuerraAudit.lean` verify all completed critical-path results without
+placeholder dependencies.
 
 The convergence deduction within Theorem 2.2 is proved in
 `Targets/TalagrandConvergence.lean`, conditional on an explicit mass-weighted
 overlap-concentration estimate. `Targets/TalagrandOverlapTail.lean` derives that
 estimate from the quadratic bound, and `Targets/TalagrandTheorem22Integration.lean`
-now supplies the bound using Theorem 2.4. Thus the downstream theorem has exactly
-the unconditional Theorem 2.2 conclusion. The remaining issue is declaration placement
-in the acyclic module graph, not an unproved concentration estimate.
+supplies the bound using Theorem 2.4. `Targets/TalagrandFinal.lean` exports the result
+under the canonical Theorem 2.2 name and proves the final Parisi formula.
 
 The unrestricted coupled cascade and both identities in Lemma 2.7 are now proved in
 `Targets/CoupledCascade.lean`. `Targets/ReplicaMeasure.lean` identifies the individual
@@ -152,14 +149,14 @@ left/right neighboring regions and compact left outside-trial regions.
 Adjacent-trial boundary compatibility is checked in `Section5AdjacentScalarFamily`,
 `Section5AdjacentDeficit`, and `Section5AdjacentCompact`. The finite positive and
 negative region assemblies now prove the complete uniform Theorem 2.4 statement.
-Theorem 2.2 and the final formula remain open.
+The downstream integration, canonical Theorem 2.2 and final formula are now also checked.
 
 **Milestone 1 (Targets 1b, 1c) is *not* on this critical path.**  Target 4 is strictly
 stronger than 1c — convergence to `parisiValue` subsumes existence of a limit — and deriving
 4 from 3' plus the lower bound never invokes 1c.  Milestone 1 is the classical
 Guerra–Toninelli (2002) result and exercises related interpolation and Gaussian-IBP
 machinery, but work there should not be mistaken for completing Theorem 2.2. The current
-deduction of `parisi_formula` does not use the separate thermodynamic-limit target.
+proof of `parisi_formula` does not use the separate thermodynamic-limit target.
 
 The completed Theorem 2.1 uses the local coordinate Stein lemmas and finite cascade
 modules. The older Gaussian-triple packaging plan below belongs to Target 1b, not to the
@@ -2718,14 +2715,14 @@ and it prunes a large branch of prerequisites — we do **not** need any of:
 * Ruelle probability cascades / Poisson–Dirichlet,
 * the Aizenman–Sims–Starr scheme.
 
-The exact mathematical conclusion of `talagrand_theorem_2_2` is now proved in
+The exact mathematical conclusion of `talagrand_theorem_2_2` is proved in
 `Targets/TalagrandTheorem22Integration.lean`, following Proposition 2.3 and the
 coupled-replica estimates of §3–§5. The current canonical statement asks for convergence
 `φ_N(t) → ψ(t)` on `0 ≤ t ≤ t₀ < 1` for schemes that are sufficiently close to the
 value given by the Parisi formula and minimize at their own fixed level. The deduction
-from this theorem and Theorem 2.1 to `parisi_formula` is already written. The next task
-is to reorganize the import graph so this checked downstream proof replaces the
-canonical placeholder in `Targets/Talagrand.lean`.
+from this theorem and Theorem 2.1 to `parisi_formula` is checked. The acyclic split into
+`Targets/TalagrandCore.lean` and `Targets/TalagrandFinal.lean` now gives both results
+their canonical public names through `Targets/Talagrand.lean`.
 
 Supporting results available through the **active RSAT dependency** include:
 
@@ -2786,9 +2783,20 @@ performs the exact mass/overlap reduction, Proposition 2.3 overlap-tail deductio
 concentration-to-convergence argument. The integration theorem depends only on
 `propext`, `Classical.choice` and `Quot.sound`, and is guarded by `GuerraAudit`.
 
-The next critical-path task is the import-graph refactor needed to replace the original
-`talagrand_theorem_2_2` placeholder with this checked proof while preserving the public
-name. No mathematical estimate remains between Theorem 2.4 and Theorem 2.2.
+No mathematical estimate remains between Theorem 2.4 and Theorem 2.2.
+
+### Step 53 — Canonical Theorem 2.2 and Parisi formula (checked)
+
+The import graph is split into `Targets/TalagrandCore.lean`, containing the foundational
+interpolation, Theorem 2.1, Guerra's upper bound and the final deduction from an explicit
+Theorem 2.2 hypothesis, and `Targets/TalagrandFinal.lean`, which sits downstream of the
+completed Section 3--5 development. The latter exports the canonical
+`talagrand_theorem_2_2` and `parisi_formula`; `Targets/Talagrand.lean` is the stable public
+façade. Both final theorems depend only on `propext`, `Classical.choice` and `Quot.sound`.
+
+The critical-path placeholder count is now zero. The only remaining source placeholders
+are the three historical targets in `Targets/Milestones.lean`, none of which is used by
+the completed Parisi-formula theorem.
 
 ## Housekeeping (any time)
 

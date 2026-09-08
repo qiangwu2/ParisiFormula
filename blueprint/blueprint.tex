@@ -55,9 +55,10 @@ identified explicitly. The active theorem statement is in
 Guerra's RSB upper bound, and Theorem~2.4 are proved. A downstream integration
 theorem combines Theorem~2.4, Proposition~2.3 and the checked convergence argument
 to prove exactly the mathematical conclusion of Theorem~2.2. All these results
-pass the standard-axiom audit in \texttt{Targets/GuerraAudit.lean}. The canonical
-Theorem~2.2 declaration still contains its placeholder pending an import-graph
-refactor, so the canonical Parisi-formula theorem remains conditional.
+pass the standard-axiom audit in \texttt{Targets/GuerraAudit.lean}. The refactored
+final module exports this result as the canonical Theorem~2.2 and uses it to prove
+the Parisi formula. Thus the full critical path is checked in the stated
+exact-covariance SK setting.
 Three older placeholders remain off this critical path: Guerra--Toninelli
 monotonicity, the standalone thermodynamic-limit target, and a uniform Lipschitz
 estimate for the scheme. Fixed-level continuity and existence of a minimizer are proved.
@@ -371,7 +372,7 @@ existence of a limit. Nonemptiness and boundedness below of the defining set of
 \texttt{parisiValue} are proved in \texttt{Targets/Milestones.lean}.
 \end{theorem}
 
-\section{Milestone 4: Theorem 2.2 integration is checked}
+\section{Milestone 4: Theorem 2.2 is formalised}
 
 \paragraph{Route decision (fixed).}  We formalise \textbf{Talagrand's} proof
 \cite{Tal06}.  Panchenko's route \cite{Pan13} is out of scope for now.  Consequently the
@@ -380,8 +381,8 @@ the overlap, Ruelle probability cascades, and the Aizenman--Sims--Starr scheme.
 The fixed-level minimizer used below is already proved; the legacy uniform
 Lipschitz target is not a prerequisite of this deduction.
 
-\begin{theorem}[Talagrand Theorem 2.2; open]\label{thm:two-two}
-\lean{SpinGlass.Targets.talagrand\_theorem\_2\_2}
+\begin{theorem}[Talagrand Theorem 2.2; formalised]\label{thm:two-two}
+\lean{SpinGlass.Targets.talagrand\_theorem\_2\_2}\leanok
 Fix $\beta>0$, $h\in\R$, and a family of SK disorders. For every $t_0<1$ there
 exists $\varepsilon>0$ such that, whenever a scheme $s$ satisfies
 \[
@@ -389,8 +390,8 @@ exists $\varepsilon>0$ such that, whenever a scheme $s$ satisfies
 \qquad \mathcal P_k(s)\le\mathcal P_k(s')\quad\text{for all schemes $s'$ at level $k$},
 \]
 one has $\varphi_N(t)\to\psi_s(t)$ for every $0\le t\le t_0$.
-The canonical declaration still contains its proof placeholder because it occurs
-upstream of the completed Section~5 development in the current import graph.
+The theorem is checked under exactly these quantifiers and has no placeholder
+dependency.
 \end{theorem}
 
 \begin{theorem}[Theorem 2.2 downstream integration; formalised]
@@ -399,8 +400,8 @@ Under the hypotheses and with the conclusion of Theorem~\ref{thm:two-two},
 $\varphi_N(t)\to\psi_s(t)$ for every $0\le t\le t_0$. This theorem has the exact
 mathematical type of the canonical target. It applies the completed Theorem~2.4
 to the strict mass/overlap reduction, which already contains Proposition~2.3 and
-the concentration-to-convergence deduction. Only relocation to the canonical
-public declaration remains.
+the concentration-to-convergence deduction. The canonical public theorem now
+reuses this result directly.
 \end{theorem}
 
 \begin{lemma}[Concentration-to-convergence implication]\label{lem:concentration-convergence}
@@ -436,15 +437,14 @@ concentration hypothesis. The new downstream integration theorem discharges that
 hypothesis through Theorem~2.4 and has no placeholder dependencies.
 \end{proof}
 
-\begin{theorem}[Parisi formula; conditional deduction \cite{Tal06}]
-\lean{SpinGlass.Targets.parisi\_formula}
+\begin{theorem}[Parisi formula; formalised \cite{Tal06}]
+\lean{SpinGlass.Targets.parisi\_formula}\leanok
 \uses{thm:identity, thm:two-two, thm:guerra}
 For $\beta>0$, $\lim_N F_N(\beta,h)=\mathcal P(\beta,h)$.
-The deduction is written and checked, but still depends on the placeholder
-in Theorem~\ref{thm:two-two}; it is not an unconditional formalised result.
+The theorem is checked without a critical-path placeholder dependency.
 \end{theorem}
 
-\begin{proof}[Checked deduction, conditional on Theorem~2.2]
+\begin{proof}[Checked deduction from Theorem~2.2]
 Theorem~2.1 gives a uniform bound $|\varphi_N'|\le L$. Choose $t_0<1$ close to
 one, an $\varepsilon$-optimal scheme, and then a minimizer at the same level.
 Theorem~2.2 gives $\varphi_N(t_0)\to\psi_s(t_0)\ge\mathcal P$.
@@ -2956,18 +2956,17 @@ padding to transfer minimality at each stage.
 \end{proof}
 This completes the mass-strictness part of (2.19). The combined reduction
 proved above also removes repeated interior overlaps while preserving strict
-masses. Thus the final conditional convergence theorem requires the quadratic
-bound only for these reduced schemes. The baseline mass at $r=1$ is
+masses. Thus the convergence theorem requires the quadratic bound only for
+these reduced schemes. The baseline mass at $r=1$ is
 nevertheless $m_0=0$. Both its scalar derivative and the uniform nested
 mass-variation estimates are covered by the checked results above.
 
-The analytic work through Proposition~2.3, Theorem~2.4 and the exact scheme
-reduction is now checked. The remaining critical-path task is architectural:
-reorganise the acyclic module graph so that the downstream integration proof can
-replace the original \texttt{talagrand\_theorem\_2\_2} placeholder without changing
-its public name. The final Parisi-formula deduction is already written against that
-canonical name and will then receive its placeholder-free dependency audit. The
-detailed next-step record is maintained in \texttt{docs/ROADMAP.md}.
+The analytic work through Proposition~2.3, Theorems~2.2 and~2.4, the exact scheme
+reduction and the final Parisi-formula deduction is checked. The import graph now
+separates the foundational interpolation in \texttt{Targets/TalagrandCore.lean}
+from the canonical final declarations in \texttt{Targets/TalagrandFinal.lean};
+\texttt{Targets/Talagrand.lean} remains the public façade. The detailed record is
+maintained in \texttt{docs/ROADMAP.md}.
 
 \begin{thebibliography}{9}
 \bibitem{Gue03} F.~Guerra, Broken replica symmetry bounds in the mean field spin glass

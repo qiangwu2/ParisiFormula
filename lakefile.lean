@@ -18,8 +18,8 @@ Two reasons this is better than the vendoring it replaces:
   available — `Lemmas.AT.PsiContinuity` (continuity of the Guerra–Talagrand functional in
   its parameters), `Lemmas.GuerraTalagrand.Bound.*` (the GT bound, including the coupled
   two-field form), `Lemmas.Cavity.TalagrandCavity`, `Lemmas.Concentration.*` — which is
-  where supporting interpolation and concentration results live. These do not replace
-  the still-open local Theorem 2.2 in `Targets/Talagrand.lean`.
+  where supporting interpolation and concentration results live. These are reused by
+  the completed local Theorem 2.2; they do not replace its project-specific assembly.
 
 The narrowness of the original vendoring is also what made `port/` unusable: those files
 were cut from a *different* fork (`or4nge19/SpinGlass`) and referenced API that the
@@ -30,9 +30,10 @@ eight-file slice did not include.  See `port/README.md`.
 ## Build targets
 
 * `ParisiFormula` (default): the local supporting library, without source placeholders.
-* `Targets`: the finite-step functional and cascade proofs, the completed SK Theorem 2.1,
-  and four remaining placeholders (Theorem 2.2 plus three off-path legacy lemmas).
-  This target also builds `Targets.GuerraAudit`, which guards the completed results
+* `Targets`: the finite-step functional and cascade proofs, completed SK Theorems
+  2.1, 2.2 and 2.4, and the final Parisi formula. Three off-path legacy placeholders
+  remain in `Targets.Milestones`; none is a dependency of the final theorem.
+  This target also builds `Targets.GuerraAudit`, which guards completed results
   against placeholder or additional-axiom dependencies. Both libraries must build.
 -/
 

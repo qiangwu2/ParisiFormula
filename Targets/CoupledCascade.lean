@@ -10,7 +10,7 @@ The independent step is an integral against the product Gaussian measure, not
 an assumption of factorisation. The full two-replica partition function is also
 defined before proving its factorisation. Zero masses are handled explicitly.
 -/
-import Targets.Talagrand
+import Targets.TalagrandCore
 
 open MeasureTheory ProbabilityTheory Real Filter Topology
 open scoped BigOperators NNReal
