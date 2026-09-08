@@ -1,5 +1,6 @@
 import Targets.Section5QuadraticAssembly
 import Targets.TalagrandOverlapTail
+import Targets.Section5FiniteGapCover
 
 /-!
 # Quantifier-preserving regional assembly
@@ -15,6 +16,7 @@ open MeasureTheory ProbabilityTheory Real Set Filter
 namespace SpinGlass.Targets
 
 variable {Ω : Type*} [MeasureSpace Ω]
+variable [IsProbabilityMeasure (ℙ : Measure Ω)]
 
 /-- A uniform local quadratic estimate and a uniform positive outside gap
 combine into the desired quadratic estimate.  The regional hypotheses are
@@ -159,5 +161,72 @@ theorem exists_uniform_quadratic_bound_of_finite_regional
     (fun n hn t ht d hd1 hdk u hu hfar => by
       have H := houtside n hn t ht d hd1 hdk u hu hfar
       linarith [hcc d hd1 hdk])
+
+/- This is the compact-cover specialization used by the global assembly.  The
+sets `S d j` are the closed compact pieces for level `d`; `hcover` is required
+only on the far region, while `hlocal` handles the complementary quadratic
+neighborhood.  Thus endpoint gluing and sign-specific estimates remain
+explicit inputs rather than being hidden in this bookkeeping theorem. -/
+theorem exists_uniform_quadratic_bound_of_local_and_finite_compact_cover
+    {J : Type*} [Fintype J] {k : ℕ} (s : RSBScheme k) (β h : ℝ)
+    (sk : ∀ n : ℕ, SKDisorder (Ω := Ω) n β h) (a : ℕ → ℝ)
+    {t₀ η : ℝ} (hη : 0 < η)
+    (ha : ∀ d, 1 ≤ d → d ≤ k + 1 → 0 < a d)
+    (hlocal : ∀ n, 0 < n → ∀ t ∈ Ioo (0 : ℝ) t₀, ∀ d,
+      1 ≤ d → d ≤ k + 1 → ∀ u ∈ attainableOverlaps n,
+      |u - s.q (k + 2 - d)| ≤ η →
+      constrainedPhi n s β h (sk n).U d t u ≤
+        2 * guerraPsi s β h t - a d * (u - s.q (k + 2 - d)) ^ 2)
+    (X : Set (ℝ × ℝ)) (S : ℕ → J → Set (ℝ × ℝ))
+    (hS : ∀ d j, IsCompact (S d j))
+    (hcover : ∀ d, 1 ≤ d → d ≤ k + 1 → ∀ z ∈ X,
+      η ≤ |z.2 - s.q (k + 2 - d)| → ∃ j, z ∈ S d j)
+    (hgap : ∀ d j, 1 ≤ d → d ≤ k + 1 → ∃ δ > (0 : ℝ),
+      ∀ z ∈ S d j, ∀ {n : ℕ}, 0 < n →
+      ∀ sk : SKDisorder (Ω := Ω) n β h,
+      (∃ σ τ : Config n, overlap n σ τ = z.2) →
+      constrainedPhi n s β h sk.U d z.1 z.2 ≤
+        2 * guerraPsi s β h z.1 - δ)
+    (hX : ∀ t ∈ Ioo (0 : ℝ) t₀, ∀ {n : ℕ}, ∀ u ∈ attainableOverlaps n,
+      (t, u) ∈ X) :
+    ∃ K > (0 : ℝ), ∀ᶠ n in atTop, ∀ t ∈ Ioo (0 : ℝ) t₀,
+      ∀ d, 1 ≤ d → d ≤ k + 1 → ∀ u ∈ attainableOverlaps n,
+        constrainedPhi n s β h (sk n).U d t u ≤
+          2 * guerraPsi s β h t -
+            (u - s.q (k + 2 - d)) ^ 2 / K := by
+  classical
+  let Xd : ℕ → Set (ℝ × ℝ) := fun d =>
+    {z | z ∈ X ∧ η ≤ |z.2 - s.q (k + 2 - d)|}
+  let c : ℕ → ℝ := fun d => if hd : 1 ≤ d ∧ d ≤ k + 1 then
+    Classical.choose (exists_uniform_constrainedPhi_gap_of_finite_compact_cover_at_level
+      (Ω := Ω) s β h d (Xd d) (S d) (hS d)
+      (fun z hz => hcover d hd.1 hd.2 z hz.1 hz.2)
+      (fun j => hgap d j hd.1 hd.2)) else 1
+  have hc : ∀ d, 1 ≤ d → d ≤ k + 1 → 0 < c d := by
+    intro d hd1 hdk
+    have H := (Classical.choose_spec (exists_uniform_constrainedPhi_gap_of_finite_compact_cover_at_level
+      (Ω := Ω) s β h d (Xd d) (S d) (hS d)
+      (fun z hz => hcover d hd1 hdk z hz.1 hz.2)
+      (fun j => hgap d j hd1 hdk))).1
+    simpa [c, hd1, hdk] using H
+  have hcout : ∀ d, 1 ≤ d → d ≤ k + 1 → ∀ z ∈ Xd d, ∀ {n : ℕ}, 0 < n →
+      ∀ sk : SKDisorder (Ω := Ω) n β h,
+      (∃ σ τ : Config n, overlap n σ τ = z.2) →
+      constrainedPhi n s β h sk.U d z.1 z.2 ≤
+        2 * guerraPsi s β h z.1 - c d := by
+    intro d hd1 hdk z hz n hn sk hatt
+    have H := (Classical.choose_spec (exists_uniform_constrainedPhi_gap_of_finite_compact_cover_at_level
+      (Ω := Ω) s β h d (Xd d) (S d) (hS d)
+      (fun z hz => hcover d hd1 hdk z hz.1 hz.2)
+      (fun j => hgap d j hd1 hdk))).2 z hz hn sk hatt
+    simp [c, hd1, hdk]
+    simpa using H
+  apply exists_uniform_quadratic_bound_of_finite_regional s β h sk a c
+    hη ha hc hlocal
+  intro n hn t ht d hd1 hdk u hu hfar
+  have hzX : (t, u) ∈ X := hX t ht u hu
+  obtain ⟨σ, τ, hστ⟩ := mem_attainableOverlaps.mp hu
+  have H := hcout d hd1 hdk (t, u) ⟨hzX, hfar⟩ hn (sk n) ⟨σ, τ, hστ⟩
+  simpa using H
 
 end SpinGlass.Targets
